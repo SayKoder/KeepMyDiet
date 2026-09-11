@@ -1,0 +1,1 @@
+Application Flutter pour la gestion de son alimentation, de son frigo et de ses courses. (README en construction)
