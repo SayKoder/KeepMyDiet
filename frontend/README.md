@@ -12,4 +12,12 @@ App Flutter/Dart mobile (Android/iOS), structure feature-first.
 - `features/nutrition/` — dashboard nutrition (Rémi)
 - `features/shopping_list/` — liste de courses (Carl & Rémi)
 
-À initialiser : `flutter create` puis mise en place de la structure ci-dessus.
+## Lancer le projet
+```
+cd frontend
+flutter analyze   # analyse statique
+flutter test       # tests
+flutter run        # sur un émulateur/téléphone connecté
+```
+
+`org` de l'app : `com.keepmydiet`. Plateformes générées : Android + iOS uniquement (pas de web/desktop pour l'instant, voir CLAUDE.md).
