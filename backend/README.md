@@ -11,4 +11,8 @@ Symfony 7 + API Platform + Doctrine (PostgreSQL).
 
 `src/Shared/` : `User`, auth JWT, classes de base communes (socle commun).
 
-À initialiser : Symfony + API Platform + Doctrine + `docker-compose.yml` (Postgres).
+## Dev local
+`compose.yaml` démarre uniquement Postgres (port 5432 exposé via `compose.override.yaml`). L'app tourne en dehors de Docker (`symfony serve` ou `php -S`) — pas de conteneur PHP en dev, pour rester rapide à itérer.
+
+## Prod (VPS)
+`Dockerfile` (PHP-FPM Alpine, multi-stage) construit une image prod optimisée (autoload figé, `.env` compilé via `composer dump-env prod`). Il est consommé par `../infra/docker-compose.prod.yml` (nginx + app + Postgres), pas utilisé en dev. Détails et gestion des secrets : voir `../infra/README.md`.

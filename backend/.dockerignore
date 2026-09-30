@@ -1,0 +1,10 @@
+.git
+.env.local
+.env.local.php
+.env.*.local
+config/jwt/*.pem
+var/
+vendor/
+Dockerfile
+docker-compose*.yml
+compose*.yaml

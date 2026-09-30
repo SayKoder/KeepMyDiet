@@ -1,0 +1,63 @@
+services:
+  app:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+      args:
+        PHP_VERSION: "8.4"
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
+      JWT_SECRET_KEY: /var/www/html/config/jwt/private.pem
+      JWT_PUBLIC_KEY: /var/www/html/config/jwt/public.pem
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+    volumes:
+      - jwt_keys:/var/www/html/config/jwt
+    depends_on:
+      - database
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - ../backend/public:/var/www/html/public:ro
+      - ./nginx/backend.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - web
+      - internal
+    labels:
+      # TODO (étape 18 — déploiement VPS) : brancher sur le réseau Traefik réel du VPS
+      # et remplacer le Host() par le vrai domaine avant mise en prod.
+      - "traefik.enable=true"
+      - "traefik.http.routers.keepmydiet-api.rule=Host(`api.TODO-domaine.tld`)"
+      - "traefik.http.routers.keepmydiet-api.entrypoints=websecure"
+      - "traefik.http.routers.keepmydiet-api.tls.certresolver=TODO-certresolver"
+      - "traefik.http.services.keepmydiet-api.loadbalancer.server.port=80"
+
+  database:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - database_data:/var/lib/postgresql/data:rw
+    networks:
+      - internal
+
+networks:
+  web:
+    # TODO (étape 18) : réseau externe déjà créé sur le VPS, partagé avec Traefik.
+    external: true
+  internal:
+
+volumes:
+  database_data:
+  jwt_keys:
