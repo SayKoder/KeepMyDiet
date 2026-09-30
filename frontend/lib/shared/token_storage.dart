@@ -7,6 +7,10 @@ final tokenStorageProvider = Provider<TokenStorage>((ref) {
 
 /// Coffre-fort chiffré (Keystore Android / Keychain iOS) pour le JWT — jamais
 /// dans les SharedPreferences ou le localStorage, qui ne sont pas chiffrés.
+///
+/// Vit dans `shared/` (et pas dans `features/auth/data/`) car `api_client.dart`
+/// en a besoin pour injecter le token sur toutes les requêtes authentifiées,
+/// pas seulement celles de la feature auth.
 class TokenStorage {
   TokenStorage(this._storage);
 

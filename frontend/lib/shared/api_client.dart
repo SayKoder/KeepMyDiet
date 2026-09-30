@@ -2,9 +2,28 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/env.dart';
+import 'token_storage.dart';
 
 final dioProvider = Provider<Dio>((ref) {
-  return Dio(BaseOptions(baseUrl: Env.apiBaseUrl));
+  final dio = Dio(BaseOptions(baseUrl: Env.apiBaseUrl));
+  final tokenStorage = ref.watch(tokenStorageProvider);
+
+  // Injecte le JWT sur CHAQUE requête sortante (login/register n'en ont pas
+  // besoin mais l'ignorent simplement côté serveur). Centralisé ici plutôt
+  // que répété dans chaque *ApiClient de feature.
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = await tokenStorage.read();
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        handler.next(options);
+      },
+    ),
+  );
+
+  return dio;
 });
 
 /// Message lisible extrait d'une erreur API : API Platform renvoie `detail`

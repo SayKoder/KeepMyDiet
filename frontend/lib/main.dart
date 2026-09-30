@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'features/auth/domain/auth_session.dart';
 import 'features/auth/presentation/auth_controller.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'features/groups/presentation/groups_list_screen.dart';
 
 void main() {
   // ProviderScope doit envelopper toute l'app : c'est lui qui porte l'état de
@@ -35,38 +35,13 @@ class _AuthGate extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
 
     return authState.when(
-      data: (session) => session == null
-          ? const LoginScreen()
-          : _HomePlaceholder(session: session),
+      data: (session) => session == null ? const LoginScreen() : const GroupsListScreen(),
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),
       error: (error, _) => Scaffold(
         body: Center(child: Text('Erreur de démarrage : $error')),
       ),
-    );
-  }
-}
-
-class _HomePlaceholder extends ConsumerWidget {
-  const _HomePlaceholder({required this.session});
-
-  final AuthSession session;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('KeepMyDiet'),
-        actions: [
-          IconButton(
-            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Se déconnecter',
-          ),
-        ],
-      ),
-      body: const Center(child: Text('Connecté — socle auth en place')),
     );
   }
 }

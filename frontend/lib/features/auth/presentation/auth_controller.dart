@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/api_client.dart';
+import '../../../shared/token_storage.dart';
 import '../data/auth_api_client.dart';
-import '../data/token_storage.dart';
 import '../domain/auth_failure.dart';
 import '../domain/auth_session.dart';
 
