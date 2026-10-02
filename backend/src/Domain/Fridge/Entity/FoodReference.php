@@ -20,9 +20,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  * "APIs externes utilisées") :
  * - Ciqual (source = ciqual, group = null) : seed global partagé par tout le
  *   monde, jamais créé depuis l'app — seulement via migration.
- * - Produit personnalisé (source = custom, group = <groupe>) : créé quand un
- *   code-barres scanné n'est pas trouvé sur Open Food Facts, réutilisable
- *   ensuite uniquement par CE groupe.
+ * - Produit personnalisé (source = custom, group = <groupe>) : créé depuis
+ *   l'app, soit pré-rempli via un scan de code-barres trouvé sur Open Food
+ *   Facts, soit saisi à la main si le scan ne trouve rien — réutilisable
+ *   ensuite uniquement par CE groupe. Le barcode n'est donc PAS unique en
+ *   base : deux groupes qui scannent le même produit créent chacun leur
+ *   propre ligne (doublon accepté, voir JOURNAL.md).
  *
  * Valeurs nutritionnelles toujours pour 100g (convention Ciqual/Open Food
  * Facts) — contrairement à RecipeIngredient qui stocke les macros pour SA
@@ -80,7 +83,7 @@ class FoodReference
     #[Groups(['food_reference:read', 'fridge_item:read'])]
     private FoodSource $source = FoodSource::Custom;
 
-    #[ORM\Column(length: 64, nullable: true, unique: true)]
+    #[ORM\Column(length: 64, nullable: true)]
     #[Groups(['food_reference:read', 'food_reference:write', 'fridge_item:read'])]
     private ?string $barcode = null;
 

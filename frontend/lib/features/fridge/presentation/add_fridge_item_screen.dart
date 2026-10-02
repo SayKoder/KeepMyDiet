@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/fridge_api_client.dart';
+import '../data/open_food_facts_client.dart';
 import '../domain/food_reference.dart';
 import '../domain/storage_location.dart';
+import 'barcode_scanner_screen.dart';
 import 'fridge_controller.dart';
 
 /// Deux étapes dans un seul écran (pas de navigation supplémentaire) :
@@ -55,6 +57,55 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
     final result = await showDialog<FoodReference>(
       context: context,
       builder: (context) => _CreateFoodDialog(groupId: widget.groupId, initialName: name),
+    );
+    if (result != null) {
+      setState(() => _selectedFood = result);
+    }
+  }
+
+  /// Ouvre la caméra, puis :
+  /// 1. Si CE groupe a déjà un produit avec ce code-barres (recherche dans le
+  ///    catalogue déjà chargé par `foodCatalogProvider`, pas d'appel réseau
+  ///    en plus) → on le sélectionne directement, écran de détails.
+  /// 2. Sinon → recherche sur Open Food Facts pour pré-remplir le formulaire
+  ///    de création (nom + macros), qu'il trouve le produit ou non.
+  Future<void> _scanBarcode() async {
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (context) => const BarcodeScannerScreen()),
+    );
+    if (code == null || !mounted) {
+      return;
+    }
+
+    final catalog = ref.read(foodCatalogProvider(widget.groupId)).value ?? const [];
+    final existing = catalog.where((f) => f.barcode == code).firstOrNull;
+    if (existing != null) {
+      setState(() => _selectedFood = existing);
+      return;
+    }
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+    final offProduct = await ref.read(openFoodFactsClientProvider).lookup(code);
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pop();
+
+    final result = await showDialog<FoodReference>(
+      context: context,
+      builder: (context) => _CreateFoodDialog(
+        groupId: widget.groupId,
+        initialName: offProduct?.name ?? '',
+        initialCalories: offProduct?.caloriesPer100g,
+        initialProteins: offProduct?.proteinsPer100g,
+        initialCarbs: offProduct?.carbsPer100g,
+        initialFats: offProduct?.fatsPer100g,
+        barcode: code,
+      ),
     );
     if (result != null) {
       setState(() => _selectedFood = result);
@@ -124,7 +175,15 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
           TextField(
             controller: _searchController,
             autofocus: true,
-            decoration: const InputDecoration(labelText: 'Rechercher un aliment', prefixIcon: Icon(Icons.search)),
+            decoration: InputDecoration(
+              labelText: 'Rechercher un aliment',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.qr_code_scanner),
+                tooltip: 'Scanner un code-barres',
+                onPressed: _scanBarcode,
+              ),
+            ),
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
@@ -241,10 +300,29 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
 }
 
 class _CreateFoodDialog extends ConsumerStatefulWidget {
-  const _CreateFoodDialog({required this.groupId, required this.initialName});
+  const _CreateFoodDialog({
+    required this.groupId,
+    required this.initialName,
+    this.initialCalories,
+    this.initialProteins,
+    this.initialCarbs,
+    this.initialFats,
+    this.barcode,
+  });
 
   final int groupId;
   final String initialName;
+
+  /// Préremplissage quand on arrive d'un scan ayant trouvé le produit sur
+  /// Open Food Facts — `null` pour une création manuelle classique.
+  final double? initialCalories;
+  final double? initialProteins;
+  final double? initialCarbs;
+  final double? initialFats;
+
+  /// Code scanné, à rattacher au produit créé pour le retrouver directement
+  /// la prochaine fois (voir `_scanBarcode`). `null` en création manuelle.
+  final String? barcode;
 
   @override
   ConsumerState<_CreateFoodDialog> createState() => _CreateFoodDialogState();
@@ -252,12 +330,14 @@ class _CreateFoodDialog extends ConsumerStatefulWidget {
 
 class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
   late final _nameController = TextEditingController(text: widget.initialName);
-  final _caloriesController = TextEditingController(text: '0');
-  final _proteinsController = TextEditingController(text: '0');
-  final _carbsController = TextEditingController(text: '0');
-  final _fatsController = TextEditingController(text: '0');
+  late final _caloriesController = TextEditingController(text: _fmt(widget.initialCalories));
+  late final _proteinsController = TextEditingController(text: _fmt(widget.initialProteins));
+  late final _carbsController = TextEditingController(text: _fmt(widget.initialCarbs));
+  late final _fatsController = TextEditingController(text: _fmt(widget.initialFats));
   bool _isSubmitting = false;
   String? _errorMessage;
+
+  static String _fmt(double? value) => (value ?? 0).toString();
 
   @override
   void dispose() {
@@ -289,6 +369,7 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
             proteinsPer100g: double.tryParse(_proteinsController.text) ?? 0,
             carbsPer100g: double.tryParse(_carbsController.text) ?? 0,
             fatsPer100g: double.tryParse(_fatsController.text) ?? 0,
+            barcode: widget.barcode,
           );
       ref.invalidate(foodCatalogProvider(widget.groupId));
       if (mounted) {
@@ -311,6 +392,16 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (widget.barcode != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  widget.initialName.isEmpty
+                      ? "Code-barres ${widget.barcode} — introuvable sur Open Food Facts, à saisir manuellement"
+                      : 'Pré-rempli depuis Open Food Facts (code ${widget.barcode}), vérifie avant de valider',
+                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.secondary),
+                ),
+              ),
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Nom'),

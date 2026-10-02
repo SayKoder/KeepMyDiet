@@ -30,6 +30,7 @@ class FridgeApiClient {
     required double proteinsPer100g,
     required double carbsPer100g,
     required double fatsPer100g,
+    String? barcode,
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/food_references',
@@ -40,6 +41,7 @@ class FridgeApiClient {
         'carbsPer100g': carbsPer100g,
         'fatsPer100g': fatsPer100g,
         'group': '/api/groups/$groupId',
+        'barcode': ?barcode,
       },
       options: _ldJson,
     );
