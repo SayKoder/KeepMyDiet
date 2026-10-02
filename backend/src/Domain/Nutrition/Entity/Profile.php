@@ -4,10 +4,12 @@ namespace App\Domain\Nutrition\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Domain\Nutrition\Repository\ProfileRepository;
 use App\Domain\Nutrition\State\CreateProfileProcessor;
+use App\Domain\Nutrition\State\MyProfileProvider;
 use App\Shared\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -27,6 +29,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'nutrition_profile')]
 #[ApiResource(
     operations: [
+        new GetCollection(provider: MyProfileProvider::class),
         new Post(processor: CreateProfileProcessor::class, validationContext: ['groups' => ['profile:write']]),
         new Get(security: 'object.getUser() == user'),
         new Patch(security: 'object.getUser() == user', validationContext: ['groups' => ['profile:write']]),

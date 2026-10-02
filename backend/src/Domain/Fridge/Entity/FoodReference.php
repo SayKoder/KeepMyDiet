@@ -47,7 +47,7 @@ class FoodReference
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['food_reference:read'])]
+    #[Groups(['food_reference:read', 'fridge_item:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 120)]

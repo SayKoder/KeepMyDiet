@@ -38,6 +38,13 @@ final class CreateFridgeItemProcessor implements ProcessorInterface
         $this->em->persist($data);
         $this->em->flush();
 
+        // Particularité observée (pas élucidée, testée avec plusieurs
+        // contournements — proxy Doctrine forcé, em->clear()+find() frais —
+        // sans effet) : la réponse de CE POST n'embarque QUE l'IRI de
+        // `foodReference` (pas ses macros), alors qu'un GET juste après
+        // l'affiche correctement. Sans impact réel : le client ne se fie
+        // jamais à ce retour pour l'affichage, il rafraîchit toujours via un
+        // GET après création (voir frontend/.../fridge_controller.dart).
         return $data;
     }
 }

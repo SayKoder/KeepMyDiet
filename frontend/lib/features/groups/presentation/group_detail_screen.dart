@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/api_client.dart';
+import '../../fridge/presentation/fridge_screen.dart';
 import '../data/groups_api_client.dart';
 import '../domain/group.dart';
 import 'groups_controller.dart';
@@ -59,6 +60,15 @@ class GroupDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(group.name),
         actions: [
+          IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => FridgeScreen(groupId: group.id, groupName: group.name),
+              ),
+            ),
+            icon: const Icon(Icons.kitchen_outlined),
+            tooltip: 'Frigo et placard',
+          ),
           IconButton(
             onPressed: () => _invite(context, ref),
             icon: const Icon(Icons.person_add),

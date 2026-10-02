@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/presentation/auth_controller.dart';
+import '../../nutrition/presentation/nutrition_dashboard_screen.dart';
 import '../../recipes/presentation/recipes_list_screen.dart';
 import 'create_group_screen.dart';
 import 'group_detail_screen.dart';
@@ -19,6 +20,13 @@ class GroupsListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Mes groupes'),
         actions: [
+          IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NutritionDashboardScreen()),
+            ),
+            icon: const Icon(Icons.monitor_heart_outlined),
+            tooltip: 'Nutrition',
+          ),
           IconButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const RecipesListScreen()),
