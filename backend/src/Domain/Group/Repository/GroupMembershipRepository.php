@@ -48,4 +48,12 @@ class GroupMembershipRepository extends ServiceEntityRepository
     {
         return $this->count(['group' => $group]);
     }
+
+    /**
+     * @return GroupMembership[]
+     */
+    public function findForGroup(Group $group): array
+    {
+        return $this->findBy(['group' => $group]);
+    }
 }

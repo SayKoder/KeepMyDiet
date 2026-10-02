@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/api_client.dart';
 import '../../fridge/presentation/fridge_screen.dart';
+import '../../recipe_suggestions/presentation/recipe_suggestions_screen.dart';
+import '../../shopping_list/presentation/shopping_list_screen.dart';
 import '../data/groups_api_client.dart';
 import '../domain/group.dart';
 import 'groups_controller.dart';
@@ -68,6 +70,24 @@ class GroupDetailScreen extends ConsumerWidget {
             ),
             icon: const Icon(Icons.kitchen_outlined),
             tooltip: 'Frigo et placard',
+          ),
+          IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ShoppingListScreen(groupId: group.id, groupName: group.name),
+              ),
+            ),
+            icon: const Icon(Icons.checklist),
+            tooltip: 'Liste de courses',
+          ),
+          IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => RecipeSuggestionsScreen(groupId: group.id, groupName: group.name),
+              ),
+            ),
+            icon: const Icon(Icons.auto_awesome),
+            tooltip: 'Suggestions de recettes',
           ),
           IconButton(
             onPressed: () => _invite(context, ref),
