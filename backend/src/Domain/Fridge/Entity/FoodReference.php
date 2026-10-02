@@ -33,6 +33,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * conventions différentes, chacune adaptée à son cas d'usage).
  */
 #[ORM\Entity(repositoryClass: FoodReferenceRepository::class)]
+#[ORM\Index(name: 'idx_3659248897ae0266', columns: ['barcode'])]
 #[ApiResource(
     operations: [
         new GetCollection(
