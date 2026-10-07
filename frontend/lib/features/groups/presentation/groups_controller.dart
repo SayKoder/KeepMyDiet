@@ -50,3 +50,16 @@ class GroupsController extends AsyncNotifier<List<Group>> {
 final groupMembersProvider = FutureProvider.family<List<GroupMember>, int>((ref, groupId) {
   return ref.watch(groupsApiClientProvider).fetchMembers(groupId);
 });
+
+/// Groupe affiché dans l'onglet Frigo. Null tant qu'aucun groupe n'a encore
+/// été résolu (`HomeShell` le fixe automatiquement sur le premier groupe dès
+/// que la liste arrive) ; changé manuellement via le sélecteur de
+/// `GroupDetailScreen` si l'utilisateur a plusieurs groupes.
+class ActiveGroupNotifier extends Notifier<Group?> {
+  @override
+  Group? build() => null;
+
+  void select(Group group) => state = group;
+}
+
+final activeGroupProvider = NotifierProvider<ActiveGroupNotifier, Group?>(ActiveGroupNotifier.new);

@@ -16,6 +16,9 @@ class Profile {
     required this.tdee,
     required this.calorieGoal,
     required this.calorieFloor,
+    required this.proteinTargetG,
+    required this.carbTargetG,
+    required this.fatTargetG,
     this.targetWeightKg,
     this.weeklyWeightLossGoalKg,
     this.estimatedWeeksToTarget,
@@ -32,6 +35,9 @@ class Profile {
   final double tdee;
   final double calorieGoal;
   final double calorieFloor;
+  final double proteinTargetG;
+  final double carbTargetG;
+  final double fatTargetG;
   final double? targetWeightKg;
   final double? weeklyWeightLossGoalKg;
   final int? estimatedWeeksToTarget;
@@ -48,6 +54,9 @@ class Profile {
         tdee: (json['tdee'] as num).toDouble(),
         calorieGoal: (json['calorieGoal'] as num).toDouble(),
         calorieFloor: (json['calorieFloor'] as num).toDouble(),
+        proteinTargetG: (json['proteinTargetG'] as num).toDouble(),
+        carbTargetG: (json['carbTargetG'] as num).toDouble(),
+        fatTargetG: (json['fatTargetG'] as num).toDouble(),
         targetWeightKg: (json['targetWeightKg'] as num?)?.toDouble(),
         weeklyWeightLossGoalKg: (json['weeklyWeightLossGoalKg'] as num?)?.toDouble(),
         estimatedWeeksToTarget: json['estimatedWeeksToTarget'] as int?,

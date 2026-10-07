@@ -43,6 +43,11 @@ class RecipeIngredient
     #[ORM\JoinColumn(nullable: false)]
     private ?Recipe $recipe = null;
 
+    /**
+     * Indexé via `LOWER(name) varchar_pattern_ops` (migration Version20261007154500,
+     * pas modélisable par un attribut Doctrine) — `RecipeIngredientRepository::searchByName()`
+     * s'appuie dessus pour rester rapide même quand le pool global grossit.
+     */
     #[ORM\Column(length: 120)]
     #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
     #[Assert\NotBlank(groups: ['recipe:write'])]

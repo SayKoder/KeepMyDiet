@@ -5,6 +5,8 @@ import '../../../shared/api_client.dart';
 import '../domain/activity_level.dart';
 import '../domain/profile.dart';
 import '../domain/sex.dart';
+import '../domain/water_goal.dart';
+import '../domain/water_intake.dart';
 
 final nutritionApiClientProvider = Provider<NutritionApiClient>((ref) {
   return NutritionApiClient(ref.watch(dioProvider));
@@ -61,6 +63,58 @@ class NutritionApiClient {
     );
 
     return Profile.fromJson(response.data!);
+  }
+
+  /// `/water_intakes` n'est pas une vraie collection : 0 ou 1 élément, le
+  /// suivi du jour pour l'utilisateur courant (voir TodayWaterIntakeProvider
+  /// côté backend) — même pattern que `/profiles`.
+  Future<WaterIntake?> fetchTodayWaterIntake() async {
+    final response = await _dio.get<Map<String, dynamic>>('/water_intakes');
+    final members = response.data!['member'] as List<dynamic>;
+
+    return members.isEmpty ? null : WaterIntake.fromJson(members.first as Map<String, dynamic>);
+  }
+
+  /// `deltaMl` : toujours une variation ("+250", ou négatif pour annuler un
+  /// ajout), jamais le total absolu — le backend incrémente lui-même la
+  /// ligne du jour (la crée si besoin), pas de risque de désynchronisation.
+  Future<WaterIntake> addWater(int deltaMl) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/water_intakes/add',
+      data: {'deltaMl': deltaMl},
+      options: _ldJson,
+    );
+
+    return WaterIntake.fromJson(response.data!);
+  }
+
+  /// `/water_goals` n'est pas une vraie collection : 0 ou 1 élément, la
+  /// surcharge d'objectif d'hydratation de l'utilisateur courant (voir
+  /// MyWaterGoalProvider côté backend) — absence = pas de surcharge, le
+  /// client retombe sur son calcul par défaut (35 mL/kg).
+  Future<WaterGoal?> fetchMyWaterGoal() async {
+    final response = await _dio.get<Map<String, dynamic>>('/water_goals');
+    final members = response.data!['member'] as List<dynamic>;
+
+    return members.isEmpty ? null : WaterGoal.fromJson(members.first as Map<String, dynamic>);
+  }
+
+  Future<WaterGoal> setWaterGoal(int goalMl) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/water_goals/set',
+      data: {'goalMl': goalMl},
+      options: _ldJson,
+    );
+
+    return WaterGoal.fromJson(response.data!);
+  }
+
+  /// Pas de `setWaterGoal(null)` : l'action dédiée `/water_goals/reset`
+  /// existe précisément parce que l'ancienne tentative de gérer ça via un
+  /// `goalMl` nul dans `set` cassait la sérialisation côté backend (voir
+  /// SetWaterGoalInput).
+  Future<void> resetWaterGoal() {
+    return _dio.post<void>('/water_goals/reset', data: const {}, options: _ldJson);
   }
 
   Map<String, dynamic> _toJson(

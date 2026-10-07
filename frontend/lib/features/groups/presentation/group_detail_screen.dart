@@ -4,9 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/api_client.dart';
-import '../../fridge/presentation/fridge_screen.dart';
-import '../../recipe_suggestions/presentation/recipe_suggestions_screen.dart';
-import '../../shopping_list/presentation/shopping_list_screen.dart';
 import '../data/groups_api_client.dart';
 import '../domain/group.dart';
 import 'groups_controller.dart';
@@ -57,38 +54,26 @@ class GroupDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final membersAsync = ref.watch(groupMembersProvider(group.id));
+    final groups = ref.watch(groupsControllerProvider).value ?? [];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(group.name),
         actions: [
-          IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => FridgeScreen(groupId: group.id, groupName: group.name),
-              ),
+          if (groups.length > 1)
+            PopupMenuButton<Group>(
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: 'Changer de groupe',
+              onSelected: (selected) =>
+                  ref.read(activeGroupProvider.notifier).select(selected),
+              itemBuilder: (_) => [
+                for (final g in groups)
+                  PopupMenuItem(
+                    value: g,
+                    child: Text(g.name),
+                  ),
+              ],
             ),
-            icon: const Icon(Icons.kitchen_outlined),
-            tooltip: 'Frigo et placard',
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ShoppingListScreen(groupId: group.id, groupName: group.name),
-              ),
-            ),
-            icon: const Icon(Icons.checklist),
-            tooltip: 'Liste de courses',
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => RecipeSuggestionsScreen(groupId: group.id, groupName: group.name),
-              ),
-            ),
-            icon: const Icon(Icons.auto_awesome),
-            tooltip: 'Suggestions de recettes',
-          ),
           IconButton(
             onPressed: () => _invite(context, ref),
             icon: const Icon(Icons.person_add),
