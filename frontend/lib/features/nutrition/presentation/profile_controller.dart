@@ -30,6 +30,8 @@ class ProfileController extends AsyncNotifier<Profile?> {
     required double heightCm,
     required double weightKg,
     required ActivityLevel activityLevel,
+    double? targetWeightKg,
+    double? weeklyWeightLossGoalKg,
   }) async {
     final Profile profile;
     try {
@@ -39,6 +41,8 @@ class ProfileController extends AsyncNotifier<Profile?> {
             heightCm: heightCm,
             weightKg: weightKg,
             activityLevel: activityLevel,
+            targetWeightKg: targetWeightKg,
+            weeklyWeightLossGoalKg: weeklyWeightLossGoalKg,
           );
     } on DioException catch (e) {
       throw ProfileFailure(extractErrorMessage(e));
@@ -56,6 +60,8 @@ class ProfileController extends AsyncNotifier<Profile?> {
     required double heightCm,
     required double weightKg,
     required ActivityLevel activityLevel,
+    double? targetWeightKg,
+    double? weeklyWeightLossGoalKg,
   }) async {
     final current = state.value;
     if (current == null) {
@@ -71,6 +77,8 @@ class ProfileController extends AsyncNotifier<Profile?> {
             heightCm: heightCm,
             weightKg: weightKg,
             activityLevel: activityLevel,
+            targetWeightKg: targetWeightKg,
+            weeklyWeightLossGoalKg: weeklyWeightLossGoalKg,
           );
     } on DioException catch (e) {
       throw ProfileFailure(extractErrorMessage(e));

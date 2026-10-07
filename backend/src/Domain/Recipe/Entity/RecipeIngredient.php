@@ -2,19 +2,35 @@
 
 namespace App\Domain\Recipe\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use App\Domain\Recipe\Repository\RecipeIngredientRepository;
+use App\Domain\Recipe\State\IngredientSuggestionsProvider;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Pas une ApiResource à part entière : toujours créé/lu/modifié à travers
- * Recipe (cascade persist/remove). Porte ses propres macros directement
- * (déjà calculées pour SA quantité dans la recette), plutôt que de référencer
- * un aliment externe — il n'existe pas encore d'entité "aliment" partagée
- * (le futur FoodItem du Frigo + import Ciqual/Open Food Facts, phase 2).
- * À relier plus tard, décision actée avec Carl le 2026-09-29.
+ * Pas une ApiResource à part entière pour la création/lecture habituelle :
+ * toujours créé/lu/modifié à travers Recipe (cascade persist/remove). Porte
+ * ses propres macros directement (déjà calculées pour SA quantité dans la
+ * recette), plutôt que de référencer un aliment externe — il n'existe pas
+ * encore d'entité "aliment" partagée (le futur FoodItem du Frigo + import
+ * Ciqual/Open Food Facts, phase 2). À relier plus tard, décision actée avec
+ * Carl le 2026-09-29.
+ *
+ * Exception : une seule route en lecture seule, `/ingredient_suggestions`,
+ * pour l'autocomplete à la création d'une recette (réutilise l'entité telle
+ * quelle plutôt qu'un DTO parallèle qui dupliquerait les 7 mêmes champs —
+ * décision actée avec Carl le 2026-10-07).
  */
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: RecipeIngredientRepository::class)]
+#[ApiResource(
+    operations: [
+        new GetCollection(uriTemplate: '/ingredient_suggestions', provider: IngredientSuggestionsProvider::class),
+    ],
+    normalizationContext: ['groups' => ['ingredient_suggestion:read']],
+)]
 class RecipeIngredient
 {
     #[ORM\Id]
@@ -28,38 +44,38 @@ class RecipeIngredient
     private ?Recipe $recipe = null;
 
     #[ORM\Column(length: 120)]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
     #[Assert\NotBlank(groups: ['recipe:write'])]
     private string $name = '';
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
     #[Assert\Positive(groups: ['recipe:write'])]
     private float $quantity = 0;
 
     /** Libre pour l'instant (g, ml, unité, pincée...) — pas de table de conversion tant qu'il n'y a pas de vraie base aliments. */
     #[ORM\Column(length: 20)]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
     #[Assert\NotBlank(groups: ['recipe:write'])]
     private string $unit = 'g';
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
     #[Assert\PositiveOrZero(groups: ['recipe:write'])]
     private float $calories = 0;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
     #[Assert\PositiveOrZero(groups: ['recipe:write'])]
     private float $proteins = 0;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
     #[Assert\PositiveOrZero(groups: ['recipe:write'])]
     private float $carbs = 0;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
     #[Assert\PositiveOrZero(groups: ['recipe:write'])]
     private float $fats = 0;
 

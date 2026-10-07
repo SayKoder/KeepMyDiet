@@ -103,8 +103,21 @@ class _DashboardView extends StatelessWidget {
             Expanded(child: _StatCard(label: 'Métabolisme de base', value: profile.bmr)),
             const SizedBox(width: 12),
             Expanded(child: _StatCard(label: 'Dépense totale (TDEE)', value: profile.tdee)),
+            const SizedBox(width: 12),
+            Expanded(child: _StatCard(label: 'Plancher de sécurité', value: profile.calorieFloor)),
           ],
         ),
+        if (profile.estimatedWeeksToTarget != null) ...[
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              'Environ ${profile.estimatedWeeksToTarget} semaines pour atteindre '
+              '${profile.targetWeightKg!.toStringAsFixed(1)}kg au rythme choisi.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ],
         const SizedBox(height: 24),
         Text(
           '${profile.age} ans · ${profile.heightCm.toStringAsFixed(0)}cm · ${profile.weightKg.toStringAsFixed(1)}kg',

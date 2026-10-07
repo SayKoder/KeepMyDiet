@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/api_client.dart';
+import '../../recipe_suggestions/presentation/recipe_suggestions_controller.dart';
 import '../data/fridge_api_client.dart';
 import '../domain/food_reference.dart';
 import '../domain/fridge_failure.dart';
@@ -45,6 +46,10 @@ Future<void> addFridgeItem(
   }
 
   ref.invalidate(fridgeItemsProvider(groupId));
+  // Le contenu du frigo/placard change la couverture des suggestions de
+  // recettes (ingrédients disponibles, DLC la plus proche) : sans ça, la
+  // liste de suggestions reste figée sur l'état d'avant l'ajout.
+  ref.invalidate(recipeSuggestionsProvider(groupId));
 }
 
 Future<void> deleteFridgeItem(WidgetRef ref, {required int groupId, required int itemId}) async {
@@ -55,4 +60,7 @@ Future<void> deleteFridgeItem(WidgetRef ref, {required int groupId, required int
   }
 
   ref.invalidate(fridgeItemsProvider(groupId));
+  // Même raison que dans addFridgeItem : une suppression retire un
+  // ingrédient potentiellement compté comme disponible dans une suggestion.
+  ref.invalidate(recipeSuggestionsProvider(groupId));
 }

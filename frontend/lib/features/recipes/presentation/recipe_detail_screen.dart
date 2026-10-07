@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/recipe.dart';
+import '../domain/recipe_step.dart';
 import 'recipes_controller.dart';
 
 class RecipeDetailScreen extends ConsumerWidget {
@@ -66,7 +67,51 @@ class RecipeDetailScreen extends ConsumerWidget {
               title: Text(ingredient.name),
               trailing: Text('${ingredient.quantity} ${ingredient.unit}'),
             ),
+          if (recipe.steps.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Text('Préparation', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            for (var i = 0; i < recipe.steps.length; i++)
+              _StepTile(index: i, step: recipe.steps[i]),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _StepTile extends StatelessWidget {
+  const _StepTile({required this.index, required this.step});
+
+  final int index;
+  final RecipeStep step;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 14,
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              child: Text('${index + 1}'),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(step.instruction)),
+            if (step.durationMinutes != null) ...[
+              const SizedBox(width: 8),
+              Chip(
+                avatar: const Icon(Icons.schedule, size: 16),
+                label: Text('${step.durationMinutes} min'),
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import '../data/recipes_api_client.dart';
 import '../domain/recipe.dart';
 import '../domain/recipe_failure.dart';
 import '../domain/recipe_ingredient.dart';
+import '../domain/recipe_step.dart';
 
 final recipesControllerProvider =
     AsyncNotifierProvider<RecipesController, List<Recipe>>(RecipesController.new);
@@ -23,6 +24,7 @@ class RecipesController extends AsyncNotifier<List<Recipe>> {
     required String name,
     required int referenceServings,
     required List<RecipeIngredient> ingredients,
+    List<RecipeStep> steps = const [],
   }) async {
     final Recipe recipe;
     try {
@@ -30,6 +32,7 @@ class RecipesController extends AsyncNotifier<List<Recipe>> {
             name: name,
             referenceServings: referenceServings,
             ingredients: ingredients,
+            steps: steps,
           );
     } on DioException catch (e) {
       throw RecipeFailure(extractErrorMessage(e));
