@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/home_navigation.dart';
 import '../../auth/presentation/auth_controller.dart';
-import '../../nutrition/presentation/nutrition_dashboard_screen.dart';
-import '../../recipes/presentation/recipes_list_screen.dart';
 import 'create_group_screen.dart';
-import 'group_detail_screen.dart';
 import 'groups_controller.dart';
 import 'join_group_screen.dart';
 
@@ -20,20 +18,6 @@ class GroupsListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Mes groupes'),
         actions: [
-          IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const NutritionDashboardScreen()),
-            ),
-            icon: const Icon(Icons.monitor_heart_outlined),
-            tooltip: 'Nutrition',
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const RecipesListScreen()),
-            ),
-            icon: const Icon(Icons.restaurant_menu),
-            tooltip: 'Recettes',
-          ),
           IconButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const JoinGroupScreen()),
@@ -70,9 +54,10 @@ class GroupsListScreen extends ConsumerWidget {
                     return ListTile(
                       leading: const Icon(Icons.groups),
                       title: Text(group.name),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => GroupDetailScreen(group: group)),
-                      ),
+                      onTap: () {
+                        ref.read(activeGroupProvider.notifier).select(group);
+                        ref.read(homeTabIndexProvider.notifier).show(1);
+                      },
                     );
                   },
                 ),

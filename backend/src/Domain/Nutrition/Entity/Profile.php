@@ -262,4 +262,30 @@ class Profile
 
         return (int) ceil($remainingKg / $this->weeklyWeightLossGoalKg);
     }
+
+    /**
+     * Répartition macro par défaut (30% protéines / 40% glucides / 30%
+     * lipides de `getCalorieGoal`) : juste des repères indicatifs tant qu'il
+     * n'y a pas de suivi réel de ce qui est mangé dans la journée (pas encore
+     * construit, voir "Suivi diététique" dans CLAUDE.md). Pas personnalisable
+     * pour l'instant — à revoir si besoin le jour où le journal alimentaire
+     * existe.
+     */
+    #[Groups(['profile:read'])]
+    public function getProteinTargetG(): float
+    {
+        return $this->getCalorieGoal() * 0.3 / 4;
+    }
+
+    #[Groups(['profile:read'])]
+    public function getCarbTargetG(): float
+    {
+        return $this->getCalorieGoal() * 0.4 / 4;
+    }
+
+    #[Groups(['profile:read'])]
+    public function getFatTargetG(): float
+    {
+        return $this->getCalorieGoal() * 0.3 / 9;
+    }
 }

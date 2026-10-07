@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/auth/presentation/auth_controller.dart';
 import 'features/auth/presentation/login_screen.dart';
-import 'features/groups/presentation/groups_list_screen.dart';
+import 'features/home/presentation/home_shell.dart';
 
 void main() {
   // ProviderScope doit envelopper toute l'app : c'est lui qui porte l'état de
@@ -48,7 +48,7 @@ class _AuthGate extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
 
     return authState.when(
-      data: (session) => session == null ? const LoginScreen() : const GroupsListScreen(),
+      data: (session) => session == null ? const LoginScreen() : const HomeShell(),
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),
