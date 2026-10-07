@@ -25,9 +25,14 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
   late final _weightController = TextEditingController(
     text: widget.existingProfile?.weightKg.toString() ?? '',
   );
+  late final _targetWeightController = TextEditingController(
+    text: widget.existingProfile?.targetWeightKg?.toString() ?? '',
+  );
   late Sex _sex = widget.existingProfile?.sex ?? Sex.male;
   late DateTime? _birthDate = widget.existingProfile?.birthDate;
   late ActivityLevel _activityLevel = widget.existingProfile?.activityLevel ?? ActivityLevel.moderate;
+  late bool _customPace = widget.existingProfile?.weeklyWeightLossGoalKg != null;
+  late double _weeklyWeightLossGoalKg = widget.existingProfile?.weeklyWeightLossGoalKg ?? 0.5;
   bool _isSubmitting = false;
   String? _errorMessage;
 
@@ -35,6 +40,7 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
   void dispose() {
     _heightController.dispose();
     _weightController.dispose();
+    _targetWeightController.dispose();
     super.dispose();
   }
 
@@ -54,6 +60,8 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
   Future<void> _submit() async {
     final height = double.tryParse(_heightController.text);
     final weight = double.tryParse(_weightController.text);
+    final targetWeightText = _targetWeightController.text.trim();
+    final targetWeight = targetWeightText.isEmpty ? null : double.tryParse(targetWeightText);
 
     if (_birthDate == null) {
       setState(() => _errorMessage = 'Choisis ta date de naissance.');
@@ -63,6 +71,12 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
       setState(() => _errorMessage = 'Taille et poids doivent être des nombres positifs.');
       return;
     }
+    if (targetWeightText.isNotEmpty && (targetWeight == null || targetWeight <= 0)) {
+      setState(() => _errorMessage = 'Le poids visé doit être un nombre positif.');
+      return;
+    }
+
+    final weeklyGoal = _customPace ? _weeklyWeightLossGoalKg : null;
 
     setState(() {
       _isSubmitting = true;
@@ -78,6 +92,8 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
           heightCm: height,
           weightKg: weight,
           activityLevel: _activityLevel,
+          targetWeightKg: targetWeight,
+          weeklyWeightLossGoalKg: weeklyGoal,
         );
       } else {
         await controller.updateProfile(
@@ -86,6 +102,8 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
           heightCm: height,
           weightKg: weight,
           activityLevel: _activityLevel,
+          targetWeightKg: targetWeight,
+          weeklyWeightLossGoalKg: weeklyGoal,
         );
       }
       if (mounted) {
@@ -153,6 +171,38 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
               }
             },
           ),
+          const SizedBox(height: 24),
+          TextField(
+            controller: _targetWeightController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'Poids visé (kg) — optionnel',
+              helperText: "Sert uniquement à estimer le délai, n'influence pas l'objectif calorique.",
+            ),
+          ),
+          const SizedBox(height: 16),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Rythme de perte personnalisé'),
+            subtitle: const Text('Sinon : déficit fixe de 20% du maintien.'),
+            value: _customPace,
+            onChanged: (value) => setState(() => _customPace = value),
+          ),
+          if (_customPace) ...[
+            Text('${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg / semaine'),
+            Slider(
+              value: _weeklyWeightLossGoalKg,
+              min: 0.25,
+              max: 1,
+              divisions: 3,
+              label: '${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg',
+              onChanged: (value) => setState(() => _weeklyWeightLossGoalKg = value),
+            ),
+            const Text(
+              "L'objectif ne descendra jamais sous ton métabolisme de base (plancher de sécurité).",
+              style: TextStyle(fontSize: 12),
+            ),
+          ],
           const SizedBox(height: 24),
           if (_errorMessage != null)
             Padding(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/api_client.dart';
 import '../domain/recipe.dart';
 import '../domain/recipe_ingredient.dart';
+import '../domain/recipe_step.dart';
 
 final recipesApiClientProvider = Provider<RecipesApiClient>((ref) {
   return RecipesApiClient(ref.watch(dioProvider));
@@ -29,6 +30,7 @@ class RecipesApiClient {
     required String name,
     required int referenceServings,
     required List<RecipeIngredient> ingredients,
+    List<RecipeStep> steps = const [],
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/recipes',
@@ -36,6 +38,7 @@ class RecipesApiClient {
         'name': name,
         'referenceServings': referenceServings,
         'ingredients': ingredients.map((i) => i.toJson()).toList(),
+        'steps': steps.map((s) => s.toJson()).toList(),
       },
       options: _ldJson,
     );
@@ -47,5 +50,18 @@ class RecipesApiClient {
   /// l'opération Delete), remonté comme une erreur classique.
   Future<void> delete(int id) async {
     await _dio.delete<void>('/recipes/$id');
+  }
+
+  /// Autocomplete à la création d'une recette : noms d'ingrédients déjà
+  /// utilisés ailleurs, avec leurs macros, pour éviter la ressaisie. `query`
+  /// de moins de 2 caractères renvoie toujours une liste vide côté backend.
+  Future<List<RecipeIngredient>> suggestIngredients(String query) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/ingredient_suggestions',
+      queryParameters: {'query': query},
+    );
+    final members = response.data!['member'] as List<dynamic>;
+
+    return members.map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>)).toList();
   }
 }

@@ -15,6 +15,10 @@ class Profile {
     required this.bmr,
     required this.tdee,
     required this.calorieGoal,
+    required this.calorieFloor,
+    this.targetWeightKg,
+    this.weeklyWeightLossGoalKg,
+    this.estimatedWeeksToTarget,
   });
 
   final int id;
@@ -27,6 +31,10 @@ class Profile {
   final double bmr;
   final double tdee;
   final double calorieGoal;
+  final double calorieFloor;
+  final double? targetWeightKg;
+  final double? weeklyWeightLossGoalKg;
+  final int? estimatedWeeksToTarget;
 
   factory Profile.fromJson(Map<String, dynamic> json) => Profile(
         id: json['id'] as int,
@@ -39,5 +47,9 @@ class Profile {
         bmr: (json['bmr'] as num).toDouble(),
         tdee: (json['tdee'] as num).toDouble(),
         calorieGoal: (json['calorieGoal'] as num).toDouble(),
+        calorieFloor: (json['calorieFloor'] as num).toDouble(),
+        targetWeightKg: (json['targetWeightKg'] as num?)?.toDouble(),
+        weeklyWeightLossGoalKg: (json['weeklyWeightLossGoalKg'] as num?)?.toDouble(),
+        estimatedWeeksToTarget: json['estimatedWeeksToTarget'] as int?,
       );
 }

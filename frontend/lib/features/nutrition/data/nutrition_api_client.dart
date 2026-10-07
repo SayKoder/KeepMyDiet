@@ -32,10 +32,12 @@ class NutritionApiClient {
     required double heightCm,
     required double weightKg,
     required ActivityLevel activityLevel,
+    double? targetWeightKg,
+    double? weeklyWeightLossGoalKg,
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/profiles',
-      data: _toJson(sex, birthDate, heightCm, weightKg, activityLevel),
+      data: _toJson(sex, birthDate, heightCm, weightKg, activityLevel, targetWeightKg, weeklyWeightLossGoalKg),
       options: _ldJson,
     );
 
@@ -49,10 +51,12 @@ class NutritionApiClient {
     required double heightCm,
     required double weightKg,
     required ActivityLevel activityLevel,
+    double? targetWeightKg,
+    double? weeklyWeightLossGoalKg,
   }) async {
     final response = await _dio.patch<Map<String, dynamic>>(
       '/profiles/$id',
-      data: _toJson(sex, birthDate, heightCm, weightKg, activityLevel),
+      data: _toJson(sex, birthDate, heightCm, weightKg, activityLevel, targetWeightKg, weeklyWeightLossGoalKg),
       options: Options(contentType: 'application/merge-patch+json'),
     );
 
@@ -65,6 +69,8 @@ class NutritionApiClient {
     double heightCm,
     double weightKg,
     ActivityLevel activityLevel,
+    double? targetWeightKg,
+    double? weeklyWeightLossGoalKg,
   ) {
     final iso = birthDate.toIso8601String().split('T').first;
 
@@ -74,6 +80,11 @@ class NutritionApiClient {
       'heightCm': heightCm,
       'weightKg': weightKg,
       'activityLevel': activityLevel.toJson(),
+      // merge-patch+json : null efface explicitement la valeur côté backend
+      // (désactiver le rythme personnalisé doit repasser au déficit fixe de
+      // 20%), donc pas de syntaxe `?value` ici — on veut la clé même à null.
+      'targetWeightKg': targetWeightKg,
+      'weeklyWeightLossGoalKg': weeklyWeightLossGoalKg,
     };
   }
 }

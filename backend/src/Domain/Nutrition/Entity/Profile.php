@@ -74,6 +74,22 @@ class Profile
     #[Assert\NotNull(groups: ['profile:write'])]
     private ?ActivityLevel $activityLevel = null;
 
+    /** Poids visé, optionnel — purement informatif (estimation du délai), ne modifie pas le calcul du déficit. */
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Groups(['profile:read', 'profile:write'])]
+    #[Assert\Positive(groups: ['profile:write'])]
+    private ?float $targetWeightKg = null;
+
+    /**
+     * Rythme de perte visé, optionnel (kg/semaine). Si renseigné, remplace le
+     * déficit fixe de 20% par un déficit calculé à partir de ce rythme (voir
+     * getCalorieGoal) — décision actée avec Carl le 2026-10-03.
+     */
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Groups(['profile:read', 'profile:write'])]
+    #[Assert\Range(min: 0.25, max: 1, groups: ['profile:write'])]
+    private ?float $weeklyWeightLossGoalKg = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -151,6 +167,30 @@ class Profile
         return $this;
     }
 
+    public function getTargetWeightKg(): ?float
+    {
+        return $this->targetWeightKg;
+    }
+
+    public function setTargetWeightKg(?float $targetWeightKg): static
+    {
+        $this->targetWeightKg = $targetWeightKg;
+
+        return $this;
+    }
+
+    public function getWeeklyWeightLossGoalKg(): ?float
+    {
+        return $this->weeklyWeightLossGoalKg;
+    }
+
+    public function setWeeklyWeightLossGoalKg(?float $weeklyWeightLossGoalKg): static
+    {
+        $this->weeklyWeightLossGoalKg = $weeklyWeightLossGoalKg;
+
+        return $this;
+    }
+
     #[Groups(['profile:read'])]
     public function getAge(): int
     {
@@ -173,10 +213,53 @@ class Profile
         return null === $this->activityLevel ? 0.0 : $this->getBmr() * $this->activityLevel->multiplier();
     }
 
-    /** Objectif calorique perte de poids : TDEE avec un déficit fixe de 20%. */
+    /**
+     * Objectif calorique perte de poids.
+     *
+     * Si `weeklyWeightLossGoalKg` est renseigné : déficit calculé à partir de
+     * ce rythme (1 kg de masse grasse ≈ 7700 kcal — constante scientifique
+     * standard), jamais sous le plancher de sécurité (`getCalorieFloor`,
+     * décision actée avec Carl le 2026-10-03).
+     * Sinon : comportement par défaut inchangé, déficit fixe de 20% du TDEE.
+     */
     #[Groups(['profile:read'])]
     public function getCalorieGoal(): float
     {
-        return $this->getTdee() * 0.8;
+        if (null === $this->weeklyWeightLossGoalKg) {
+            return $this->getTdee() * 0.8;
+        }
+
+        $dailyDeficit = $this->weeklyWeightLossGoalKg * 7700 / 7;
+
+        return max($this->getCalorieFloor(), $this->getTdee() - $dailyDeficit);
+    }
+
+    /** Plancher de sécurité : jamais descendre sous son métabolisme de base. */
+    #[Groups(['profile:read'])]
+    public function getCalorieFloor(): float
+    {
+        return $this->getBmr();
+    }
+
+    /**
+     * Estimation du nombre de semaines pour atteindre le poids visé, au
+     * rythme hebdomadaire choisi — purement informatif, n'influence pas
+     * `getCalorieGoal`. Null si l'un des deux n'est pas renseigné, ou si le
+     * poids visé n'est pas inférieur au poids actuel (objectif de perte
+     * uniquement, cohérent avec le reste de l'app).
+     */
+    #[Groups(['profile:read'])]
+    public function getEstimatedWeeksToTarget(): ?int
+    {
+        if (null === $this->targetWeightKg || null === $this->weeklyWeightLossGoalKg) {
+            return null;
+        }
+
+        $remainingKg = $this->weightKg - $this->targetWeightKg;
+        if ($remainingKg <= 0) {
+            return null;
+        }
+
+        return (int) ceil($remainingKg / $this->weeklyWeightLossGoalKg);
     }
 }
