@@ -43,4 +43,17 @@ class GroupMembershipRepository extends ServiceEntityRepository
 
         return array_map(static fn (GroupMembership $membership) => $membership->getGroup(), $memberships);
     }
+
+    public function countMembers(Group $group): int
+    {
+        return $this->count(['group' => $group]);
+    }
+
+    /**
+     * @return GroupMembership[]
+     */
+    public function findForGroup(Group $group): array
+    {
+        return $this->findBy(['group' => $group]);
+    }
 }

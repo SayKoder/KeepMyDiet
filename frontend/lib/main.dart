@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'features/auth/domain/auth_session.dart';
 import 'features/auth/presentation/auth_controller.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'features/groups/presentation/groups_list_screen.dart';
 
 void main() {
   // ProviderScope doit envelopper toute l'app : c'est lui qui porte l'état de
@@ -19,6 +20,18 @@ class KeepMyDietApp extends StatelessWidget {
     return MaterialApp(
       title: 'KeepMyDiet',
       theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
+      // Sans ça, les widgets Material (dont le sélecteur de date en mode
+      // saisie clavier) retombent sur un format par défaut sans séparateurs
+      // automatiques ("jj/mm/aaaa" devient juste une suite de chiffres) : le
+      // bug remonté par Carl ("24052004" illisible) vient de là, pas d'un
+      // champ de saisie custom.
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('fr', 'FR')],
+      locale: const Locale('fr', 'FR'),
       home: const _AuthGate(),
     );
   }
@@ -35,38 +48,13 @@ class _AuthGate extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
 
     return authState.when(
-      data: (session) => session == null
-          ? const LoginScreen()
-          : _HomePlaceholder(session: session),
+      data: (session) => session == null ? const LoginScreen() : const GroupsListScreen(),
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),
       error: (error, _) => Scaffold(
         body: Center(child: Text('Erreur de démarrage : $error')),
       ),
-    );
-  }
-}
-
-class _HomePlaceholder extends ConsumerWidget {
-  const _HomePlaceholder({required this.session});
-
-  final AuthSession session;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('KeepMyDiet'),
-        actions: [
-          IconButton(
-            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Se déconnecter',
-          ),
-        ],
-      ),
-      body: const Center(child: Text('Connecté — socle auth en place')),
     );
   }
 }

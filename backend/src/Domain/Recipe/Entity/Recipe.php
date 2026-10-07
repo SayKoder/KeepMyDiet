@@ -67,10 +67,23 @@ class Recipe
     #[Assert\Valid]
     private Collection $ingredients;
 
+    /**
+     * Étapes de préparation, entièrement facultatives (voir RecipeStep) —
+     * pas de `Assert\Count(min: ...)` contrairement aux ingrédients.
+     *
+     * @var Collection<int, RecipeStep>
+     */
+    #[ORM\OneToMany(targetEntity: RecipeStep::class, mappedBy: 'recipe', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['id' => 'ASC'])]
+    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Assert\Valid]
+    private Collection $steps;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->ingredients = new ArrayCollection();
+        $this->steps = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -138,6 +151,29 @@ class Recipe
     public function removeIngredient(RecipeIngredient $ingredient): static
     {
         $this->ingredients->removeElement($ingredient);
+
+        return $this;
+    }
+
+    /** @return Collection<int, RecipeStep> */
+    public function getSteps(): Collection
+    {
+        return $this->steps;
+    }
+
+    public function addStep(RecipeStep $step): static
+    {
+        if (!$this->steps->contains($step)) {
+            $this->steps->add($step);
+            $step->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStep(RecipeStep $step): static
+    {
+        $this->steps->removeElement($step);
 
         return $this;
     }
