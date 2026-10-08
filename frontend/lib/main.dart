@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'features/auth/presentation/auth_controller.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/groups/presentation/groups_list_screen.dart';
 
-void main() {
+void main() async {
+  // Nécessaire avant tout `DateFormat(pattern, 'fr_FR')` (planning de repas) —
+  // sans ça, `intl` lève une exception "Locale data has not been
+  // initialized" au premier formatage de date.
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('fr_FR');
+
   // ProviderScope doit envelopper toute l'app : c'est lui qui porte l'état de
   // tous les providers Riverpod (dioProvider, authControllerProvider, ...).
   runApp(const ProviderScope(child: KeepMyDietApp()));

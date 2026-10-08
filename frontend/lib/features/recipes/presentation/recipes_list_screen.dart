@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../meal_plan/presentation/meal_plan_screen.dart';
 import 'create_recipe_screen.dart';
 import 'recipe_detail_screen.dart';
 import 'recipes_controller.dart';
@@ -13,7 +14,18 @@ class RecipesListScreen extends ConsumerWidget {
     final recipesAsync = ref.watch(recipesControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Recettes')),
+      appBar: AppBar(
+        title: const Text('Recettes'),
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MealPlanScreen()),
+            ),
+            icon: const Icon(Icons.calendar_month_outlined),
+            tooltip: 'Planning de la semaine',
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(recipesControllerProvider.notifier).refresh(),
         child: recipesAsync.when(
