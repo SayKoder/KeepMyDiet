@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme.dart';
 
 import '../domain/activity_level.dart';
 import '../domain/profile.dart';
@@ -121,97 +122,246 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.existingProfile == null ? 'Créer mon profil' : 'Modifier mon profil'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          SegmentedButton<Sex>(
-            segments: Sex.values
-                .map((sex) => ButtonSegment(value: sex, label: Text(sex.label)))
-                .toList(),
-            selected: {_sex},
-            onSelectionChanged: (selection) => setState(() => _sex = selection.first),
-          ),
-          const SizedBox(height: 16),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Date de naissance'),
-            subtitle: Text(
-              _birthDate == null
-                  ? 'Non renseignée'
-                  : '${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}',
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: AppColors.border),
+                    minimumSize: const Size(44, 44),
+                    shape: const CircleBorder(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  widget.existingProfile == null ? 'Créer mon profil' : 'Modifier mon profil',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ],
             ),
-            trailing: const Icon(Icons.calendar_today),
-            onTap: _pickBirthDate,
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _heightController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Taille (cm)'),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _weightController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Poids (kg)'),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<ActivityLevel>(
-            initialValue: _activityLevel,
-            decoration: const InputDecoration(labelText: "Niveau d'activité"),
-            items: ActivityLevel.values
-                .map((level) => DropdownMenuItem(value: level, child: Text(level.label)))
-                .toList(),
-            onChanged: (value) {
-              if (value != null) {
-                setState(() => _activityLevel = value);
-              }
-            },
-          ),
-          const SizedBox(height: 24),
-          TextField(
-            controller: _targetWeightController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
-              labelText: 'Poids visé (kg) — optionnel',
-              helperText: "Sert uniquement à estimer le délai, n'influence pas l'objectif calorique.",
-            ),
-          ),
-          const SizedBox(height: 16),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Rythme de perte personnalisé'),
-            subtitle: const Text('Sinon : déficit fixe de 20% du maintien.'),
-            value: _customPace,
-            onChanged: (value) => setState(() => _customPace = value),
-          ),
-          if (_customPace) ...[
-            Text('${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg / semaine'),
-            Slider(
-              value: _weeklyWeightLossGoalKg,
-              min: 0.25,
-              max: 1,
-              divisions: 3,
-              label: '${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg',
-              onChanged: (value) => setState(() => _weeklyWeightLossGoalKg = value),
-            ),
-            const Text(
-              "L'objectif ne descendra jamais sous ton métabolisme de base (plancher de sécurité).",
-              style: TextStyle(fontSize: 12),
-            ),
-          ],
-          const SizedBox(height: 24),
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('TOI', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: AppColors.textSecondary)),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(color: AppColors.fieldFill, borderRadius: BorderRadius.circular(999)),
+                    child: Row(
+                      children: Sex.values.map((sex) {
+                        final selected = _sex == sex;
+                        return Expanded(
+                          child: Material(
+                            color: selected ? AppColors.ink : Colors.transparent,
+                            borderRadius: BorderRadius.circular(999),
+                            child: InkWell(
+                              onTap: () => setState(() => _sex = sex),
+                              borderRadius: BorderRadius.circular(999),
+                              child: Container(
+                                height: 44,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  sex.label,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: selected ? Colors.white : AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  InkWell(
+                    onTap: _pickBirthDate,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    child: Container(
+                      height: 56,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(color: AppColors.fieldFill, borderRadius: BorderRadius.circular(AppRadius.md)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('Date de naissance', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                              Text(
+                                _birthDate == null
+                                    ? 'Non renseignée'
+                                    : '${_birthDate!.day.toString().padLeft(2, '0')}/${_birthDate!.month.toString().padLeft(2, '0')}/${_birthDate!.year}',
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
+                              ),
+                            ],
+                          ),
+                          const Icon(Icons.calendar_today_outlined, size: 20, color: AppColors.brand),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(child: _MiniNumberField(label: 'Taille', unit: 'cm', controller: _heightController)),
+                      const SizedBox(width: 10),
+                      Expanded(child: _MiniNumberField(label: 'Poids', unit: 'kg', controller: _weightController)),
+                    ],
+                  ),
+                ],
               ),
             ),
+                        const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("NIVEAU D'ACTIVITÉ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: AppColors.textSecondary)),
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: ActivityLevel.values.map((level) {
+                      final selected = _activityLevel == level;
+                      return Material(
+                        color: selected ? AppColors.brandLight : Colors.white,
+                        borderRadius: BorderRadius.circular(999),
+                        child: InkWell(
+                          onTap: () => setState(() => _activityLevel = level),
+                          borderRadius: BorderRadius.circular(999),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: selected ? AppColors.brand : AppColors.border),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              level.shortLabel,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: selected ? AppColors.brandDark : const Color(0xFF3E4A43),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('OBJECTIF', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: AppColors.textSecondary)),
+                  const SizedBox(height: 14),
+                  _MiniNumberField(label: 'Poids visé — optionnel', unit: 'kg', controller: _targetWeightController),
+                  const SizedBox(height: 6),
+                  const Text(
+                    "Sert uniquement à estimer le délai, n'influence pas l'objectif calorique.",
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Rythme de perte personnalisé', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                            SizedBox(height: 2),
+                            Text('Sinon : déficit fixe de 20% du maintien.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: _customPace,
+                        onChanged: (value) => setState(() => _customPace = value),
+                      ),
+                    ],
+                  ),
+                  if (_customPace) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      '${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg / semaine',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.ink),
+                    ),
+                    Slider(
+                      value: _weeklyWeightLossGoalKg,
+                      min: 0.25,
+                      max: 1,
+                      divisions: 3,
+                      label: '${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg',
+                      onChanged: (value) => setState(() => _weeklyWeightLossGoalKg = value),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: const [
+                          Text('0.25', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                          Text('0.50', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                          Text('0.75', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                          Text('1.00', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const _Banner(
+                      message: "L'objectif ne descendra jamais sous ton métabolisme de base (plancher de sécurité).",
+                      icon: Icons.info_outline,
+                      background: AppColors.brandLight,
+                      foreground: AppColors.brandDark,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _Banner(
+                  message: _errorMessage!,
+                  icon: Icons.error_outline,
+                  background: AppColors.errorBg,
+                  foreground: AppColors.errorText,
+                ),
+              ),
           FilledButton(
             onPressed: _isSubmitting ? null : _submit,
             child: _isSubmitting
@@ -223,7 +373,85 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                 : const Text('Enregistrer'),
           ),
         ],
+        ),
       ),
     );
   }
 }
+
+class _MiniNumberField extends StatelessWidget {
+  const _MiniNumberField({required this.label, required this.unit, required this.controller});
+
+  final String label;
+  final String unit;
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(color: AppColors.fieldFill, borderRadius: BorderRadius.circular(AppRadius.md)),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              SizedBox(
+                width: 70,
+                child: TextField(
+                  controller: controller,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink),
+                  decoration: const InputDecoration(
+                    // Annule le style "rempli" global du thème (`theme.dart`
+                    // met `filled: true` sur TOUS les champs) : ici le champ
+                    // vit déjà dans un Container teinté, un 2e fond grisé
+                    // par-dessus aurait fait un rectangle dans le rectangle.
+                    filled: false,
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(unit, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Banner extends StatelessWidget {
+  const _Banner({required this.message, required this.icon, required this.background, required this.foreground});
+
+  final String message;
+  final IconData icon;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(16)),
+      child: Row(
+        children: [
+          Icon(icon, color: foreground, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(message, style: TextStyle(color: foreground, fontSize: 13, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

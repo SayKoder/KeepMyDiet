@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../../core/theme.dart';
 
 import '../../../shared/home_navigation.dart';
 import '../../groups/presentation/groups_controller.dart';
@@ -18,12 +20,11 @@ class HomeDashboardScreen extends ConsumerWidget {
     final profileAsync = ref.watch(profileControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Accueil')),
       body: profileAsync.when(
         data: (profile) => profile == null
             ? _NoProfileScroll(
                 onCreate: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ProfileFormScreen()),
+                  MaterialPageRoute(builder: (_) => ProfileFormScreen(existingProfile: profile)),
                 ),
               )
             : _DashboardBody(profile: profile),
@@ -43,9 +44,6 @@ class _WaterCard extends ConsumerWidget {
     final goalOverride = ref.watch(waterGoalControllerProvider).value?.goalMl;
     final profile = ref.watch(profileControllerProvider).value;
 
-    // Surcharge manuelle (engrenage) si définie, sinon 35 mL/kg (repère
-    // courant, fourchette 30-40 mL/kg habituelle) arrondi à 50 mL près.
-    // 2000 mL par défaut si ni l'un ni l'autre n'existe.
     final defaultGoalMl = profile == null ? 2000 : ((profile.weightKg * 35) / 50).round() * 50;
     final goalMl = goalOverride ?? defaultGoalMl;
     final amountMl = waterAsync.value?.amountMl ?? 0;
@@ -54,80 +52,111 @@ class _WaterCard extends ConsumerWidget {
 
     Future<void> add(int deltaMl) => ref.read(waterIntakeControllerProvider.notifier).add(deltaMl);
 
-    final compactButtonStyle = OutlinedButton.styleFrom(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      visualDensity: VisualDensity.compact,
-      textStyle: Theme.of(context).textTheme.labelMedium,
-    );
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.water_drop_outlined, color: Theme.of(context).colorScheme.primary),
-                    const SizedBox(width: 8),
-                    Text('Hydratation', style: Theme.of(context).textTheme.titleMedium),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text(
-                      isLoading ? '…' : '$amountMl / $goalMl mL',
-                      style: Theme.of(context).textTheme.bodyMedium,
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(color: AppColors.waterBg, borderRadius: BorderRadius.circular(14)),
+                    child: const Icon(Icons.water_drop_outlined, size: 20, color: AppColors.waterIcon),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Hydratation', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: isLoading ? '… ' : '$amountMl ',
+                              style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.ink),
+                            ),
+                            TextSpan(text: '/ $goalMl mL'),
+                          ],
+                        ),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              IconButton(
+                onPressed: () => _showEditGoalDialog(context, ref, goalMl),
+                icon: const Icon(Icons.settings_outlined, size: 18, color: AppColors.textSecondary),
+                tooltip: "Modifier l'objectif",
+                style: IconButton.styleFrom(backgroundColor: AppColors.fieldFill, minimumSize: const Size(44, 44)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              for (var i = 0; i < 10; i++)
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: i == 9 ? 0 : 5),
+                    child: Container(
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: _segmentColor(progress, i),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    IconButton(
-                      onPressed: () => _showEditGoalDialog(context, ref, goalMl),
-                      icon: const Icon(Icons.settings_outlined, size: 20),
-                      tooltip: "Modifier l'objectif",
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(value: progress, minHeight: 10),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: compactButtonStyle,
-                    onPressed: isLoading || amountMl <= 0 ? null : () => add(-250),
-                    child: const Text('-250 mL'),
                   ),
                 ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: FilledButton.tonal(
-                    style: compactButtonStyle,
-                    onPressed: isLoading ? null : () => add(250),
-                    child: const Text('+250 mL'),
-                  ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: isLoading || amountMl <= 0 ? null : () => add(-250),
+                  style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(44)),
+                  child: const Text('−250'),
                 ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: FilledButton(
-                    style: compactButtonStyle,
-                    onPressed: isLoading ? null : () => add(500),
-                    child: const Text('+500 mL'),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  onPressed: isLoading ? null : () => add(250),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.waterBg,
+                    // Pas dans AppColors (seul usage dans toute l'appli) : pas
+                    // la peine d'ajouter un token pour une seule ligne.
+                    foregroundColor: const Color(0xFF135F99),
+                    minimumSize: const Size.fromHeight(44),
                   ),
+                  child: const Text('+250 mL'),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  onPressed: isLoading ? null : () => add(500),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.waterIcon,
+                    minimumSize: const Size.fromHeight(44),
+                  ),
+                  child: const Text('+500 mL'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -178,6 +207,15 @@ class _WaterCard extends ConsumerWidget {
   }
 }
 
+Color _segmentColor(double progress, int index) {
+  final segmentStart = index / 10;
+  final segmentEnd = (index + 1) / 10;
+  if (progress >= segmentEnd) return AppColors.water;
+  if (progress > segmentStart) return const Color(0xFFA9D6F8);
+  return const Color(0xFFE6F1FB);
+}
+
+
 class _NoProfileScroll extends StatelessWidget {
   const _NoProfileScroll({required this.onCreate});
 
@@ -188,6 +226,8 @@ class _NoProfileScroll extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
+        const _Header(),
+        const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 32),
           child: Column(
@@ -207,6 +247,163 @@ class _NoProfileScroll extends StatelessWidget {
   }
 }
 
+class _Header extends StatelessWidget {
+  const _Header({this.profile});
+
+  final Profile? profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final today = _capitalize(DateFormat('EEEE d MMMM', 'fr_FR').format(DateTime.now()));
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(today, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+            const SizedBox(height: 2),
+            Text('Bonjour !', style: Theme.of(context).textTheme.headlineMedium),
+          ],
+        ),
+        IconButton(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => ProfileFormScreen(existingProfile: profile)),
+          ),
+          icon: const Icon(Icons.person_outline, color: AppColors.brandDark),
+          style: IconButton.styleFrom(
+            backgroundColor: AppColors.brandLight,
+            minimumSize: const Size(48, 48),
+            shape: const CircleBorder(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+String _capitalize(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+
+class _CalorieHeroCard extends StatelessWidget {
+  const _CalorieHeroCard({required this.profile});
+
+  final Profile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final span = profile.tdee - profile.calorieFloor;
+    final ringValue = span <= 0 ? 0.0 : ((profile.calorieGoal - profile.calorieFloor) / span).clamp(0.0, 1.0);
+    final deficit = profile.tdee - profile.calorieGoal;
+
+    final String modeLabel;
+    if (deficit.abs() < 1) {
+      modeLabel = 'Maintien';
+    } else if (deficit > 0) {
+      modeLabel = profile.weeklyWeightLossGoalKg != null
+          ? 'Perte · −${profile.weeklyWeightLossGoalKg!.toStringAsFixed(2)} kg/sem.'
+          : 'Perte';
+    } else {
+      modeLabel = 'Prise';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: AppColors.hero,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Objectif calorique', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
+                child: Text(modeLabel, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 156,
+                height: 156,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 156,
+                      height: 156,
+                      child: CircularProgressIndicator(
+                        value: ringValue,
+                        strokeWidth: 14,
+                        strokeCap: StrokeCap.round,
+                        backgroundColor: Colors.white.withValues(alpha: 0.12),
+                        color: AppColors.limeAccent,
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(profile.calorieGoal.toStringAsFixed(0), style: Theme.of(context).textTheme.displayMedium?.copyWith(color: Colors.white)),
+                        Text('kcal / jour', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.75))),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _HeroStat(label: 'Maintien (TDEE)', value: '${profile.tdee.toStringAsFixed(0)} kcal'),
+                    const SizedBox(height: 12),
+                    _HeroStat(label: 'Plancher sécurité', value: '${profile.calorieFloor.toStringAsFixed(0)} kcal'),
+                    const SizedBox(height: 12),
+                    _HeroStat(label: 'Déficit', value: '${deficit >= 0 ? '−' : '+'}${deficit.abs().toStringAsFixed(0)} kcal', valueColor: AppColors.limeAccent),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Text(
+            "L'anneau situe ton objectif entre le plancher et le maintien.",
+            style: TextStyle(fontSize: 12, height: 1.45, color: Colors.white.withValues(alpha: 0.7)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({required this.label, required this.value, this.valueColor = Colors.white});
+
+  final String label;
+  final String value;
+  final Color valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.72))),
+        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: valueColor)),
+      ],
+    );
+  }
+}
+
+
 class _DashboardBody extends ConsumerWidget {
   const _DashboardBody({required this.profile});
 
@@ -215,58 +412,60 @@ class _DashboardBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final groups = ref.watch(groupsControllerProvider).value ?? [];
-
-    // Position de l'objectif entre le plancher de sécurité et le maintien
-    // (TDEE) : contrairement à un vrai anneau "calories du jour", ceci ne
-    // bouge pas dans la journée — pas de suivi de ce qui est mangé pour
-    // l'instant (voir "Suivi diététique" dans CLAUDE.md).
-    final span = profile.tdee - profile.calorieFloor;
-    final ringValue = span <= 0 ? 0.0 : ((profile.calorieGoal - profile.calorieFloor) / span).clamp(0.0, 1.0);
-
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        Center(
-          child: SizedBox(
-            width: 200,
-            height: 200,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: CircularProgressIndicator(
-                    value: ringValue,
-                    strokeWidth: 14,
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      profile.calorieGoal.toStringAsFixed(0),
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const Text('kcal / jour visés'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
+        _Header(profile: profile),
+        const SizedBox(height: 16),
+        _CalorieHeroCard(profile: profile),
         const SizedBox(height: 24),
-        Row(
-          children: [
-            Expanded(child: _MacroCard(label: 'Protéines', grams: profile.proteinTargetG)),
-            const SizedBox(width: 12),
-            Expanded(child: _MacroCard(label: 'Glucides', grams: profile.carbTargetG)),
-            const SizedBox(width: 12),
-            Expanded(child: _MacroCard(label: 'Lipides', grams: profile.fatTargetG)),
-          ],
-        ),
+        Builder(builder: (context) {
+          final totalKcal = profile.calorieGoal <= 0 ? 1.0 : profile.calorieGoal;
+          // 4 kcal/g pour protéines et glucides, 9 kcal/g pour les lipides — les
+          // vrais facteurs nutritionnels, pas une proportion inventée : la largeur
+          // de chaque barre reflète la vraie part de calories de ce macro, calculée
+          // à partir des grammes réels (peut différer de l'exemple 30/45/25 de la
+          // maquette, qui n'est qu'un exemple statique).
+          return Row(
+            children: [
+              Expanded(
+                child: _MacroCard(
+                  icon: Icons.favorite_border,
+                  iconBg: AppColors.proteinBg,
+                  iconColor: AppColors.proteinIcon,
+                  barColor: AppColors.protein,
+                  label: 'Protéines',
+                  grams: profile.proteinTargetG,
+                  shareOfCalories: (profile.proteinTargetG * 4) / totalKcal,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MacroCard(
+                  icon: Icons.grain,
+                  iconBg: AppColors.carbsBg,
+                  iconColor: AppColors.carbsIcon,
+                  barColor: AppColors.carbs,
+                  label: 'Glucides',
+                  grams: profile.carbTargetG,
+                  shareOfCalories: (profile.carbTargetG * 4) / totalKcal,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MacroCard(
+                  icon: Icons.water_drop_outlined,
+                  iconBg: AppColors.fatBg,
+                  iconColor: AppColors.fatIcon,
+                  barColor: AppColors.fat,
+                  label: 'Lipides',
+                  grams: profile.fatTargetG,
+                  shareOfCalories: (profile.fatTargetG * 9) / totalKcal,
+                ),
+              ),
+            ],
+          );
+        }),
         const SizedBox(height: 8),
         Text(
           "Repères indicatifs (répartition standard) — pas encore de suivi de "
@@ -277,33 +476,64 @@ class _DashboardBody extends ConsumerWidget {
         const SizedBox(height: 24),
         const _WaterCard(),
         const SizedBox(height: 24),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+        Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Poids', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                if (profile.estimatedWeeksToTarget != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(color: AppColors.brandLight, borderRadius: BorderRadius.circular(999)),
+                    child: Text(
+                      '~${profile.estimatedWeeksToTarget} semaines',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.brandDark),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
-                  profile.targetWeightKg == null
-                      ? '${profile.weightKg.toStringAsFixed(1)} kg'
-                      : '${profile.weightKg.toStringAsFixed(1)} kg → objectif ${profile.targetWeightKg!.toStringAsFixed(1)} kg',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  profile.weightKg.toStringAsFixed(1),
+                  style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800, letterSpacing: -0.8, color: AppColors.ink),
                 ),
+                const Text(' kg', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
                 if (profile.targetWeightKg != null) ...[
-                  const SizedBox(height: 4),
-                  Builder(builder: (context) {
-                    final remainingKg = profile.weightKg - profile.targetWeightKg!;
-                    final weeks = profile.estimatedWeeksToTarget;
-                    final text = remainingKg <= 0
-                        ? 'Objectif atteint 🎉'
-                        : 'Reste ${remainingKg.toStringAsFixed(1)} kg'
-                            '${weeks != null ? ' · environ $weeks semaines au rythme choisi' : ''}';
-
-                    return Text(text, style: Theme.of(context).textTheme.bodySmall);
-                  }),
+                  const SizedBox(width: 10),
+                  const Icon(Icons.arrow_forward, size: 18, color: AppColors.iconMuted),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${profile.targetWeightKg!.toStringAsFixed(1)} kg',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.brandDark),
+                  ),
                 ],
               ],
             ),
-          ),
+            if (profile.targetWeightKg != null) ...[
+              const SizedBox(height: 8),
+              Builder(builder: (context) {
+                final remainingKg = profile.weightKg - profile.targetWeightKg!;
+                final text = remainingKg <= 0
+                    ? 'Objectif atteint 🎉'
+                    : 'Reste ${remainingKg.toStringAsFixed(1)} kg au rythme choisi';
+                return Text(text, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary));
+              }),
+            ],
+          ],
+        ),
         ),
         const SizedBox(height: 24),
         Row(
@@ -311,15 +541,21 @@ class _DashboardBody extends ConsumerWidget {
             Expanded(
               child: _ShortcutCard(
                 icon: Icons.kitchen_outlined,
+                iconBg: AppColors.brandLight,
+                iconColor: AppColors.brandDark,
                 label: groups.isEmpty ? 'Créer un groupe' : 'Frigo',
+                subtitle: groups.isEmpty ? '' : groups.first.name,
                 onTap: () => ref.read(homeTabIndexProvider.notifier).show(groups.isEmpty ? 3 : 1),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: _ShortcutCard(
                 icon: Icons.restaurant_menu,
+                iconBg: const Color(0xFFFFE8DD),
+                iconColor: const Color(0xFFC8501C),
                 label: 'Recettes',
+                subtitle: 'Tes recettes',
                 onTap: () => ref.read(homeTabIndexProvider.notifier).show(2),
               ),
             ),
@@ -340,47 +576,106 @@ class _DashboardBody extends ConsumerWidget {
 }
 
 class _MacroCard extends StatelessWidget {
-  const _MacroCard({required this.label, required this.grams});
+  const _MacroCard({
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    required this.barColor,
+    required this.label,
+    required this.grams,
+    required this.shareOfCalories,
+  });
 
+  final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
+  final Color barColor;
   final String label;
   final double grams;
+  final double shareOfCalories;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text('${grams.toStringAsFixed(0)} g', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 4),
-            Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, size: 18, color: iconColor),
+          ),
+          const SizedBox(height: 10),
+          Text('${grams.toStringAsFixed(0)} g', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.4, color: AppColors.ink)),
+          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: shareOfCalories.clamp(0.0, 1.0),
+              minHeight: 6,
+              backgroundColor: AppColors.fieldFill,
+              color: barColor,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
+
 class _ShortcutCard extends StatelessWidget {
-  const _ShortcutCard({required this.icon, required this.label, required this.onTap});
+  const _ShortcutCard({
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+  });
 
   final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
   final String label;
+  final String subtitle;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon),
-              const SizedBox(height: 8),
-              Text(label),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(14)),
+                child: Icon(icon, size: 20, color: iconColor),
+              ),
+              const SizedBox(height: 14),
+              Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
+              const SizedBox(height: 2),
+              Text(subtitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
             ],
           ),
         ),
@@ -388,3 +683,4 @@ class _ShortcutCard extends StatelessWidget {
     );
   }
 }
+
