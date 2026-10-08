@@ -49,38 +49,38 @@ class RecipeIngredient
      * s'appuie dessus pour rester rapide même quand le pool global grossit.
      */
     #[ORM\Column(length: 120)]
-    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read', 'meal_plan_entry:read'])]
     #[Assert\NotBlank(groups: ['recipe:write'])]
     private string $name = '';
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read', 'meal_plan_entry:read'])]
     #[Assert\Positive(groups: ['recipe:write'])]
     private float $quantity = 0;
 
     /** Libre pour l'instant (g, ml, unité, pincée...) — pas de table de conversion tant qu'il n'y a pas de vraie base aliments. */
     #[ORM\Column(length: 20)]
-    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read', 'meal_plan_entry:read'])]
     #[Assert\NotBlank(groups: ['recipe:write'])]
     private string $unit = 'g';
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read', 'meal_plan_entry:read'])]
     #[Assert\PositiveOrZero(groups: ['recipe:write'])]
     private float $calories = 0;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read', 'meal_plan_entry:read'])]
     #[Assert\PositiveOrZero(groups: ['recipe:write'])]
     private float $proteins = 0;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read', 'meal_plan_entry:read'])]
     #[Assert\PositiveOrZero(groups: ['recipe:write'])]
     private float $carbs = 0;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read'])]
+    #[Groups(['recipe:read', 'recipe:write', 'ingredient_suggestion:read', 'meal_plan_entry:read'])]
     #[Assert\PositiveOrZero(groups: ['recipe:write'])]
     private float $fats = 0;
 

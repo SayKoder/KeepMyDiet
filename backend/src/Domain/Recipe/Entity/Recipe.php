@@ -37,18 +37,18 @@ class Recipe
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['recipe:read'])]
+    #[Groups(['recipe:read', 'meal_plan_entry:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 120)]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'meal_plan_entry:read'])]
     #[Assert\NotBlank(groups: ['recipe:write'])]
     #[Assert\Length(max: 120, groups: ['recipe:write'])]
     private string $name = '';
 
     /** Nombre de personnes pour lequel les quantités des ingrédients sont prévues. */
     #[ORM\Column]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'meal_plan_entry:read'])]
     #[Assert\Positive(groups: ['recipe:write'])]
     private int $referenceServings = 1;
 
@@ -62,7 +62,7 @@ class Recipe
 
     /** @var Collection<int, RecipeIngredient> */
     #[ORM\OneToMany(targetEntity: RecipeIngredient::class, mappedBy: 'recipe', cascade: ['persist'], orphanRemoval: true)]
-    #[Groups(['recipe:read', 'recipe:write'])]
+    #[Groups(['recipe:read', 'recipe:write', 'meal_plan_entry:read'])]
     #[Assert\Count(min: 1, groups: ['recipe:write'], minMessage: 'Une recette doit avoir au moins un ingrédient.')]
     #[Assert\Valid]
     private Collection $ingredients;
@@ -178,25 +178,25 @@ class Recipe
         return $this;
     }
 
-    #[Groups(['recipe:read'])]
+    #[Groups(['recipe:read', 'meal_plan_entry:read'])]
     public function getTotalCalories(): float
     {
         return array_sum(array_map(static fn (RecipeIngredient $i) => $i->getCalories(), $this->ingredients->toArray()));
     }
 
-    #[Groups(['recipe:read'])]
+    #[Groups(['recipe:read', 'meal_plan_entry:read'])]
     public function getTotalProteins(): float
     {
         return array_sum(array_map(static fn (RecipeIngredient $i) => $i->getProteins(), $this->ingredients->toArray()));
     }
 
-    #[Groups(['recipe:read'])]
+    #[Groups(['recipe:read', 'meal_plan_entry:read'])]
     public function getTotalCarbs(): float
     {
         return array_sum(array_map(static fn (RecipeIngredient $i) => $i->getCarbs(), $this->ingredients->toArray()));
     }
 
-    #[Groups(['recipe:read'])]
+    #[Groups(['recipe:read', 'meal_plan_entry:read'])]
     public function getTotalFats(): float
     {
         return array_sum(array_map(static fn (RecipeIngredient $i) => $i->getFats(), $this->ingredients->toArray()));

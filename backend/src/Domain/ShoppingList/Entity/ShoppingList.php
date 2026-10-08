@@ -8,9 +8,11 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use App\Domain\Group\Entity\Group;
 use App\Domain\ShoppingList\Dto\CheckoutShoppingListInput;
+use App\Domain\ShoppingList\Dto\GenerateFromMealPlanInput;
 use App\Domain\ShoppingList\Dto\GenerateShoppingListInput;
 use App\Domain\ShoppingList\Repository\ShoppingListRepository;
 use App\Domain\ShoppingList\State\CheckoutShoppingListProcessor;
+use App\Domain\ShoppingList\State\GenerateShoppingListFromMealPlanProcessor;
 use App\Domain\ShoppingList\State\GenerateShoppingListProcessor;
 use App\Domain\ShoppingList\State\ShoppingListProvider;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -25,8 +27,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * la liste les lignes achetées en les transformant en FoodReference +
  * FridgeItem (toujours un nouveau FoodReference "Custom", jamais de
  * matching par nom — voir JOURNAL.md, décision actée avec Carl le
- * 2026-10-02). Pas de `Post`/`Patch`/`Delete` classiques exposés : tout
- * passe par ces deux actions métier.
+ * 2026-10-02). `generate_from_plan` (2026-10-07) est une 3ᵉ façon
+ * d'alimenter la liste, à partir du planning de repas plutôt que d'une
+ * sélection manuelle de recettes — voir GenerateShoppingListFromMealPlanProcessor
+ * pour ce qui diffère de `generate`. Pas de `Post`/`Patch`/`Delete`
+ * classiques exposés : tout passe par ces actions métier.
  */
 #[ORM\Entity(repositoryClass: ShoppingListRepository::class)]
 #[ApiResource(
@@ -47,6 +52,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
             uriVariables: ['groupId' => new Link(fromClass: Group::class, toProperty: 'group')],
             input: CheckoutShoppingListInput::class,
             processor: CheckoutShoppingListProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/groups/{groupId}/shopping_lists/generate_from_plan',
+            uriVariables: ['groupId' => new Link(fromClass: Group::class, toProperty: 'group')],
+            input: GenerateFromMealPlanInput::class,
+            processor: GenerateShoppingListFromMealPlanProcessor::class,
         ),
     ],
     normalizationContext: ['groups' => ['shopping_list:read']],
