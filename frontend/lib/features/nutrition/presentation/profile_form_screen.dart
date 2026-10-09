@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme.dart';
 
+import '../../auth/presentation/auth_controller.dart';
 import '../domain/activity_level.dart';
 import '../domain/profile.dart';
 import '../domain/sex.dart';
@@ -116,6 +117,23 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
+    }
+  }
+
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Se déconnecter ?'),
+        content: const Text('Tu devras te reconnecter avec ton email et ton mot de passe.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annuler')),
+          FilledButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Se déconnecter')),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ref.read(authControllerProvider.notifier).logout();
     }
   }
 
@@ -362,6 +380,17 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                   foreground: AppColors.errorText,
                 ),
               ),
+          OutlinedButton.icon(
+            onPressed: _isSubmitting ? null : _confirmLogout,
+            icon: const Icon(Icons.logout, size: 18),
+            label: const Text('Se déconnecter'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.errorText,
+              side: const BorderSide(color: AppColors.border),
+              minimumSize: const Size.fromHeight(48),
+            ),
+          ),
+          const SizedBox(height: 12),
           FilledButton(
             onPressed: _isSubmitting ? null : _submit,
             child: _isSubmitting

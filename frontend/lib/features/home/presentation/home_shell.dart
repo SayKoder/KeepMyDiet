@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme.dart';
 import '../../../shared/app_bottom_nav.dart';
 import '../../../shared/home_navigation.dart';
 import '../../fridge/presentation/fridge_screen.dart';
@@ -34,14 +35,47 @@ class HomeShell extends ConsumerWidget {
       }
     });
 
+    // La pilule flotte au-dessus du contenu, donc en dessous d'elle le
+    // contenu scrollable (dernier bouton d'une liste, etc.) reste visible et
+    // peut sembler cliquable alors qu'il est en partie masqué par elle — on
+    // l'estompe avec un dégradé non cliquable (`IgnorePointer`) juste avant
+    // qu'il ne l'atteigne. Moitié de `floatingClearance` (pas sa totalité) :
+    // un fondu sur toute cette hauteur débordait trop haut dans le contenu.
+    final fadeHeight = AppBottomNav.floatingClearance(context) / 2;
+
     return Scaffold(
-      body: IndexedStack(
-        index: index,
-        children: const [
-          HomeDashboardScreen(),
-          _FridgeTab(),
-          RecipesListScreen(),
-          GroupsListScreen(),
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: index,
+            children: const [
+              HomeDashboardScreen(),
+              _FridgeTab(),
+              RecipesListScreen(),
+              GroupsListScreen(),
+            ],
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: fadeHeight,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.background.withValues(alpha: 0),
+                      AppColors.background,
+                    ],
+                    stops: const [0, 0.65],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: AppBottomNav(

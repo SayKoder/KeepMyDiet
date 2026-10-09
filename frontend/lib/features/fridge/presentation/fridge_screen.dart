@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/app_bottom_nav.dart';
 import '../../groups/domain/group.dart';
 import '../../groups/presentation/group_detail_screen.dart';
 import '../../groups/presentation/groups_controller.dart';
@@ -107,18 +108,26 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen> with SingleTickerPr
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Erreur : $error')),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => AddFridgeItemScreen(
-              groupId: groupId,
-              defaultLocation:
-                  _tabController.index == 0 ? StorageLocation.fridge : StorageLocation.pantry,
+      // Sans ce décalage, le FAB se positionne juste au-dessus de la pilule
+      // (le `Scaffold` imbriqué gère déjà correctement cette marge tout seul)
+      // mais sa moitié basse reste prise dans le dégradé de HomeShell, qui
+      // l'estompe comme s'il était passé dessous — même hauteur que ce
+      // dégradé (`fadeHeight` dans home_shell.dart) pour passer juste au-dessus.
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: AppBottomNav.floatingClearance(context) / 2),
+        child: FloatingActionButton(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => AddFridgeItemScreen(
+                groupId: groupId,
+                defaultLocation:
+                    _tabController.index == 0 ? StorageLocation.fridge : StorageLocation.pantry,
+              ),
             ),
           ),
+          tooltip: 'Ajouter un aliment',
+          child: const Icon(Icons.add),
         ),
-        tooltip: 'Ajouter un aliment',
-        child: const Icon(Icons.add),
       ),
     );
   }

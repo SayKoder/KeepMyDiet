@@ -56,7 +56,12 @@ class _WaterCard extends ConsumerWidget {
 
     final defaultGoalMl = profile == null ? 2000 : ((profile.weightKg * 35) / 50).round() * 50;
     final goalMl = goalOverride ?? defaultGoalMl;
-    final amountMl = waterAsync.value?.amountMl ?? 0;
+    // `.value` reste rempli avec la valeur du jour précédent pendant un
+    // AsyncError (comportement Riverpod voulu pour éviter un flash de
+    // chargement) — sans ce `hasError`, changer de jour après un échec réseau
+    // affichait silencieusement l'hydratation d'un AUTRE jour comme si elle
+    // était à jour.
+    final amountMl = waterAsync.hasError ? 0 : (waterAsync.value?.amountMl ?? 0);
     final progress = goalMl <= 0 ? 0.0 : (amountMl / goalMl).clamp(0.0, 1.0);
     final isLoading = waterAsync.isLoading && !waterAsync.hasValue;
 
@@ -91,8 +96,11 @@ class _WaterCard extends ConsumerWidget {
                         TextSpan(
                           children: [
                             TextSpan(
-                              text: isLoading ? '… ' : '$amountMl ',
-                              style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.ink),
+                              text: isLoading ? '… ' : (waterAsync.hasError ? '— ' : '$amountMl '),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                color: waterAsync.hasError ? AppColors.errorText : AppColors.ink,
+                              ),
                             ),
                             TextSpan(text: '/ $goalMl mL'),
                           ],
@@ -135,7 +143,11 @@ class _WaterCard extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: isLoading || amountMl <= 0 ? null : () => add(-250),
-                  style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(44)),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
                   child: const Text('−250'),
                 ),
               ),
@@ -149,6 +161,13 @@ class _WaterCard extends ConsumerWidget {
                     // la peine d'ajouter un token pour une seule ligne.
                     foregroundColor: const Color(0xFF135F99),
                     minimumSize: const Size.fromHeight(44),
+                    // Le padding horizontal par défaut du thème (`FilledButtonThemeData`,
+                    // pensé pour un bouton pleine largeur) mangeait à lui seul
+                    // plus de place que le texte dans ces boutons tiers de
+                    // largeur — réduire seulement la police ne suffisait pas,
+                    // il fallait aussi resserrer le padding.
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                   child: const Text('+250 mL'),
                 ),
@@ -160,6 +179,8 @@ class _WaterCard extends ConsumerWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.waterIcon,
                     minimumSize: const Size.fromHeight(44),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                   child: const Text('+500 mL'),
                 ),
@@ -529,9 +550,30 @@ class _AddChooserSheet extends ConsumerWidget {
         builder: (dialogContext) => AlertDialog(
           title: Text('${mealType.label} déjà prévu'),
           content: Text('${existing.recipe.name} est déjà prévu pour ce créneau. Le remplacer ?'),
+          // Un `Row` unique (plutôt que deux entrées dans `actions`) : passé
+          // à l'`OverflowBar` interne de `AlertDialog`, deux boutons de taille
+          // normale empilaient "Annuler" au-dessus de "Remplacer" dès que le
+          // texte ne tenait pas sur une seule ligne faute de place — ici les
+          // deux `Expanded` forcent le côte-à-côte quelle que soit la largeur.
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annuler')),
-            FilledButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Remplacer')),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.border)),
+                    child: const Text('Annuler'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    child: const Text('Remplacer'),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       );
@@ -678,36 +720,6 @@ class _ChooserTile extends StatelessWidget {
   }
 }
 
-/// Heure par défaut en dessous de laquelle on ne propose pas encore le
-/// pop-up d'un créneau planifié — MealPlanEntry n'a pas d'heure propre (juste
-/// une date), ces constantes sont donc purement indicatives côté client,
-/// faciles à ajuster plus tard sans migration.
-(int, int) _defaultMealTime(MealType type) => switch (type) {
-      MealType.breakfast => (8, 0),
-      MealType.lunch => (12, 30),
-      MealType.dinner => (19, 30),
-      MealType.snack => (16, 0),
-    };
-
-/// Un jour entièrement passé (hier ou avant) : toujours "dû", peu importe
-/// l'heure — on veut pouvoir répondre a posteriori en remontant le journal.
-/// Aujourd'hui : dû seulement passé l'heure par défaut du repas. Un jour
-/// futur : jamais dû.
-bool _isPromptDue(DateTime journalDate, MealType mealType) {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-
-  if (journalDate.isBefore(today)) {
-    return true;
-  }
-  if (journalDate.isAfter(today)) {
-    return false;
-  }
-
-  final (hour, minute) = _defaultMealTime(mealType);
-  return now.isAfter(DateTime(today.year, today.month, today.day, hour, minute));
-}
-
 class _MealPromptCard extends ConsumerWidget {
   const _MealPromptCard({required this.entry});
 
@@ -789,6 +801,37 @@ class _MealPromptCard extends ConsumerWidget {
   }
 }
 
+class _DataErrorBanner extends StatelessWidget {
+  const _DataErrorBanner({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(color: AppColors.errorBg, borderRadius: BorderRadius.circular(AppRadius.md)),
+      child: Row(
+        children: [
+          const Icon(Icons.wifi_off_rounded, size: 18, color: AppColors.errorText),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'Impossible de charger les données de ce jour.',
+              style: TextStyle(fontSize: 13, color: AppColors.errorText, fontWeight: FontWeight.w600),
+            ),
+          ),
+          TextButton(
+            onPressed: onRetry,
+            style: TextButton.styleFrom(foregroundColor: AppColors.errorText, padding: EdgeInsets.zero),
+            child: const Text('Réessayer'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _DashboardBody extends ConsumerWidget {
   const _DashboardBody({required this.profile});
 
@@ -797,23 +840,17 @@ class _DashboardBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final groups = ref.watch(groupsControllerProvider).value ?? [];
-    final dailyLog = ref.watch(dailyNutritionLogControllerProvider).value;
+    final dailyLogAsync = ref.watch(dailyNutritionLogControllerProvider);
+    // `.value` reste rempli avec la valeur du jour précédent pendant un
+    // AsyncError (comportement Riverpod voulu pour éviter un flash de
+    // chargement entre deux jours) — sans ce `hasError`, un simple raté réseau
+    // pendant la navigation laissait les calories/macros du jour précédent
+    // affichées comme si elles étaient celles du nouveau jour sélectionné.
+    final dailyLog = dailyLogAsync.hasError ? null : dailyLogAsync.value;
     final caloriesConsumed = dailyLog?.caloriesConsumed ?? 0;
     final proteinConsumedG = dailyLog?.proteinConsumedG ?? 0.0;
     final carbConsumedG = dailyLog?.carbConsumedG ?? 0.0;
     final fatConsumedG = dailyLog?.fatConsumedG ?? 0.0;
-
-    final activeGroup = ref.watch(activeGroupProvider);
-    final journalDate = ref.watch(journalDateProvider);
-    final entries = activeGroup == null
-        ? const <MealPlanEntry>[]
-        : ref.watch(mealPlanEntriesForDateProvider(activeGroup.id)).value ?? const <MealPlanEntry>[];
-    final answeredEntryIds = (ref.watch(mealPlanEntryLogsProvider).value ?? const [])
-        .map((log) => log.mealPlanEntryId)
-        .toSet();
-    final duePrompts = entries
-        .where((entry) => !answeredEntryIds.contains(entry.id) && _isPromptDue(journalDate, entry.mealType))
-        .toList();
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -822,7 +859,10 @@ class _DashboardBody extends ConsumerWidget {
         const SizedBox(height: 12),
         const _JournalDateNav(),
         const SizedBox(height: 16),
-        for (final entry in duePrompts) _MealPromptCard(entry: entry),
+        if (dailyLogAsync.hasError) ...[
+          _DataErrorBanner(onRetry: () => ref.invalidate(dailyNutritionLogControllerProvider)),
+          const SizedBox(height: 16),
+        ],
         _CalorieHeroCard(
           profile: profile,
           caloriesConsumed: caloriesConsumed,

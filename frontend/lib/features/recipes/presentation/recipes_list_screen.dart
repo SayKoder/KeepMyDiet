@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/app_bottom_nav.dart';
 import '../../meal_plan/presentation/meal_plan_screen.dart';
 import 'create_recipe_screen.dart';
 import 'recipe_detail_screen.dart';
@@ -59,12 +60,20 @@ class RecipesListScreen extends ConsumerWidget {
           error: (error, _) => Center(child: Text('Erreur : $error')),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const CreateRecipeScreen()),
+      // Sans ce décalage, le FAB se positionne juste au-dessus de la pilule
+      // (le `Scaffold` imbriqué gère déjà correctement cette marge tout seul)
+      // mais sa moitié basse reste prise dans le dégradé de HomeShell, qui
+      // l'estompe comme s'il était passé dessous — même hauteur que ce
+      // dégradé (`fadeHeight` dans home_shell.dart) pour passer juste au-dessus.
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: AppBottomNav.floatingClearance(context) / 2),
+        child: FloatingActionButton(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const CreateRecipeScreen()),
+          ),
+          tooltip: 'Ajouter une recette',
+          child: const Icon(Icons.add),
         ),
-        tooltip: 'Ajouter une recette',
-        child: const Icon(Icons.add),
       ),
     );
   }

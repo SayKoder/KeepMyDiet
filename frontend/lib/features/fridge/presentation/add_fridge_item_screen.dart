@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/ingredient_unit_field.dart';
 import '../data/fridge_api_client.dart';
 import '../data/open_food_facts_client.dart';
 import '../domain/food_reference.dart';
@@ -252,10 +253,7 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: TextField(
-                controller: _unitController,
-                decoration: const InputDecoration(labelText: 'Unité'),
-              ),
+              child: IngredientUnitField(controller: _unitController),
             ),
           ],
         ),

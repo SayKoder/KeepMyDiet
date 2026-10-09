@@ -33,14 +33,36 @@ class AppBottomNav extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
   final List<AppNavDestination> destinations;
 
+  /// Hauteur réelle de la pilule (`Container` ci-dessous).
+  static const double pillHeight = 72;
+
+  /// Marge entre le bas de l'écran et le bas de la pilule : part de la vraie
+  /// zone système de l'appareil (`MediaQuery.padding.bottom` — barre de
+  /// gestes ou barre 3-boutons selon le téléphone, 0 sur certains, 30-48px
+  /// sur d'autres) plutôt qu'un nombre fixe, jamais en dessous de 16 (valeur
+  /// de la maquette). Une marge fixe de 24 ne suffisait pas sur les
+  /// téléphones où cette barre est visible et plus haute — la pilule se
+  /// retrouvait partiellement dessous, zone où les taps sont interceptés par
+  /// le système plutôt que par l'app.
+  static double bottomMargin(BuildContext context) {
+    final systemBottomInset = MediaQuery.paddingOf(context).bottom;
+    return systemBottomInset > 0 ? systemBottomInset + 12 : 16.0;
+  }
+
+  /// Hauteur totale occupée par la pilule (elle + sa marge) : la clearance à
+  /// laisser à tout élément flottant qui lui est propre à l'écran (FAB...)
+  /// pour passer AU-DESSUS d'elle plutôt que de se retrouver en partie
+  /// dessous, visuellement masqué par elle ou par le dégradé qui la précède.
+  static double floatingClearance(BuildContext context) => bottomMargin(context) + pillHeight;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       // La pilule ne touche ni les bords ni le bas de l'écran — marge 16 de
-      // chaque côté, 24 en bas (valeurs de la maquette).
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      // chaque côté (valeur de la maquette), bas adapté à l'appareil ci-dessus.
+      padding: EdgeInsets.fromLTRB(16, 0, 16, bottomMargin(context)),
       child: Container(
-        height: 72,
+        height: pillHeight,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white,

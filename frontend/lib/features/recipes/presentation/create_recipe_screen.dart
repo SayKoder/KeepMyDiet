@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/ingredient_unit_field.dart';
 import '../data/recipes_api_client.dart';
 import '../domain/recipe_ingredient.dart';
 import '../domain/recipe_step.dart';
@@ -366,10 +367,7 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: TextField(
-                    controller: row.unit,
-                    decoration: const InputDecoration(labelText: 'Unité'),
-                  ),
+                  child: IngredientUnitField(controller: row.unit),
                 ),
               ],
             ),
