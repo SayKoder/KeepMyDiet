@@ -16,6 +16,7 @@ class NutritionDashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Nutrition')),
       body: profileAsync.toWidget(
+        onRetry: () => ref.invalidate(profileControllerProvider),
         data: (profile) => profile == null
             ? _NoProfileView(
                 onCreate: () => Navigator.of(context).push(

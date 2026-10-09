@@ -44,6 +44,7 @@ class GroupsListScreen extends ConsumerWidget {
           onRefresh: () =>
               ref.read(groupsControllerProvider.notifier).refresh(),
           child: groupsAsync.toWidget(
+            onRetry: () => ref.invalidate(groupsControllerProvider),
             data: (groups) => ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [

@@ -34,6 +34,7 @@ class HomeDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       body: profileAsync.toWidget(
+        onRetry: () => ref.invalidate(profileControllerProvider),
         data: (profile) => profile == null
             ? _NoProfileScroll(
                 onCreate: () => Navigator.of(context).push(

@@ -96,6 +96,7 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen>
         ),
       ),
       body: itemsAsync.toWidget(
+        onRetry: () => ref.invalidate(fridgeItemsProvider(groupId)),
         data: (items) => TabBarView(
           controller: _tabController,
           children: [
@@ -141,7 +142,11 @@ class _ItemsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (items.isEmpty) {
-      return const Center(child: Text('Rien ici pour le moment.'));
+      return const EmptyState(
+        icon: Icons.kitchen_outlined,
+        title: 'Rien ici pour le moment',
+        message: 'Ajoute un aliment avec le bouton +.',
+      );
     }
 
     return RefreshIndicator(

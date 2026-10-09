@@ -78,6 +78,7 @@ class GroupDetailScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(groupMembersProvider(group.id).future),
         child: membersAsync.toWidget(
+          onRetry: () => ref.invalidate(groupMembersProvider(group.id)),
           data: (members) => ListView.builder(
             itemCount: members.length,
             itemBuilder: (context, index) {

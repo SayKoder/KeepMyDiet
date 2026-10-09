@@ -202,6 +202,7 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
           const SizedBox(height: 12),
           Expanded(
             child: catalogAsync.toWidget(
+              onRetry: () => ref.invalidate(foodCatalogProvider(widget.groupId)),
               data: (catalog) {
                 final query = _searchController.text.trim().toLowerCase();
                 final matches = query.isEmpty
