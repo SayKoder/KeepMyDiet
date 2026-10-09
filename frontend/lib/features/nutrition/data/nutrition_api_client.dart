@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../domain/daily_nutrition_log.dart';
 import '../../../shared/api_client.dart';
 import '../domain/activity_level.dart';
 import '../domain/profile.dart';
@@ -11,6 +12,8 @@ import '../domain/water_intake.dart';
 final nutritionApiClientProvider = Provider<NutritionApiClient>((ref) {
   return NutritionApiClient(ref.watch(dioProvider));
 });
+
+
 
 class NutritionApiClient {
   NutritionApiClient(this._dio);
@@ -27,6 +30,53 @@ class NutritionApiClient {
 
     return members.isEmpty ? null : Profile.fromJson(members.first as Map<String, dynamic>);
   }
+
+    String _iso(DateTime date) => date.toIso8601String().split('T').first;
+
+  Future<DailyNutritionLog?> fetchDailyNutritionLog(DateTime date) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/daily_nutrition_logs',
+      queryParameters: {'date': _iso(date)},
+    );
+    final members = response.data!['member'] as List<dynamic>;
+
+    return members.isEmpty ? null : DailyNutritionLog.fromJson(members.first as Map<String, dynamic>);
+  }
+
+  Future<DailyNutritionLog> addDailyNutritionLog({
+    required DateTime date,
+    int deltaKcal = 0,
+    double deltaProteinG = 0,
+    double deltaCarbG = 0,
+    double deltaFatG = 0,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/daily_nutrition_logs/add',
+      data: {
+        'date': _iso(date),
+        'deltaKcal': deltaKcal,
+        'deltaProteinG': deltaProteinG,
+        'deltaCarbG': deltaCarbG,
+        'deltaFatG': deltaFatG,
+      },
+      options: _ldJson,
+    );
+
+    return DailyNutritionLog.fromJson(response.data!);
+  }
+
+  /// Variante date-aware de fetchTodayWaterIntake, pour la navigation jour par
+  /// jour — l'ancienne méthode reste intacte pour ne rien casser ailleurs.
+  Future<WaterIntake?> fetchWaterIntakeForDate(DateTime date) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/water_intakes',
+      queryParameters: {'date': _iso(date)},
+    );
+    final members = response.data!['member'] as List<dynamic>;
+
+    return members.isEmpty ? null : WaterIntake.fromJson(members.first as Map<String, dynamic>);
+  }
+
 
   Future<Profile> createProfile({
     required Sex sex,
@@ -64,29 +114,24 @@ class NutritionApiClient {
 
     return Profile.fromJson(response.data!);
   }
-
-  /// `/water_intakes` n'est pas une vraie collection : 0 ou 1 élément, le
-  /// suivi du jour pour l'utilisateur courant (voir TodayWaterIntakeProvider
-  /// côté backend) — même pattern que `/profiles`.
-  Future<WaterIntake?> fetchTodayWaterIntake() async {
-    final response = await _dio.get<Map<String, dynamic>>('/water_intakes');
-    final members = response.data!['member'] as List<dynamic>;
-
-    return members.isEmpty ? null : WaterIntake.fromJson(members.first as Map<String, dynamic>);
-  }
+  
 
   /// `deltaMl` : toujours une variation ("+250", ou négatif pour annuler un
   /// ajout), jamais le total absolu — le backend incrémente lui-même la
   /// ligne du jour (la crée si besoin), pas de risque de désynchronisation.
-  Future<WaterIntake> addWater(int deltaMl) async {
+    Future<WaterIntake> addWater(int deltaMl, {DateTime? date}) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/water_intakes/add',
-      data: {'deltaMl': deltaMl},
+      data: {
+        'deltaMl': deltaMl,
+        if (date != null) 'date': _iso(date),
+      },
       options: _ldJson,
     );
 
     return WaterIntake.fromJson(response.data!);
   }
+
 
   /// `/water_goals` n'est pas une vraie collection : 0 ou 1 élément, la
   /// surcharge d'objectif d'hydratation de l'utilisateur courant (voir

@@ -11,9 +11,10 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * Pas une vraie "collection" : renvoie 0 ou 1 élément (le suivi d'eau du
- * jour pour l'utilisateur courant) — même logique que MyProfileProvider.
- * Absence de ligne = 0 mL bu aujourd'hui, un état normal côté client, pas une
- * erreur à gérer.
+ * jour demandé pour l'utilisateur courant) — même logique que MyProfileProvider.
+ * `?date=YYYY-MM-DD` optionnel (défaut aujourd'hui) pour la navigation jour
+ * par jour (voir DailyNutritionLogProvider, même principe). Absence de ligne
+ * = 0 mL bu ce jour-là, un état normal côté client, pas une erreur à gérer.
  */
 final class TodayWaterIntakeProvider implements ProviderInterface
 {
@@ -30,7 +31,12 @@ final class TodayWaterIntakeProvider implements ProviderInterface
             throw new AccessDeniedException();
         }
 
-        $intake = $this->waterIntakes->findForUserAndDate($user, new \DateTimeImmutable('today'));
+        $filters = $context['filters'] ?? [];
+        $date = isset($filters['date'])
+            ? \DateTimeImmutable::createFromFormat('!Y-m-d', $filters['date'])
+            : new \DateTimeImmutable('today');
+
+        $intake = $this->waterIntakes->findForUserAndDate($user, $date);
 
         return null === $intake ? [] : [$intake];
     }

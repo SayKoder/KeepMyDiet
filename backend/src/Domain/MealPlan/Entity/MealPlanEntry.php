@@ -6,12 +6,14 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Domain\Group\Entity\Group;
 use App\Domain\MealPlan\Repository\MealPlanEntryRepository;
 use App\Domain\MealPlan\State\CreateMealPlanEntryProcessor;
 use App\Domain\MealPlan\State\DeleteMealPlanEntryProcessor;
 use App\Domain\MealPlan\State\MealPlanEntriesProvider;
+use App\Domain\MealPlan\State\UpdateMealPlanEntryProcessor;
 use App\Domain\Recipe\Entity\Recipe;
 use App\Shared\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
@@ -38,6 +40,11 @@ use Symfony\Component\Validator\Constraints as Assert;
             provider: MealPlanEntriesProvider::class,
         ),
         new Post(processor: CreateMealPlanEntryProcessor::class, validationContext: ['groups' => ['meal_plan_entry:write']]),
+        // Remplacer la recette d'un créneau déjà prévu (choix "Remplacer ?"
+        // sur l'Accueil) plutôt que recréer + supprimer : évite de devoir
+        // réconcilier un MealPlanEntryLog déjà posé sur l'ancien id (voir
+        // UpdateMealPlanEntryProcessor et JOURNAL.md).
+        new Patch(processor: UpdateMealPlanEntryProcessor::class, validationContext: ['groups' => ['meal_plan_entry:write']]),
         new Delete(processor: DeleteMealPlanEntryProcessor::class),
     ],
     normalizationContext: ['groups' => ['meal_plan_entry:read']],

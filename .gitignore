@@ -1,6 +1,7 @@
 # Fichiers de guidage / journal de bord — usage local, pas de suivi git
 CLAUDE.md
 JOURNAL.md
+FLUTTER.md
 
 # Secrets de déploiement (VPS) — jamais commités, voir infra/.env.prod.dist
 infra/.env.prod

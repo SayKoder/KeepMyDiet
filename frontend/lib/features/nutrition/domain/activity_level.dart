@@ -25,4 +25,12 @@ enum ActivityLevel {
         ActivityLevel.active => 'Active (6-7 fois/semaine)',
         ActivityLevel.veryActive => 'Très active (sport intense quotidien)',
       };
+  String get shortLabel => switch (this) {
+      ActivityLevel.sedentary => 'Sédentaire',
+      ActivityLevel.light => 'Léger',
+      ActivityLevel.moderate => 'Modéré',
+      ActivityLevel.active => 'Actif',
+      ActivityLevel.veryActive => 'Très actif',
+    };
+
 }

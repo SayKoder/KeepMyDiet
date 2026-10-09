@@ -33,12 +33,15 @@ final class AddWaterIntakeProcessor implements ProcessorInterface
             throw new AccessDeniedException();
         }
 
-        $today = new \DateTimeImmutable('today');
-        $intake = $this->waterIntakes->findForUserAndDate($user, $today);
+        $date = null !== $data->date
+            ? \DateTimeImmutable::createFromFormat('!Y-m-d', $data->date)
+            : new \DateTimeImmutable('today');
+
+        $intake = $this->waterIntakes->findForUserAndDate($user, $date);
         if (null === $intake) {
             $intake = new WaterIntake();
             $intake->setUser($user);
-            $intake->setDate($today);
+            $intake->setDate($date);
         }
 
         $intake->setAmountMl($intake->getAmountMl() + $data->deltaMl);

@@ -7,6 +7,7 @@ import '../../recipes/data/recipes_api_client.dart';
 import '../../recipes/domain/recipe.dart';
 import '../../recipes/domain/recipe_ingredient.dart';
 import '../../recipes/presentation/recipes_controller.dart';
+import '../domain/meal_plan_entry.dart';
 import '../domain/meal_type.dart';
 import 'meal_plan_controller.dart';
 
@@ -21,11 +22,17 @@ class AddMealPlanEntryScreen extends ConsumerStatefulWidget {
     required this.groupId,
     required this.date,
     required this.mealType,
+    this.existingEntryId,
   });
 
   final int groupId;
   final DateTime date;
   final MealType mealType;
+
+  /// Non-null quand on remplace un créneau déjà prévu (confirmation
+  /// "Remplacer ?" côté Accueil) : on PATCH cet id au lieu de créer un
+  /// nouveau MealPlanEntry.
+  final int? existingEntryId;
 
   @override
   ConsumerState<AddMealPlanEntryScreen> createState() => _AddMealPlanEntryScreenState();
@@ -58,6 +65,26 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
     super.dispose();
   }
 
+  Future<MealPlanEntry> _saveEntry({required int recipeId, required int servings}) {
+    final existingEntryId = widget.existingEntryId;
+    final controller = ref.read(mealPlanControllerProvider);
+
+    return existingEntryId == null
+        ? controller.addEntry(
+            groupId: widget.groupId,
+            date: widget.date,
+            mealType: widget.mealType,
+            recipeId: recipeId,
+            servings: servings,
+          )
+        : controller.updateEntry(
+            groupId: widget.groupId,
+            entryId: existingEntryId,
+            recipeId: recipeId,
+            servings: servings,
+          );
+  }
+
   Future<void> _submitExisting() async {
     final recipe = _selectedRecipe;
     final servings = int.tryParse(_servingsController.text);
@@ -77,15 +104,9 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
     });
 
     try {
-      await ref.read(mealPlanControllerProvider).addEntry(
-            groupId: widget.groupId,
-            date: widget.date,
-            mealType: widget.mealType,
-            recipeId: recipe.id,
-            servings: servings,
-          );
+      final entry = await _saveEntry(recipeId: recipe.id, servings: servings);
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(entry);
       }
     } catch (e) {
       setState(() => _error = '$e');
@@ -118,15 +139,9 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
             referenceServings: 1,
             ingredients: ingredients.cast<RecipeIngredient>(),
           );
-      await ref.read(mealPlanControllerProvider).addEntry(
-            groupId: widget.groupId,
-            date: widget.date,
-            mealType: widget.mealType,
-            recipeId: recipe.id,
-            servings: 1,
-          );
+      final entry = await _saveEntry(recipeId: recipe.id, servings: 1);
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(entry);
       }
     } catch (e) {
       setState(() => _error = '$e');
@@ -149,7 +164,10 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.mealType.label} — ${widget.date.day}/${widget.date.month}'),
+        title: Text(
+          '${widget.existingEntryId == null ? '' : 'Remplacer : '}'
+          '${widget.mealType.label} — ${widget.date.day}/${widget.date.month}',
+        ),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [Tab(text: 'Recette existante'), Tab(text: 'Ajout rapide')],

@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'core/theme.dart';
 import 'features/auth/presentation/auth_controller.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/home/presentation/home_shell.dart';
@@ -26,7 +27,7 @@ class KeepMyDietApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'KeepMyDiet',
-      theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
+      theme: AppTheme.light(),
       // Sans ça, les widgets Material (dont le sélecteur de date en mode
       // saisie clavier) retombent sur un format par défaut sans séparateurs
       // automatiques ("jj/mm/aaaa" devient juste une suite de chiffres) : le

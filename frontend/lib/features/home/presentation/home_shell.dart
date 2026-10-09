@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/app_bottom_nav.dart';
 import '../../../shared/home_navigation.dart';
 import '../../fridge/presentation/fridge_screen.dart';
 import '../../groups/presentation/groups_controller.dart';
@@ -43,28 +44,28 @@ class HomeShell extends ConsumerWidget {
           GroupsListScreen(),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: AppBottomNav(
         selectedIndex: index,
         onDestinationSelected: (i) => ref.read(homeTabIndexProvider.notifier).show(i),
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
+          AppNavDestination(
+            icon: Icons.home_outlined,
+            selectedIcon: Icons.home,
             label: 'Accueil',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.kitchen_outlined),
-            selectedIcon: Icon(Icons.kitchen),
+          AppNavDestination(
+            icon: Icons.kitchen_outlined,
+            selectedIcon: Icons.kitchen,
             label: 'Frigo',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.restaurant_menu_outlined),
-            selectedIcon: Icon(Icons.restaurant_menu),
+          AppNavDestination(
+            icon: Icons.restaurant_menu_outlined,
+            selectedIcon: Icons.restaurant_menu,
             label: 'Recettes',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.groups_outlined),
-            selectedIcon: Icon(Icons.groups),
+          AppNavDestination(
+            icon: Icons.groups_outlined,
+            selectedIcon: Icons.groups,
             label: 'Groupes',
           ),
         ],
