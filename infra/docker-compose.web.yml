@@ -1,0 +1,73 @@
+# Preview web (dev) : app Flutter compilée en web + API Symfony, derrière le
+# Traefik du serveur. Sert à tester les écrans depuis un téléphone sans build natif.
+#   https://rfaupin-dev.online/keepmydiet/
+#
+# docker compose --env-file .env.web -f docker-compose.web.yml up -d --build
+services:
+  web:
+    build:
+      context: ../frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - traefik
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keepmydiet.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/keepmydiet`)"
+      - "traefik.http.routers.keepmydiet.entrypoints=websecure"
+      - "traefik.http.routers.keepmydiet.tls.certresolver=le"
+      - "traefik.http.services.keepmydiet.loadbalancer.server.port=80"
+
+  api:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - ../backend/public:/var/www/html/public:ro
+      - ./nginx/backend.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - internal
+
+  app:
+    build:
+      context: ../backend
+      args:
+        PHP_VERSION: "8.4"
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
+      JWT_SECRET_KEY: /var/www/html/config/jwt/private.pem
+      JWT_PUBLIC_KEY: /var/www/html/config/jwt/public.pem
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+    volumes:
+      - jwt_keys:/var/www/html/config/jwt
+    depends_on:
+      - database
+    networks:
+      - internal
+
+  database:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - database_data:/var/lib/postgresql/data:rw
+    networks:
+      - internal
+
+networks:
+  traefik:
+    external: true
+  internal:
+
+volumes:
+  database_data:
+  jwt_keys:

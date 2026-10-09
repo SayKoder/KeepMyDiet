@@ -27,3 +27,19 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 - Brancher le service `nginx` sur le réseau Traefik existant du VPS (`networks.web.external: true` déjà en place, nom de réseau à vérifier).
 - Remplacer le `Host()` placeholder (`api.TODO-domaine.tld`) et le `certresolver` dans les labels Traefik de `docker-compose.prod.yml` par les vraies valeurs.
 - Générer les clés JWT de prod (voir ci-dessus) et renseigner `infra/.env.prod`.
+
+## Preview web (dev) — tester les écrans depuis un téléphone
+`docker-compose.web.yml` compile l'app Flutter en web (Flutter 3.47.7, cf. `../frontend/Dockerfile`) et la sert avec l'API derrière le Traefik du serveur, en accès public :
+**https://rfaupin-dev.online/keepmydiet/** (l'API est proxifiée en même origine sur `/keepmydiet/api`).
+
+```
+cp .env.web.dist .env.web     # puis renseigner les secrets (gitignored)
+docker compose -p keepmydiet --env-file .env.web -f docker-compose.web.yml up -d --build
+```
+
+Première fois uniquement : générer les clés JWT (même commande que pour la prod, avec `-u root` puis `chown -R www-data:www-data config/jwt`) et jouer les migrations :
+```
+docker compose -p keepmydiet --env-file .env.web -f docker-compose.web.yml exec app php bin/console doctrine:migrations:migrate -n
+```
+
+Après une modif des écrans, relancer seulement le front : `... up -d --build web`.

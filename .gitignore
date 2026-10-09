@@ -6,3 +6,4 @@ FLUTTER.md
 # Secrets de déploiement (VPS) — jamais commités, voir infra/.env.prod.dist
 infra/.env.prod
 infra/.env.prod.local
+infra/.env.web
