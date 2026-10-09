@@ -10,6 +10,23 @@ import '../domain/auth_session.dart';
 final authControllerProvider =
     AsyncNotifierProvider<AuthController, AuthSession?>(AuthController.new);
 
+/// Vrai juste après une inscription réussie, le temps que l'Accueil lance le
+/// parcours guidé de création de profil (`ProfileOnboardingScreen`) — remis à
+/// `false` par ce même écran dès qu'il l'a consommé (voir
+/// `home_dashboard_screen.dart`), pour ne pas se redéclencher plus tard (ex:
+/// déconnexion/reconnexion sur ce même compte). `riverpod` 3 n'a plus
+/// `StateProvider` dans les exports par défaut, voir `home_navigation.dart`.
+class JustRegisteredNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+}
+
+final justRegisteredProvider = NotifierProvider<JustRegisteredNotifier, bool>(
+  JustRegisteredNotifier.new,
+);
+
 /// Session d'authentification, accessible depuis n'importe quel widget via
 /// `ref.watch(authControllerProvider)`. `AsyncNotifier` encapsule l'état dans
 /// un `AsyncValue` (loading / data / error) — pratique ici car `build()` doit
@@ -45,6 +62,7 @@ class AuthController extends AsyncNotifier<AuthSession?> {
     } on DioException catch (e) {
       throw AuthFailure(extractErrorMessage(e));
     }
+    ref.read(justRegisteredProvider.notifier).set(true);
     state = AsyncData(await _loginAndPersist(email, password));
   }
 
