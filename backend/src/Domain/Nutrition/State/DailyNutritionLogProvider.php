@@ -4,22 +4,22 @@ namespace App\Domain\Nutrition\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Domain\Nutrition\Repository\WaterIntakeRepository;
+use App\Domain\Nutrition\Repository\DailyNutritionLogRepository;
 use App\Shared\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
- * Pas une vraie "collection" : renvoie 0 ou 1 élément (le suivi d'eau du
- * jour demandé pour l'utilisateur courant) — même logique que MyProfileProvider.
+ * Pas une vraie "collection" : renvoie 0 ou 1 élément (le journal du jour
+ * demandé pour l'utilisateur courant) — même logique que TodayWaterIntakeProvider.
  * `?date=YYYY-MM-DD` optionnel (défaut aujourd'hui) pour la navigation jour
- * par jour (voir DailyNutritionLogProvider, même principe). Absence de ligne
- * = 0 mL bu ce jour-là, un état normal côté client, pas une erreur à gérer.
+ * par jour. Absence de ligne = rien consommé ce jour-là, un état normal côté
+ * client, pas une erreur à gérer.
  */
-final class TodayWaterIntakeProvider implements ProviderInterface
+final class DailyNutritionLogProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly WaterIntakeRepository $waterIntakes,
+        private readonly DailyNutritionLogRepository $dailyNutritionLogs,
         private readonly Security $security,
     ) {
     }
@@ -36,8 +36,8 @@ final class TodayWaterIntakeProvider implements ProviderInterface
             ? \DateTimeImmutable::createFromFormat('!Y-m-d', $filters['date'])
             : new \DateTimeImmutable('today');
 
-        $intake = $this->waterIntakes->findForUserAndDate($user, $date);
+        $log = $this->dailyNutritionLogs->findForUserAndDate($user, $date);
 
-        return null === $intake ? [] : [$intake];
+        return null === $log ? [] : [$log];
     }
 }

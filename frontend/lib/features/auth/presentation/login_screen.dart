@@ -191,10 +191,11 @@ class _Header extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: AppColors.limeAccent,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Icon(Icons.eco, color: AppColors.hero),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
                 ),
                 const SizedBox(height: 20),
                 const Text(
