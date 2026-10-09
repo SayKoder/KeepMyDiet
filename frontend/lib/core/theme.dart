@@ -219,9 +219,17 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide.none,
         ),
+        // Contour vert léger au repos (pas juste au focus) : sans lui, le
+        // remplissage `fieldFill` se distingue trop peu du fond `background`
+        // de l'écran (Carl l'a repéré en vrai, champs quasi invisibles tant
+        // qu'on n'a pas déjà cliqué dedans) — corrige la lecture précédente
+        // de la maquette ("sans bordure" au repos), voir CLAUDE.md.
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(
+            color: AppColors.brand.withValues(alpha: 0.35),
+            width: 1.3,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
