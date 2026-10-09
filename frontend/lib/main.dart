@@ -7,6 +7,7 @@ import 'core/theme.dart';
 import 'features/auth/presentation/auth_controller.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/home/presentation/home_shell.dart';
+import 'shared/responsive.dart';
 
 void main() async {
   // Nécessaire avant tout `DateFormat(pattern, 'fr_FR')` (planning de repas) —
@@ -28,6 +29,13 @@ class KeepMyDietApp extends StatelessWidget {
     return MaterialApp(
       title: 'KeepMyDiet',
       theme: AppTheme.light(),
+      // Toute l'app est pensée mobile-first (tailles, paddings fixes repris
+      // de la maquette téléphone). Plutôt que de réadapter chaque écran un
+      // par un pour tablette/desktop/web, on recentre ce même layout dans
+      // une colonne de largeur raisonnable (`ResponsiveCenter`, déjà fait
+      // pour ça) dès que l'écran est plus large — sur téléphone (< 720dp)
+      // `ConstrainedBox` ne change rien, donc zéro régression ici.
+      builder: (context, child) => ResponsiveCenter(child: child!),
       // Sans ça, les widgets Material (dont le sélecteur de date en mode
       // saisie clavier) retombent sur un format par défaut sans séparateurs
       // automatiques ("jj/mm/aaaa" devient juste une suite de chiffres) : le
