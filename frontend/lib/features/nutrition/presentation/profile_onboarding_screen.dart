@@ -132,16 +132,36 @@ class _ProfileOnboardingScreenState
                 : null,
           );
       if (!mounted) return;
-      // Petit temps mort avec coche de succès avant de revenir à l'Accueil
-      // (déjà prêt à afficher le dashboard, le profil vient d'être créé) —
-      // un retour instantané donnait l'impression que rien ne s'était passé.
+      // Écran de succès plein écran (coche sur fond `hero`) avant de révéler
+      // l'Accueil — un retour instantané donnait l'impression que rien ne
+      // s'était passé.
       setState(() {
         _isSubmitting = false;
         _isDone = true;
       });
-      await Future<void>.delayed(const Duration(milliseconds: 550));
-      if (mounted) {
-        Navigator.of(context).pop();
+      await Future<void>.delayed(const Duration(milliseconds: 650));
+      if (!mounted) return;
+      // On pousse un rideau à 3 couches (même vert `hero` que l'écran de
+      // succès ci-dessus, donc transition invisible à cet instant) PAR-DESSUS
+      // cet écran, puis on retire CET écran de la pile pendant que le rideau
+      // le cache encore — le pop lui-même devient invisible. Le rideau se
+      // détache ensuite tout seul, révélant le vrai dashboard déjà présent
+      // juste en dessous (aucune duplication de son contenu), et se retire
+      // de la pile une fois fini. Capturer `navigator`/`ownRoute` avant tout
+      // `await` : après le `push`, `context` n'est plus fiable pour
+      // retrouver la route à retirer.
+      final navigator = Navigator.of(context);
+      final ownRoute = ModalRoute.of(context);
+      navigator.push(
+        PageRouteBuilder<void>(
+          opaque: false,
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+          pageBuilder: (_, _, _) => const _OnboardingRevealCurtain(),
+        ),
+      );
+      if (ownRoute != null) {
+        navigator.removeRoute(ownRoute);
       }
     } catch (e) {
       setState(() {
@@ -178,6 +198,14 @@ class _ProfileOnboardingScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Écran dédié, pas juste un état du bouton : `_isDone` remplace tout
+    // l'écran par le fond `hero` + la coche, pour que le rideau poussé juste
+    // après (même couleur en façade) n'ait aucune discontinuité visuelle à
+    // masquer.
+    if (_isDone) {
+      return const _OnboardingSuccessView();
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -293,16 +321,12 @@ class _ProfileOnboardingScreenState
                           onPressed: _isSubmitting
                               ? null
                               : (_step == _stepCount - 1 ? _finish : _next),
-                          child: _isDone
-                              ? const Icon(Icons.check_rounded)
-                              : SubmitButtonContent(
-                                  isSubmitting: _isSubmitting,
-                                  label: Text(
-                                    _step == _stepCount - 1
-                                        ? 'Terminé'
-                                        : 'Suivant',
-                                  ),
-                                ),
+                          child: SubmitButtonContent(
+                            isSubmitting: _isSubmitting,
+                            label: Text(
+                              _step == _stepCount - 1 ? 'Terminé' : 'Suivant',
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -356,6 +380,128 @@ class _ErrorLine extends StatelessWidget {
           fontWeight: FontWeight.w600,
         ),
       ),
+    );
+  }
+}
+
+/// Plein écran fond `hero` + coche qui "pop" (léger dépassement puis retour,
+/// `Curves.easeOutBack`) — affiché pendant la pause avant le rideau. Couleur
+/// de fond volontairement identique à la couche la plus en avant du rideau
+/// (`_OnboardingRevealCurtain`) pour qu'il n'y ait aucun flash au moment où
+/// l'un remplace l'autre.
+class _OnboardingSuccessView extends StatelessWidget {
+  const _OnboardingSuccessView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.hero,
+      body: Center(
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 420),
+          curve: Curves.easeOutBack,
+          builder: (context, value, child) =>
+              Transform.scale(scale: value, child: child),
+          child: Container(
+            width: 84,
+            height: 84,
+            decoration: const BoxDecoration(
+              color: AppColors.limeAccent,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.check_rounded,
+              color: AppColors.hero,
+              size: 44,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Rideau de 3 couches qui se détachent l'une après l'autre (même direction,
+/// départs décalés) pour révéler l'écran en dessous — ici le vrai dashboard
+/// de l'Accueil, déjà construit par `HomeShell`/`IndexedStack`, jamais
+/// recopié ici. Poussé via une route `opaque: false` : tant que ce widget
+/// est affiché, l'écran juste en dessous dans la pile de navigation reste
+/// visible dès qu'une couche le découvre, pas besoin de le reconstruire.
+class _OnboardingRevealCurtain extends StatefulWidget {
+  const _OnboardingRevealCurtain();
+
+  @override
+  State<_OnboardingRevealCurtain> createState() =>
+      _OnboardingRevealCurtainState();
+}
+
+class _OnboardingRevealCurtainState extends State<_OnboardingRevealCurtain>
+    with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+
+  // Même direction (vers le haut) pour les 3 couches, mais des `Interval`
+  // décalés : c'est ce décalage de départ, pas la courbe, qui donne l'effet
+  // "stop motion" de rideaux qui se détachent l'un après l'autre plutôt
+  // qu'un simple fondu uniforme.
+  late final _hero = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0, 0.55, curve: Curves.easeInOutCubic),
+  );
+  late final _brand = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.15, 0.7, curve: Curves.easeInOutCubic),
+  );
+  late final _lime = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.3, 0.85, curve: Curves.easeInOutCubic),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addStatusListener(_onStatusChanged);
+    _controller.forward();
+  }
+
+  void _onStatusChanged(AnimationStatus status) {
+    if (status == AnimationStatus.completed && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeStatusListener(_onStatusChanged);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _layer(Animation<double> progress, Color color) {
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: Offset.zero,
+        end: const Offset(0, -1.15),
+      ).animate(progress),
+      child: Container(color: color),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Ordre = ordre de peinture : la dernière couche (hero) est donc la plus
+    // visible au départ (celle qui prolonge `_OnboardingSuccessView`) et la
+    // première à se détacher.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _layer(_lime, AppColors.limeAccent),
+        _layer(_brand, AppColors.brand),
+        _layer(_hero, AppColors.hero),
+      ],
     );
   }
 }
