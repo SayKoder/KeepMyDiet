@@ -9,7 +9,9 @@ import '../domain/recipe_ingredient.dart';
 import '../domain/recipe_step.dart';
 
 final recipesControllerProvider =
-    AsyncNotifierProvider<RecipesController, List<Recipe>>(RecipesController.new);
+    AsyncNotifierProvider<RecipesController, List<Recipe>>(
+      RecipesController.new,
+    );
 
 /// Contrairement à `GroupsController`, pas besoin d'observer la session ici :
 /// le pool de recettes est le même pour tout le monde, se déconnecter puis se
@@ -28,7 +30,9 @@ class RecipesController extends AsyncNotifier<List<Recipe>> {
   }) async {
     final Recipe recipe;
     try {
-      recipe = await ref.read(recipesApiClientProvider).create(
+      recipe = await ref
+          .read(recipesApiClientProvider)
+          .create(
             name: name,
             referenceServings: referenceServings,
             ingredients: ingredients,
@@ -54,6 +58,8 @@ class RecipesController extends AsyncNotifier<List<Recipe>> {
   }
 
   Future<void> refresh() async {
-    state = await AsyncValue.guard(() => ref.read(recipesApiClientProvider).fetchAll());
+    state = await AsyncValue.guard(
+      () => ref.read(recipesApiClientProvider).fetchAll(),
+    );
   }
 }

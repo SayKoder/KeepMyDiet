@@ -80,7 +80,8 @@ class HomeShell extends ConsumerWidget {
       ),
       bottomNavigationBar: AppBottomNav(
         selectedIndex: index,
-        onDestinationSelected: (i) => ref.read(homeTabIndexProvider.notifier).show(i),
+        onDestinationSelected: (i) =>
+            ref.read(homeTabIndexProvider.notifier).show(i),
         destinations: const [
           AppNavDestination(
             icon: Icons.home_outlined,
@@ -138,14 +139,17 @@ class _FridgeTab extends ConsumerWidget {
         // Filet de sécurité en plus du `ref.listen` de HomeShell : garantit un
         // groupe valide affiché dès le premier build, même si le listener n'a
         // pas encore eu l'occasion de tourner.
-        final group = activeGroup != null && groups.any((g) => g.id == activeGroup.id)
+        final group =
+            activeGroup != null && groups.any((g) => g.id == activeGroup.id)
             ? activeGroup
             : groups.first;
 
         return FridgeScreen(group: group);
       },
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (error, _) => Scaffold(body: Center(child: Text('Erreur : $error'))),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (error, _) =>
+          Scaffold(body: Center(child: Text('Erreur : $error'))),
     );
   }
 }

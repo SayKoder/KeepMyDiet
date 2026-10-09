@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme.dart';
 import '../../../shared/api_client.dart';
+import '../../../shared/async_value_ui.dart';
 import '../../../shared/home_navigation.dart';
+import '../../../shared/white_card.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/groups_api_client.dart';
 import '../domain/group.dart';
@@ -39,17 +41,22 @@ class GroupsListScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => ref.read(groupsControllerProvider.notifier).refresh(),
-          child: groupsAsync.when(
+          onRefresh: () =>
+              ref.read(groupsControllerProvider.notifier).refresh(),
+          child: groupsAsync.toWidget(
             data: (groups) => ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Groupes', style: Theme.of(context).textTheme.headlineMedium),
+                    Text(
+                      'Groupes',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                     IconButton(
-                      onPressed: () => ref.read(authControllerProvider.notifier).logout(),
+                      onPressed: () =>
+                          ref.read(authControllerProvider.notifier).logout(),
                       icon: const Icon(Icons.logout, size: 20),
                       tooltip: 'Se déconnecter',
                       style: IconButton.styleFrom(
@@ -70,7 +77,9 @@ class GroupsListScreen extends ConsumerWidget {
                         icon: Icons.add,
                         filled: true,
                         onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const CreateGroupScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const CreateGroupScreen(),
+                          ),
                         ),
                       ),
                     ),
@@ -81,14 +90,19 @@ class GroupsListScreen extends ConsumerWidget {
                         icon: Icons.link,
                         filled: false,
                         onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const JoinGroupScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const JoinGroupScreen(),
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                Text('MES GROUPES', style: Theme.of(context).textTheme.labelSmall),
+                Text(
+                  'MES GROUPES',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
                 const SizedBox(height: 10),
                 if (groups.isEmpty)
                   const Padding(
@@ -118,8 +132,6 @@ class GroupsListScreen extends ConsumerWidget {
                 ],
               ],
             ),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => Center(child: Text('Erreur : $error')),
           ),
         ),
       ),
@@ -154,7 +166,13 @@ class _ActionButton extends StatelessWidget {
             border: filled ? null : Border.all(color: AppColors.border),
             borderRadius: BorderRadius.circular(AppRadius.lg),
             boxShadow: filled
-                ? [BoxShadow(color: AppColors.brand.withValues(alpha: 0.28), blurRadius: 24, offset: const Offset(0, 10))]
+                ? [
+                    BoxShadow(
+                      color: AppColors.brand.withValues(alpha: 0.28),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
+                    ),
+                  ]
                 : null,
           ),
           child: Column(
@@ -165,10 +183,16 @@ class _ActionButton extends StatelessWidget {
                 height: 40,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: filled ? Colors.white.withValues(alpha: 0.18) : AppColors.brandLight,
+                  color: filled
+                      ? Colors.white.withValues(alpha: 0.18)
+                      : AppColors.brandLight,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(icon, size: 20, color: filled ? Colors.white : AppColors.brandDark),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: filled ? Colors.white : AppColors.brandDark,
+                ),
               ),
               const SizedBox(height: 14),
               Text(
@@ -188,7 +212,11 @@ class _ActionButton extends StatelessWidget {
 }
 
 class _GroupCard extends ConsumerWidget {
-  const _GroupCard({required this.group, required this.isActive, required this.onTap});
+  const _GroupCard({
+    required this.group,
+    required this.isActive,
+    required this.onTap,
+  });
 
   final Group group;
   final bool isActive;
@@ -209,7 +237,10 @@ class _GroupCard extends ConsumerWidget {
         child: Container(
           padding: EdgeInsets.all(isActive ? 14 : 15),
           decoration: BoxDecoration(
-            border: Border.all(color: isActive ? AppColors.brand : AppColors.border, width: isActive ? 2 : 1),
+            border: Border.all(
+              color: isActive ? AppColors.brand : AppColors.border,
+              width: isActive ? 2 : 1,
+            ),
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
           child: Row(
@@ -218,22 +249,43 @@ class _GroupCard extends ConsumerWidget {
                 width: 52,
                 height: 52,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: palette.$1, borderRadius: BorderRadius.circular(AppRadius.md)),
-                child: Text(initial, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: palette.$2)),
+                decoration: BoxDecoration(
+                  color: palette.$1,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Text(
+                  initial,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: palette.$2,
+                  ),
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(group.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                    Text(
+                      group.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     membersAsync.when(
                       data: (members) => isActive
                           ? _MemberAvatarStack(members: members)
                           : Text(
                               '${members.length} membre${members.length > 1 ? 's' : ''}',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                       loading: () => const SizedBox(height: 24),
                       error: (_, _) => const SizedBox.shrink(),
@@ -243,12 +295,29 @@ class _GroupCard extends ConsumerWidget {
               ),
               if (isActive)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(color: AppColors.brandLight, borderRadius: BorderRadius.circular(999)),
-                  child: const Text('Actif', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.brandDark)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandLight,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: const Text(
+                    'Actif',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.brandDark,
+                    ),
+                  ),
                 )
               else
-                const Icon(Icons.chevron_right, size: 18, color: AppColors.iconMuted),
+                const Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: AppColors.iconMuted,
+                ),
             ],
           ),
         ),
@@ -285,7 +354,8 @@ class _MemberAvatarStack extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
-                  color: _memberAvatarPalette[i % _memberAvatarPalette.length].$2,
+                  color:
+                      _memberAvatarPalette[i % _memberAvatarPalette.length].$2,
                 ),
               ),
             ),
@@ -293,7 +363,11 @@ class _MemberAvatarStack extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           '${members.length} membre${members.length > 1 ? 's' : ''}',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary,
+          ),
         ),
       ],
     );
@@ -316,13 +390,15 @@ class _InviteCardState extends ConsumerState<_InviteCard> {
   Future<void> _generate() async {
     setState(() => _isGenerating = true);
     try {
-      final invitation = await ref.read(groupsApiClientProvider).createInvitation(widget.group.id);
+      final invitation = await ref
+          .read(groupsApiClientProvider)
+          .createInvitation(widget.group.id);
       if (mounted) {
         setState(() => _token = invitation.token);
       }
     } on DioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(extractErrorMessage(e))));
+        showErrorSnackBar(context, e);
       }
     } finally {
       if (mounted) {
@@ -333,13 +409,8 @@ class _InviteCardState extends ConsumerState<_InviteCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return WhiteCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
       child: Row(
         children: [
           Expanded(
@@ -348,7 +419,11 @@ class _InviteCardState extends ConsumerState<_InviteCard> {
               children: [
                 Text(
                   "Code d'invitation · ${widget.group.name}",
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -357,7 +432,9 @@ class _InviteCardState extends ConsumerState<_InviteCard> {
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     letterSpacing: _token != null ? 2 : 0,
-                    color: _token != null ? AppColors.ink : AppColors.textSecondary,
+                    color: _token != null
+                        ? AppColors.ink
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -365,12 +442,19 @@ class _InviteCardState extends ConsumerState<_InviteCard> {
           ),
           const SizedBox(width: 12),
           FilledButton.icon(
-            onPressed: _isGenerating ? null : (_token == null ? _generate : () => Clipboard.setData(ClipboardData(text: _token!))),
+            onPressed: _isGenerating
+                ? null
+                : (_token == null
+                      ? _generate
+                      : () => Clipboard.setData(ClipboardData(text: _token!))),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.ink,
               minimumSize: const Size(0, 44),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             icon: Icon(_token == null ? Icons.vpn_key : Icons.copy, size: 16),
             label: Text(_token == null ? 'Générer' : 'Copier'),

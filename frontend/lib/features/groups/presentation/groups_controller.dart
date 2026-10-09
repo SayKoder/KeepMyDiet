@@ -41,13 +41,18 @@ class GroupsController extends AsyncNotifier<List<Group>> {
   }
 
   Future<void> refresh() async {
-    state = await AsyncValue.guard(() => ref.read(groupsApiClientProvider).fetchMyGroups());
+    state = await AsyncValue.guard(
+      () => ref.read(groupsApiClientProvider).fetchMyGroups(),
+    );
   }
 }
 
 /// `.family` car il y a un membersProvider différent par groupe — Riverpod
 /// crée/garde en cache une instance par `groupId` passé.
-final groupMembersProvider = FutureProvider.family<List<GroupMember>, int>((ref, groupId) {
+final groupMembersProvider = FutureProvider.family<List<GroupMember>, int>((
+  ref,
+  groupId,
+) {
   return ref.watch(groupsApiClientProvider).fetchMembers(groupId);
 });
 
@@ -62,4 +67,6 @@ class ActiveGroupNotifier extends Notifier<Group?> {
   void select(Group group) => state = group;
 }
 
-final activeGroupProvider = NotifierProvider<ActiveGroupNotifier, Group?>(ActiveGroupNotifier.new);
+final activeGroupProvider = NotifierProvider<ActiveGroupNotifier, Group?>(
+  ActiveGroupNotifier.new,
+);

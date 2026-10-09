@@ -15,7 +15,8 @@ class DailyNutritionLog {
   final double carbConsumedG;
   final double fatConsumedG;
 
-  factory DailyNutritionLog.fromJson(Map<String, dynamic> json) => DailyNutritionLog(
+  factory DailyNutritionLog.fromJson(Map<String, dynamic> json) =>
+      DailyNutritionLog(
         id: json['id'] as int,
         date: DateTime.parse(json['date'] as String),
         caloriesConsumed: json['caloriesConsumed'] as int,

@@ -25,7 +25,8 @@ class ShoppingListItem {
   final double fatsPer100g;
   final String? sourceRecipeName;
 
-  factory ShoppingListItem.fromJson(Map<String, dynamic> json) => ShoppingListItem(
+  factory ShoppingListItem.fromJson(Map<String, dynamic> json) =>
+      ShoppingListItem(
         id: json['id'] as int,
         name: json['name'] as String,
         quantity: (json['quantity'] as num).toDouble(),

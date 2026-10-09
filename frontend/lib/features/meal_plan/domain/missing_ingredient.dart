@@ -2,7 +2,11 @@ import '../../fridge/domain/fridge_item.dart';
 import 'meal_plan_entry.dart';
 
 class MissingIngredient {
-  const MissingIngredient({required this.name, required this.missingQuantity, required this.unit});
+  const MissingIngredient({
+    required this.name,
+    required this.missingQuantity,
+    required this.unit,
+  });
 
   final String name;
   final double missingQuantity;
@@ -43,7 +47,13 @@ List<MissingIngredient> computeMissingIngredients(
   for (final entry in needed.entries) {
     final remaining = entry.value.quantity - (stock[entry.key] ?? 0);
     if (remaining > 0) {
-      missing.add(MissingIngredient(name: entry.value.name, missingQuantity: remaining, unit: entry.value.unit));
+      missing.add(
+        MissingIngredient(
+          name: entry.value.name,
+          missingQuantity: remaining,
+          unit: entry.value.unit,
+        ),
+      );
     }
   }
 

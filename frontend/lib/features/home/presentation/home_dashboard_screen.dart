@@ -2,10 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/theme.dart';
 
 import '../../../shared/api_client.dart';
+import '../../../shared/async_value_ui.dart';
 import '../../../shared/home_navigation.dart';
+import '../../../shared/white_card.dart';
 import '../../groups/presentation/groups_controller.dart';
 import '../../meal_plan/domain/meal_plan_entry.dart';
 import '../../meal_plan/domain/meal_plan_entry_status.dart';
@@ -30,16 +33,16 @@ class HomeDashboardScreen extends ConsumerWidget {
     final profileAsync = ref.watch(profileControllerProvider);
 
     return Scaffold(
-      body: profileAsync.when(
+      body: profileAsync.toWidget(
         data: (profile) => profile == null
             ? _NoProfileScroll(
                 onCreate: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => ProfileFormScreen(existingProfile: profile)),
+                  MaterialPageRoute(
+                    builder: (_) => ProfileFormScreen(existingProfile: profile),
+                  ),
                 ),
               )
             : _DashboardBody(profile: profile),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erreur : $error')),
       ),
     );
   }
@@ -54,26 +57,25 @@ class _WaterCard extends ConsumerWidget {
     final goalOverride = ref.watch(waterGoalControllerProvider).value?.goalMl;
     final profile = ref.watch(profileControllerProvider).value;
 
-    final defaultGoalMl = profile == null ? 2000 : ((profile.weightKg * 35) / 50).round() * 50;
+    final defaultGoalMl = profile == null
+        ? 2000
+        : ((profile.weightKg * 35) / 50).round() * 50;
     final goalMl = goalOverride ?? defaultGoalMl;
     // `.value` reste rempli avec la valeur du jour précédent pendant un
     // AsyncError (comportement Riverpod voulu pour éviter un flash de
     // chargement) — sans ce `hasError`, changer de jour après un échec réseau
     // affichait silencieusement l'hydratation d'un AUTRE jour comme si elle
     // était à jour.
-    final amountMl = waterAsync.hasError ? 0 : (waterAsync.value?.amountMl ?? 0);
+    final amountMl = waterAsync.hasError
+        ? 0
+        : (waterAsync.value?.amountMl ?? 0);
     final progress = goalMl <= 0 ? 0.0 : (amountMl / goalMl).clamp(0.0, 1.0);
     final isLoading = waterAsync.isLoading && !waterAsync.hasValue;
 
-    Future<void> add(int deltaMl) => ref.read(waterIntakeControllerProvider.notifier).add(deltaMl);
+    Future<void> add(int deltaMl) =>
+        ref.read(waterIntakeControllerProvider.notifier).add(deltaMl);
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
+    return WhiteCard(
       child: Column(
         children: [
           Row(
@@ -84,28 +86,50 @@ class _WaterCard extends ConsumerWidget {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: BoxDecoration(color: AppColors.waterBg, borderRadius: BorderRadius.circular(14)),
-                    child: const Icon(Icons.water_drop_outlined, size: 20, color: AppColors.waterIcon),
+                    decoration: BoxDecoration(
+                      color: AppColors.waterBg,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.water_drop_outlined,
+                      size: 20,
+                      color: AppColors.waterIcon,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Hydratation', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                      const Text(
+                        'Hydratation',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
+                        ),
+                      ),
                       Text.rich(
                         TextSpan(
                           children: [
                             TextSpan(
-                              text: isLoading ? '… ' : (waterAsync.hasError ? '— ' : '$amountMl '),
+                              text: isLoading
+                                  ? '… '
+                                  : (waterAsync.hasError ? '— ' : '$amountMl '),
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
-                                color: waterAsync.hasError ? AppColors.errorText : AppColors.ink,
+                                color: waterAsync.hasError
+                                    ? AppColors.errorText
+                                    : AppColors.ink,
                               ),
                             ),
                             TextSpan(text: '/ $goalMl mL'),
                           ],
                         ),
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -113,9 +137,16 @@ class _WaterCard extends ConsumerWidget {
               ),
               IconButton(
                 onPressed: () => _showEditGoalDialog(context, ref, goalMl),
-                icon: const Icon(Icons.settings_outlined, size: 18, color: AppColors.textSecondary),
+                icon: const Icon(
+                  Icons.settings_outlined,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
                 tooltip: "Modifier l'objectif",
-                style: IconButton.styleFrom(backgroundColor: AppColors.fieldFill, minimumSize: const Size(44, 44)),
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.fieldFill,
+                  minimumSize: const Size(44, 44),
+                ),
               ),
             ],
           ),
@@ -142,11 +173,16 @@ class _WaterCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: isLoading || amountMl <= 0 ? null : () => add(-250),
+                  onPressed: isLoading || amountMl <= 0
+                      ? null
+                      : () => add(-250),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(44),
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   child: const Text('−250'),
                 ),
@@ -167,7 +203,10 @@ class _WaterCard extends ConsumerWidget {
                     // largeur — réduire seulement la police ne suffisait pas,
                     // il fallait aussi resserrer le padding.
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   child: const Text('+250 mL'),
                 ),
@@ -180,7 +219,10 @@ class _WaterCard extends ConsumerWidget {
                     backgroundColor: AppColors.waterIcon,
                     minimumSize: const Size.fromHeight(44),
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   child: const Text('+500 mL'),
                 ),
@@ -192,7 +234,11 @@ class _WaterCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _showEditGoalDialog(BuildContext context, WidgetRef ref, int currentGoalMl) async {
+  Future<void> _showEditGoalDialog(
+    BuildContext context,
+    WidgetRef ref,
+    int currentGoalMl,
+  ) async {
     final controller = TextEditingController(text: currentGoalMl.toString());
 
     await showDialog<void>(
@@ -246,7 +292,6 @@ Color _segmentColor(double progress, int index) {
   return const Color(0xFFE6F1FB);
 }
 
-
 class _NoProfileScroll extends StatelessWidget {
   const _NoProfileScroll({required this.onCreate});
 
@@ -268,7 +313,10 @@ class _NoProfileScroll extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              FilledButton(onPressed: onCreate, child: const Text('Créer mon profil')),
+              FilledButton(
+                onPressed: onCreate,
+                child: const Text('Créer mon profil'),
+              ),
             ],
           ),
         ),
@@ -285,7 +333,9 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = _capitalize(DateFormat('EEEE d MMMM', 'fr_FR').format(DateTime.now()));
+    final today = _capitalize(
+      DateFormat('EEEE d MMMM', 'fr_FR').format(DateTime.now()),
+    );
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -293,14 +343,26 @@ class _Header extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(today, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+            Text(
+              today,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text('Bonjour !', style: Theme.of(context).textTheme.headlineMedium),
+            Text(
+              'Bonjour !',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
           ],
         ),
         IconButton(
           onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => ProfileFormScreen(existingProfile: profile)),
+            MaterialPageRoute(
+              builder: (_) => ProfileFormScreen(existingProfile: profile),
+            ),
           ),
           icon: const Icon(Icons.person_outline, color: AppColors.brandDark),
           style: IconButton.styleFrom(
@@ -314,10 +376,15 @@ class _Header extends StatelessWidget {
   }
 }
 
-String _capitalize(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+String _capitalize(String s) =>
+    s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
 class _CalorieHeroCard extends StatelessWidget {
-  const _CalorieHeroCard({required this.profile, required this.caloriesConsumed, required this.onAdd});
+  const _CalorieHeroCard({
+    required this.profile,
+    required this.caloriesConsumed,
+    required this.onAdd,
+  });
 
   final Profile profile;
   final int caloriesConsumed;
@@ -326,7 +393,9 @@ class _CalorieHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final goal = profile.calorieGoal;
-    final ringValue = goal <= 0 ? 0.0 : (caloriesConsumed / goal).clamp(0.0, 1.0);
+    final ringValue = goal <= 0
+        ? 0.0
+        : (caloriesConsumed / goal).clamp(0.0, 1.0);
     final remaining = goal - caloriesConsumed;
     final deficit = profile.tdee - profile.calorieGoal;
 
@@ -353,11 +422,31 @@ class _CalorieHeroCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Calories du jour', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+              const Text(
+                'Calories du jour',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
-                child: Text(modeLabel, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  modeLabel,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
@@ -385,8 +474,19 @@ class _CalorieHeroCard extends StatelessWidget {
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(caloriesConsumed.toString(), style: Theme.of(context).textTheme.displayMedium?.copyWith(color: Colors.white)),
-                        Text('/ ${goal.toStringAsFixed(0)} kcal', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.75))),
+                        Text(
+                          caloriesConsumed.toString(),
+                          style: Theme.of(context).textTheme.displayMedium
+                              ?.copyWith(color: Colors.white),
+                        ),
+                        Text(
+                          '/ ${goal.toStringAsFixed(0)} kcal',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withValues(alpha: 0.75),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -397,9 +497,15 @@ class _CalorieHeroCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _HeroStat(label: 'Objectif', value: '${goal.toStringAsFixed(0)} kcal'),
+                    _HeroStat(
+                      label: 'Objectif',
+                      value: '${goal.toStringAsFixed(0)} kcal',
+                    ),
                     const SizedBox(height: 12),
-                    _HeroStat(label: 'Maintien (TDEE)', value: '${profile.tdee.toStringAsFixed(0)} kcal'),
+                    _HeroStat(
+                      label: 'Maintien (TDEE)',
+                      value: '${profile.tdee.toStringAsFixed(0)} kcal',
+                    ),
                     const SizedBox(height: 12),
                     _HeroStat(
                       label: remaining >= 0 ? 'Restant' : 'Dépassement',
@@ -414,7 +520,11 @@ class _CalorieHeroCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text(
             "Mis à jour par tes repas validés et tes ajouts manuels.",
-            style: TextStyle(fontSize: 12, height: 1.45, color: Colors.white.withValues(alpha: 0.7)),
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.45,
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
           ),
           const SizedBox(height: 14),
           SizedBox(
@@ -437,7 +547,11 @@ class _CalorieHeroCard extends StatelessWidget {
 }
 
 class _HeroStat extends StatelessWidget {
-  const _HeroStat({required this.label, required this.value, this.valueColor = Colors.white});
+  const _HeroStat({
+    required this.label,
+    required this.value,
+    this.valueColor = Colors.white,
+  });
 
   final String label;
   final String value;
@@ -448,13 +562,26 @@ class _HeroStat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.72))),
-        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: valueColor)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withValues(alpha: 0.72),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: valueColor,
+          ),
+        ),
       ],
     );
   }
 }
-
 
 class _JournalDateNav extends ConsumerWidget {
   const _JournalDateNav();
@@ -469,15 +596,29 @@ class _JournalDateNav extends ConsumerWidget {
         IconButton(
           onPressed: () => ref.read(journalDateProvider.notifier).previousDay(),
           icon: const Icon(Icons.chevron_left),
-          style: IconButton.styleFrom(backgroundColor: AppColors.fieldFill, minimumSize: const Size(40, 40)),
+          style: IconButton.styleFrom(
+            backgroundColor: AppColors.fieldFill,
+            minimumSize: const Size(40, 40),
+          ),
         ),
         Expanded(
-          child: Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.ink,
+            ),
+          ),
         ),
         IconButton(
           onPressed: () => ref.read(journalDateProvider.notifier).nextDay(),
           icon: const Icon(Icons.chevron_right),
-          style: IconButton.styleFrom(backgroundColor: AppColors.fieldFill, minimumSize: const Size(40, 40)),
+          style: IconButton.styleFrom(
+            backgroundColor: AppColors.fieldFill,
+            minimumSize: const Size(40, 40),
+          ),
         ),
       ],
     );
@@ -505,7 +646,9 @@ class _AddChooserSheet extends ConsumerWidget {
     }
 
     try {
-      await ref.read(dailyNutritionLogControllerProvider.notifier).add(
+      await ref
+          .read(dailyNutritionLogControllerProvider.notifier)
+          .add(
             deltaKcal: result.kcal.round(),
             deltaProteinG: result.proteinG,
             deltaCarbG: result.carbG,
@@ -513,7 +656,7 @@ class _AddChooserSheet extends ConsumerWidget {
           );
     } on DioException catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(extractErrorMessage(e))));
+        showErrorSnackBar(context, e);
       }
     }
 
@@ -538,7 +681,12 @@ class _AddChooserSheet extends ConsumerWidget {
   /// null, on demande confirmation puis on PATCH ce créneau (remplace sa
   /// recette) au lieu d'en créer un second — voir
   /// `AddMealPlanEntryScreen.existingEntryId` et JOURNAL.md.
-  Future<void> _openMeal(BuildContext context, WidgetRef ref, MealType mealType, {MealPlanEntry? existing}) async {
+  Future<void> _openMeal(
+    BuildContext context,
+    WidgetRef ref,
+    MealType mealType, {
+    MealPlanEntry? existing,
+  }) async {
     final groupId = ref.read(activeGroupProvider)?.id;
     if (groupId == null) {
       return;
@@ -549,7 +697,9 @@ class _AddChooserSheet extends ConsumerWidget {
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: Text('${mealType.label} déjà prévu'),
-          content: Text('${existing.recipe.name} est déjà prévu pour ce créneau. Le remplacer ?'),
+          content: Text(
+            '${existing.recipe.name} est déjà prévu pour ce créneau. Le remplacer ?',
+          ),
           // Un `Row` unique (plutôt que deux entrées dans `actions`) : passé
           // à l'`OverflowBar` interne de `AlertDialog`, deux boutons de taille
           // normale empilaient "Annuler" au-dessus de "Remplacer" dès que le
@@ -561,7 +711,9 @@ class _AddChooserSheet extends ConsumerWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(dialogContext).pop(false),
-                    style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.border)),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.border),
+                    ),
                     child: const Text('Annuler'),
                   ),
                 ),
@@ -599,10 +751,12 @@ class _AddChooserSheet extends ConsumerWidget {
     }
 
     try {
-      await ref.read(mealPlanControllerProvider).respondToEntry(entryId: entry.id, status: MealPlanEntryStatus.eaten);
+      await ref
+          .read(mealPlanControllerProvider)
+          .respondToEntry(entryId: entry.id, status: MealPlanEntryStatus.eaten);
     } on DioException catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(extractErrorMessage(e))));
+        showErrorSnackBar(context, e);
       }
     }
 
@@ -616,11 +770,15 @@ class _AddChooserSheet extends ConsumerWidget {
     final activeGroup = ref.watch(activeGroupProvider);
     final entries = activeGroup == null
         ? const <MealPlanEntry>[]
-        : ref.watch(mealPlanEntriesForDateProvider(activeGroup.id)).value ?? const <MealPlanEntry>[];
-    final answeredEntryIds = (ref.watch(mealPlanEntryLogsProvider).value ?? const [])
-        .map((log) => log.mealPlanEntryId)
-        .toSet();
-    final pendingEntries = entries.where((entry) => !answeredEntryIds.contains(entry.id)).toList();
+        : ref.watch(mealPlanEntriesForDateProvider(activeGroup.id)).value ??
+              const <MealPlanEntry>[];
+    final answeredEntryIds =
+        (ref.watch(mealPlanEntryLogsProvider).value ?? const [])
+            .map((log) => log.mealPlanEntryId)
+            .toSet();
+    final pendingEntries = entries
+        .where((entry) => !answeredEntryIds.contains(entry.id))
+        .toList();
 
     // Un seul créneau par type de repas pour le jour affiché : s'il en
     // existe déjà un, on le passe à `_openMeal` pour déclencher la
@@ -633,36 +791,65 @@ class _AddChooserSheet extends ConsumerWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Ajouter un repas', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Ajouter un repas',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 16),
-            Text('REPAS DU JOUR', style: Theme.of(context).textTheme.labelSmall),
+            Text(
+              'REPAS DU JOUR',
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
             const SizedBox(height: 10),
             _ChooserTile(
               icon: Icons.free_breakfast_outlined,
               label: 'Petit-déjeuner',
-              onTap: () => _openMeal(context, ref, MealType.breakfast, existing: existingFor(MealType.breakfast)),
+              onTap: () => _openMeal(
+                context,
+                ref,
+                MealType.breakfast,
+                existing: existingFor(MealType.breakfast),
+              ),
             ),
             const SizedBox(height: 8),
             _ChooserTile(
               icon: Icons.lunch_dining_outlined,
               label: 'Déjeuner',
-              onTap: () => _openMeal(context, ref, MealType.lunch, existing: existingFor(MealType.lunch)),
+              onTap: () => _openMeal(
+                context,
+                ref,
+                MealType.lunch,
+                existing: existingFor(MealType.lunch),
+              ),
             ),
             const SizedBox(height: 8),
             _ChooserTile(
               icon: Icons.dinner_dining_outlined,
               label: 'Dîner',
-              onTap: () => _openMeal(context, ref, MealType.dinner, existing: existingFor(MealType.dinner)),
+              onTap: () => _openMeal(
+                context,
+                ref,
+                MealType.dinner,
+                existing: existingFor(MealType.dinner),
+              ),
             ),
             if (pendingEntries.isNotEmpty) ...[
               const SizedBox(height: 18),
-              Text('REPAS PLANIFIÉS', style: Theme.of(context).textTheme.labelSmall),
+              Text(
+                'REPAS PLANIFIÉS',
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
               const SizedBox(height: 10),
               for (final entry in pendingEntries) _MealPromptCard(entry: entry),
             ],
@@ -710,7 +897,15 @@ class _ChooserTile extends StatelessWidget {
             children: [
               Icon(icon, color: foreground),
               const SizedBox(width: 12),
-              Expanded(child: Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: foreground))),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: foreground,
+                  ),
+                ),
+              ),
               Icon(Icons.chevron_right, color: foreground),
             ],
           ),
@@ -725,7 +920,11 @@ class _MealPromptCard extends ConsumerWidget {
 
   final MealPlanEntry entry;
 
-  Future<void> _respond(BuildContext context, WidgetRef ref, MealPlanEntryStatus status) async {
+  Future<void> _respond(
+    BuildContext context,
+    WidgetRef ref,
+    MealPlanEntryStatus status,
+  ) async {
     JournalQuickAddResult? replacement;
 
     if (status == MealPlanEntryStatus.replaced) {
@@ -737,7 +936,9 @@ class _MealPromptCard extends ConsumerWidget {
     }
 
     try {
-      await ref.read(mealPlanControllerProvider).respondToEntry(
+      await ref
+          .read(mealPlanControllerProvider)
+          .respondToEntry(
             entryId: entry.id,
             status: status,
             replacementDescription: replacement?.description,
@@ -748,48 +949,49 @@ class _MealPromptCard extends ConsumerWidget {
           );
     } on DioException catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(extractErrorMessage(e))));
+        showErrorSnackBar(context, e);
       }
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
+    return WhiteCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '${entry.mealType.label} — ${entry.recipe.name} ?',
-            style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              color: AppColors.ink,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => _respond(context, ref, MealPlanEntryStatus.eaten),
+                  onPressed: () =>
+                      _respond(context, ref, MealPlanEntryStatus.eaten),
                   child: const Text('Oui'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => _respond(context, ref, MealPlanEntryStatus.skipped),
+                  onPressed: () =>
+                      _respond(context, ref, MealPlanEntryStatus.skipped),
                   child: const Text('Non'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => _respond(context, ref, MealPlanEntryStatus.replaced),
+                  onPressed: () =>
+                      _respond(context, ref, MealPlanEntryStatus.replaced),
                   child: const Text('Autre chose'),
                 ),
               ),
@@ -810,20 +1012,34 @@ class _DataErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(color: AppColors.errorBg, borderRadius: BorderRadius.circular(AppRadius.md)),
+      decoration: BoxDecoration(
+        color: AppColors.errorBg,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
       child: Row(
         children: [
-          const Icon(Icons.wifi_off_rounded, size: 18, color: AppColors.errorText),
+          const Icon(
+            Icons.wifi_off_rounded,
+            size: 18,
+            color: AppColors.errorText,
+          ),
           const SizedBox(width: 10),
           const Expanded(
             child: Text(
               'Impossible de charger les données de ce jour.',
-              style: TextStyle(fontSize: 13, color: AppColors.errorText, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.errorText,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           TextButton(
             onPressed: onRetry,
-            style: TextButton.styleFrom(foregroundColor: AppColors.errorText, padding: EdgeInsets.zero),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.errorText,
+              padding: EdgeInsets.zero,
+            ),
             child: const Text('Réessayer'),
           ),
         ],
@@ -860,7 +1076,9 @@ class _DashboardBody extends ConsumerWidget {
         const _JournalDateNav(),
         const SizedBox(height: 16),
         if (dailyLogAsync.hasError) ...[
-          _DataErrorBanner(onRetry: () => ref.invalidate(dailyNutritionLogControllerProvider)),
+          _DataErrorBanner(
+            onRetry: () => ref.invalidate(dailyNutritionLogControllerProvider),
+          ),
           const SizedBox(height: 16),
         ],
         _CalorieHeroCard(
@@ -870,7 +1088,9 @@ class _DashboardBody extends ConsumerWidget {
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.white,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
             builder: (_) => const _AddChooserSheet(),
           ),
         ),
@@ -917,64 +1137,105 @@ class _DashboardBody extends ConsumerWidget {
         const SizedBox(height: 24),
         const _WaterCard(),
         const SizedBox(height: 24),
-        Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Poids', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
-                if (profile.estimatedWeeksToTarget != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(color: AppColors.brandLight, borderRadius: BorderRadius.circular(999)),
-                    child: Text(
-                      '~${profile.estimatedWeeksToTarget} semaines',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.brandDark),
+        WhiteCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Poids',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.ink,
                     ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  profile.weightKg.toStringAsFixed(1),
-                  style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800, letterSpacing: -0.8, color: AppColors.ink),
-                ),
-                const Text(' kg', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
-                if (profile.targetWeightKg != null) ...[
-                  const SizedBox(width: 10),
-                  const Icon(Icons.arrow_forward, size: 18, color: AppColors.iconMuted),
-                  const SizedBox(width: 10),
-                  Text(
-                    '${profile.targetWeightKg!.toStringAsFixed(1)} kg',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.brandDark),
-                  ),
+                  if (profile.estimatedWeeksToTarget != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandLight,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '~${profile.estimatedWeeksToTarget} semaines',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.brandDark,
+                        ),
+                      ),
+                    ),
                 ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    profile.weightKg.toStringAsFixed(1),
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.8,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                  const Text(
+                    ' kg',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (profile.targetWeightKg != null) ...[
+                    const SizedBox(width: 10),
+                    const Icon(
+                      Icons.arrow_forward,
+                      size: 18,
+                      color: AppColors.iconMuted,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      '${profile.targetWeightKg!.toStringAsFixed(1)} kg',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.brandDark,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              if (profile.targetWeightKg != null) ...[
+                const SizedBox(height: 8),
+                Builder(
+                  builder: (context) {
+                    final remainingKg =
+                        profile.weightKg - profile.targetWeightKg!;
+                    final text = remainingKg <= 0
+                        ? 'Objectif atteint 🎉'
+                        : 'Reste ${remainingKg.toStringAsFixed(1)} kg au rythme choisi';
+                    return Text(
+                      text,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    );
+                  },
+                ),
               ],
-            ),
-            if (profile.targetWeightKg != null) ...[
-              const SizedBox(height: 8),
-              Builder(builder: (context) {
-                final remainingKg = profile.weightKg - profile.targetWeightKg!;
-                final text = remainingKg <= 0
-                    ? 'Objectif atteint 🎉'
-                    : 'Reste ${remainingKg.toStringAsFixed(1)} kg au rythme choisi';
-                return Text(text, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary));
-              }),
             ],
-          ],
-        ),
+          ),
         ),
         const SizedBox(height: 24),
         Row(
@@ -986,7 +1247,9 @@ class _DashboardBody extends ConsumerWidget {
                 iconColor: AppColors.brandDark,
                 label: groups.isEmpty ? 'Créer un groupe' : 'Frigo',
                 subtitle: groups.isEmpty ? '' : groups.first.name,
-                onTap: () => ref.read(homeTabIndexProvider.notifier).show(groups.isEmpty ? 3 : 1),
+                onTap: () => ref
+                    .read(homeTabIndexProvider.notifier)
+                    .show(groups.isEmpty ? 3 : 1),
               ),
             ),
             const SizedBox(width: 10),
@@ -1006,7 +1269,9 @@ class _DashboardBody extends ConsumerWidget {
         Center(
           child: TextButton(
             onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const NutritionDashboardScreen()),
+              MaterialPageRoute(
+                builder: (_) => const NutritionDashboardScreen(),
+              ),
             ),
             child: const Text('Voir le détail nutrition'),
           ),
@@ -1039,27 +1304,47 @@ class _MacroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = targetG <= 0 ? 0.0 : (consumedG / targetG).clamp(0.0, 1.0);
 
-    return Container(
+    return WhiteCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 34,
             height: 34,
-            decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(icon, size: 18, color: iconColor),
           ),
           const SizedBox(height: 10),
-          Text('${consumedG.round()} g', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.4, color: AppColors.ink)),
-          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          Text(
+            '${consumedG.round()} g',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.4,
+              color: AppColors.ink,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text('/ ${targetG.round()} g', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.iconMuted)),
+          Text(
+            '/ ${targetG.round()} g',
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.iconMuted,
+            ),
+          ),
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
@@ -1075,7 +1360,6 @@ class _MacroCard extends StatelessWidget {
     );
   }
 }
-
 
 class _ShortcutCard extends StatelessWidget {
   const _ShortcutCard({
@@ -1114,13 +1398,30 @@ class _ShortcutCard extends StatelessWidget {
               Container(
                 width: 40,
                 height: 40,
-                decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(14)),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 child: Icon(icon, size: 20, color: iconColor),
               ),
               const SizedBox(height: 14),
-              Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.ink,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(subtitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ],
           ),
         ),
@@ -1128,4 +1429,3 @@ class _ShortcutCard extends StatelessWidget {
     );
   }
 }
-

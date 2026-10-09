@@ -28,12 +28,17 @@ class JournalQuickAddResult {
 /// `groupId` optionnel : sans groupe actif, on saute la recherche dans le
 /// catalogue d'aliments (`foodCatalogProvider` est `.family` par groupe, pas
 /// de catalogue "global") et on ne propose que la saisie manuelle.
-Future<JournalQuickAddResult?> showJournalQuickAddSheet(BuildContext context, {int? groupId}) {
+Future<JournalQuickAddResult?> showJournalQuickAddSheet(
+  BuildContext context, {
+  int? groupId,
+}) {
   return showModalBottomSheet<JournalQuickAddResult>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
     builder: (_) => _JournalQuickAddSheet(groupId: groupId),
   );
 }
@@ -44,7 +49,8 @@ class _JournalQuickAddSheet extends ConsumerStatefulWidget {
   final int? groupId;
 
   @override
-  ConsumerState<_JournalQuickAddSheet> createState() => _JournalQuickAddSheetState();
+  ConsumerState<_JournalQuickAddSheet> createState() =>
+      _JournalQuickAddSheetState();
 }
 
 class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
@@ -84,7 +90,9 @@ class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
     final double carb;
     final double fat;
 
-    final quantity = _selected == null ? null : _parse(_quantityController.text);
+    final quantity = _selected == null
+        ? null
+        : _parse(_quantityController.text);
     if (_selected != null && quantity != null && quantity > 0) {
       final ratio = quantity / 100;
       kcal = _selected!.caloriesPer100g * ratio;
@@ -102,22 +110,31 @@ class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
       return;
     }
 
-    Navigator.of(context).pop(JournalQuickAddResult(
-      description: _descriptionController.text.trim().isEmpty ? 'Ajout manuel' : _descriptionController.text.trim(),
-      kcal: kcal,
-      proteinG: protein,
-      carbG: carb,
-      fatG: fat,
-    ));
+    Navigator.of(context).pop(
+      JournalQuickAddResult(
+        description: _descriptionController.text.trim().isEmpty
+            ? 'Ajout manuel'
+            : _descriptionController.text.trim(),
+        kcal: kcal,
+        proteinG: protein,
+        carbG: carb,
+        fatG: fat,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final catalog = widget.groupId == null ? null : ref.watch(foodCatalogProvider(widget.groupId!)).value;
+    final catalog = widget.groupId == null
+        ? null
+        : ref.watch(foodCatalogProvider(widget.groupId!)).value;
     final query = _searchController.text.trim().toLowerCase();
     final matches = query.isEmpty || catalog == null
         ? const <FoodReference>[]
-        : catalog.where((f) => f.name.toLowerCase().contains(query)).take(6).toList();
+        : catalog
+              .where((f) => f.name.toLowerCase().contains(query))
+              .take(6)
+              .toList();
 
     return Padding(
       padding: EdgeInsets.only(
@@ -131,12 +148,18 @@ class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Ajouter un aliment', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Ajouter un aliment',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 16),
             if (widget.groupId != null) ...[
               TextField(
                 controller: _searchController,
-                decoration: const InputDecoration(labelText: 'Chercher dans le placard', prefixIcon: Icon(Icons.search)),
+                decoration: const InputDecoration(
+                  labelText: 'Chercher dans le placard',
+                  prefixIcon: Icon(Icons.search),
+                ),
                 onChanged: (_) => setState(() {}),
               ),
               for (final food in matches)
@@ -151,11 +174,16 @@ class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
               const SizedBox(height: 12),
             ],
             if (_selected != null) ...[
-              Text('Sélectionné : ${_selected!.name}', style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(
+                'Sélectionné : ${_selected!.name}',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _quantityController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(labelText: 'Quantité (g)'),
               ),
               TextButton(
@@ -181,8 +209,12 @@ class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
                   Expanded(
                     child: TextField(
                       controller: _proteinController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: 'Protéines (g)'),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Protéines (g)',
+                      ),
                     ),
                   ),
                 ],
@@ -193,16 +225,24 @@ class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
                   Expanded(
                     child: TextField(
                       controller: _carbController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: 'Glucides (g)'),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Glucides (g)',
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _fatController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: 'Lipides (g)'),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Lipides (g)',
+                      ),
                     ),
                   ),
                 ],
@@ -211,7 +251,10 @@ class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              child: FilledButton(onPressed: _submit, child: const Text('Ajouter')),
+              child: FilledButton(
+                onPressed: _submit,
+                child: const Text('Ajouter'),
+              ),
             ),
           ],
         ),

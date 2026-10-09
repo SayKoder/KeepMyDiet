@@ -29,12 +29,15 @@ class MealPlanEntryLog {
   final double appliedCarbG;
   final double appliedFatG;
 
-  factory MealPlanEntryLog.fromJson(Map<String, dynamic> json) => MealPlanEntryLog(
+  factory MealPlanEntryLog.fromJson(Map<String, dynamic> json) =>
+      MealPlanEntryLog(
         id: json['id'] as int,
         // `mealPlanEntry` arrive en IRI ("/api/meal_plan_entries/12") tant que
         // meal_plan_entry_log:read n'embarque pas l'objet complet — l'id suffit
         // pour retrouver l'entry déjà chargée côté client via fetchEntries.
-        mealPlanEntryId: int.parse((json['mealPlanEntry'] as String).split('/').last),
+        mealPlanEntryId: int.parse(
+          (json['mealPlanEntry'] as String).split('/').last,
+        ),
         status: MealPlanEntryStatus.fromJson(json['status'] as String),
         replacementDescription: json['replacementDescription'] as String?,
         replacementCalories: (json['replacementCalories'] as num?)?.toDouble(),

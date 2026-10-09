@@ -6,7 +6,9 @@ import '../data/nutrition_api_client.dart';
 import '../domain/daily_nutrition_log.dart';
 
 final dailyNutritionLogControllerProvider =
-    AsyncNotifierProvider<DailyNutritionLogController, DailyNutritionLog?>(DailyNutritionLogController.new);
+    AsyncNotifierProvider<DailyNutritionLogController, DailyNutritionLog?>(
+      DailyNutritionLogController.new,
+    );
 
 /// `null` = rien consommé enregistré ce jour-là (pas une erreur). Observe la
 /// session (comme WaterIntakeController) ET le jour affiché
@@ -28,7 +30,9 @@ class DailyNutritionLogController extends AsyncNotifier<DailyNutritionLog?> {
     double deltaFatG = 0,
   }) async {
     final date = ref.read(journalDateProvider);
-    final log = await ref.read(nutritionApiClientProvider).addDailyNutritionLog(
+    final log = await ref
+        .read(nutritionApiClientProvider)
+        .addDailyNutritionLog(
           date: date,
           deltaKcal: deltaKcal,
           deltaProteinG: deltaProteinG,

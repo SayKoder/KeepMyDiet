@@ -24,7 +24,9 @@ class OpenFoodFactsProduct {
 /// injecte le JWT à chaque requête, ce qu'on ne veut surtout pas envoyer à
 /// un service tiers).
 final openFoodFactsClientProvider = Provider<OpenFoodFactsClient>((ref) {
-  return OpenFoodFactsClient(Dio(BaseOptions(baseUrl: 'https://world.openfoodfacts.org/api/v2')));
+  return OpenFoodFactsClient(
+    Dio(BaseOptions(baseUrl: 'https://world.openfoodfacts.org/api/v2')),
+  );
 });
 
 class OpenFoodFactsClient {
@@ -37,7 +39,9 @@ class OpenFoodFactsClient {
   /// — dans les deux cas l'appelant retombe sur la saisie manuelle.
   Future<OpenFoodFactsProduct?> lookup(String barcode) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>('/product/$barcode.json');
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/product/$barcode.json',
+      );
       final data = response.data!;
       if (data['status'] != 1) {
         return null;

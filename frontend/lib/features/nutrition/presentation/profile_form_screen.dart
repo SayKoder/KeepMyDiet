@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/theme.dart';
 
+import '../../../shared/round_back_button.dart';
+import '../../../shared/submit_button_content.dart';
+import '../../../shared/white_card.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../domain/activity_level.dart';
 import '../domain/profile.dart';
@@ -32,9 +36,12 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
   );
   late Sex _sex = widget.existingProfile?.sex ?? Sex.male;
   late DateTime? _birthDate = widget.existingProfile?.birthDate;
-  late ActivityLevel _activityLevel = widget.existingProfile?.activityLevel ?? ActivityLevel.moderate;
-  late bool _customPace = widget.existingProfile?.weeklyWeightLossGoalKg != null;
-  late double _weeklyWeightLossGoalKg = widget.existingProfile?.weeklyWeightLossGoalKg ?? 0.5;
+  late ActivityLevel _activityLevel =
+      widget.existingProfile?.activityLevel ?? ActivityLevel.moderate;
+  late bool _customPace =
+      widget.existingProfile?.weeklyWeightLossGoalKg != null;
+  late double _weeklyWeightLossGoalKg =
+      widget.existingProfile?.weeklyWeightLossGoalKg ?? 0.5;
   bool _isSubmitting = false;
   String? _errorMessage;
 
@@ -63,18 +70,26 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
     final height = double.tryParse(_heightController.text);
     final weight = double.tryParse(_weightController.text);
     final targetWeightText = _targetWeightController.text.trim();
-    final targetWeight = targetWeightText.isEmpty ? null : double.tryParse(targetWeightText);
+    final targetWeight = targetWeightText.isEmpty
+        ? null
+        : double.tryParse(targetWeightText);
 
     if (_birthDate == null) {
       setState(() => _errorMessage = 'Choisis ta date de naissance.');
       return;
     }
     if (height == null || height <= 0 || weight == null || weight <= 0) {
-      setState(() => _errorMessage = 'Taille et poids doivent être des nombres positifs.');
+      setState(
+        () => _errorMessage =
+            'Taille et poids doivent être des nombres positifs.',
+      );
       return;
     }
-    if (targetWeightText.isNotEmpty && (targetWeight == null || targetWeight <= 0)) {
-      setState(() => _errorMessage = 'Le poids visé doit être un nombre positif.');
+    if (targetWeightText.isNotEmpty &&
+        (targetWeight == null || targetWeight <= 0)) {
+      setState(
+        () => _errorMessage = 'Le poids visé doit être un nombre positif.',
+      );
       return;
     }
 
@@ -125,10 +140,18 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Se déconnecter ?'),
-        content: const Text('Tu devras te reconnecter avec ton email et ton mot de passe.'),
+        content: const Text(
+          'Tu devras te reconnecter avec ton email et ton mot de passe.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Se déconnecter')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Se déconnecter'),
+          ),
         ],
       ),
     );
@@ -147,45 +170,46 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
           children: [
             Row(
               children: [
-                IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: AppColors.border),
-                    minimumSize: const Size(44, 44),
-                    shape: const CircleBorder(),
-                  ),
-                ),
+                const RoundBackButton(),
                 const SizedBox(width: 12),
                 Text(
-                  widget.existingProfile == null ? 'Créer mon profil' : 'Modifier mon profil',
+                  widget.existingProfile == null
+                      ? 'Créer mon profil'
+                      : 'Modifier mon profil',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
+            WhiteCard(
+              radius: AppRadius.xl,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('TOI', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: AppColors.textSecondary)),
+                  const Text(
+                    'TOI',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(height: 14),
                   Container(
                     padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(color: AppColors.fieldFill, borderRadius: BorderRadius.circular(999)),
+                    decoration: BoxDecoration(
+                      color: AppColors.fieldFill,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
                     child: Row(
                       children: Sex.values.map((sex) {
                         final selected = _sex == sex;
                         return Expanded(
                           child: Material(
-                            color: selected ? AppColors.ink : Colors.transparent,
+                            color: selected
+                                ? AppColors.ink
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(999),
                             child: InkWell(
                               onTap: () => setState(() => _sex = sex),
@@ -198,7 +222,9 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: selected ? Colors.white : AppColors.textSecondary,
+                                    color: selected
+                                        ? Colors.white
+                                        : AppColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -215,7 +241,10 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                     child: Container(
                       height: 56,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(color: AppColors.fieldFill, borderRadius: BorderRadius.circular(AppRadius.md)),
+                      decoration: BoxDecoration(
+                        color: AppColors.fieldFill,
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -223,16 +252,31 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text('Date de naissance', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                              const Text(
+                                'Date de naissance',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
                               Text(
                                 _birthDate == null
                                     ? 'Non renseignée'
                                     : '${_birthDate!.day.toString().padLeft(2, '0')}/${_birthDate!.month.toString().padLeft(2, '0')}/${_birthDate!.year}',
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.ink,
+                                ),
                               ),
                             ],
                           ),
-                          const Icon(Icons.calendar_today_outlined, size: 20, color: AppColors.brand),
+                          const Icon(
+                            Icons.calendar_today_outlined,
+                            size: 20,
+                            color: AppColors.brand,
+                          ),
                         ],
                       ),
                     ),
@@ -240,26 +284,41 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      Expanded(child: _MiniNumberField(label: 'Taille', unit: 'cm', controller: _heightController)),
+                      Expanded(
+                        child: _MiniNumberField(
+                          label: 'Taille',
+                          unit: 'cm',
+                          controller: _heightController,
+                        ),
+                      ),
                       const SizedBox(width: 10),
-                      Expanded(child: _MiniNumberField(label: 'Poids', unit: 'kg', controller: _weightController)),
+                      Expanded(
+                        child: _MiniNumberField(
+                          label: 'Poids',
+                          unit: 'kg',
+                          controller: _weightController,
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
-                        const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
+            const SizedBox(height: 16),
+            WhiteCard(
+              radius: AppRadius.xl,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("NIVEAU D'ACTIVITÉ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: AppColors.textSecondary)),
+                  const Text(
+                    "NIVEAU D'ACTIVITÉ",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(height: 14),
                   Wrap(
                     spacing: 10,
@@ -273,9 +332,16 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                           onTap: () => setState(() => _activityLevel = level),
                           borderRadius: BorderRadius.circular(999),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
-                              border: Border.all(color: selected ? AppColors.brand : AppColors.border),
+                              border: Border.all(
+                                color: selected
+                                    ? AppColors.brand
+                                    : AppColors.border,
+                              ),
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
@@ -283,7 +349,9 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: selected ? AppColors.brandDark : const Color(0xFF3E4A43),
+                                color: selected
+                                    ? AppColors.brandDark
+                                    : const Color(0xFF3E4A43),
                               ),
                             ),
                           ),
@@ -295,23 +363,33 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
+            WhiteCard(
+              radius: AppRadius.xl,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('OBJECTIF', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: AppColors.textSecondary)),
+                  const Text(
+                    'OBJECTIF',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(height: 14),
-                  _MiniNumberField(label: 'Poids visé — optionnel', unit: 'kg', controller: _targetWeightController),
+                  _MiniNumberField(
+                    label: 'Poids visé — optionnel',
+                    unit: 'kg',
+                    controller: _targetWeightController,
+                  ),
                   const SizedBox(height: 6),
                   const Text(
                     "Sert uniquement à estimer le délai, n'influence pas l'objectif calorique.",
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 18),
                   Row(
@@ -320,15 +398,29 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Rythme de perte personnalisé', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                            Text(
+                              'Rythme de perte personnalisé',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.ink,
+                              ),
+                            ),
                             SizedBox(height: 2),
-                            Text('Sinon : déficit fixe de 20% du maintien.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                            Text(
+                              'Sinon : déficit fixe de 20% du maintien.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       Switch(
                         value: _customPace,
-                        onChanged: (value) => setState(() => _customPace = value),
+                        onChanged: (value) =>
+                            setState(() => _customPace = value),
                       ),
                     ],
                   ),
@@ -336,7 +428,11 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                     const SizedBox(height: 10),
                     Text(
                       '${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg / semaine',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.ink),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.ink,
+                      ),
                     ),
                     Slider(
                       value: _weeklyWeightLossGoalKg,
@@ -344,17 +440,42 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                       max: 1,
                       divisions: 3,
                       label: '${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg',
-                      onChanged: (value) => setState(() => _weeklyWeightLossGoalKg = value),
+                      onChanged: (value) =>
+                          setState(() => _weeklyWeightLossGoalKg = value),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: const [
-                          Text('0.25', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                          Text('0.50', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                          Text('0.75', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                          Text('1.00', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                          Text(
+                            '0.25',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            '0.50',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            '0.75',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            '1.00',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -380,28 +501,25 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
                   foreground: AppColors.errorText,
                 ),
               ),
-          OutlinedButton.icon(
-            onPressed: _isSubmitting ? null : _confirmLogout,
-            icon: const Icon(Icons.logout, size: 18),
-            label: const Text('Se déconnecter'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.errorText,
-              side: const BorderSide(color: AppColors.border),
-              minimumSize: const Size.fromHeight(48),
+            OutlinedButton.icon(
+              onPressed: _isSubmitting ? null : _confirmLogout,
+              icon: const Icon(Icons.logout, size: 18),
+              label: const Text('Se déconnecter'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.errorText,
+                side: const BorderSide(color: AppColors.border),
+                minimumSize: const Size.fromHeight(48),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _isSubmitting ? null : _submit,
-            child: _isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Enregistrer'),
-          ),
-        ],
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: _isSubmitting ? null : _submit,
+              child: SubmitButtonContent(
+                isSubmitting: _isSubmitting,
+                label: const Text('Enregistrer'),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -409,7 +527,11 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
 }
 
 class _MiniNumberField extends StatelessWidget {
-  const _MiniNumberField({required this.label, required this.unit, required this.controller});
+  const _MiniNumberField({
+    required this.label,
+    required this.unit,
+    required this.controller,
+  });
 
   final String label;
   final String unit;
@@ -420,12 +542,22 @@ class _MiniNumberField extends StatelessWidget {
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(color: AppColors.fieldFill, borderRadius: BorderRadius.circular(AppRadius.md)),
+      decoration: BoxDecoration(
+        color: AppColors.fieldFill,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -434,8 +566,14 @@ class _MiniNumberField extends StatelessWidget {
                 width: 70,
                 child: TextField(
                   controller: controller,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
                   decoration: const InputDecoration(
                     // Annule le style "rempli" global du thème (`theme.dart`
                     // met `filled: true` sur TOUS les champs) : ici le champ
@@ -449,7 +587,14 @@ class _MiniNumberField extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              Text(unit, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink)),
+              Text(
+                unit,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.ink,
+                ),
+              ),
             ],
           ),
         ],
@@ -459,7 +604,12 @@ class _MiniNumberField extends StatelessWidget {
 }
 
 class _Banner extends StatelessWidget {
-  const _Banner({required this.message, required this.icon, required this.background, required this.foreground});
+  const _Banner({
+    required this.message,
+    required this.icon,
+    required this.background,
+    required this.foreground,
+  });
 
   final String message;
   final IconData icon;
@@ -470,17 +620,26 @@ class _Banner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Row(
         children: [
           Icon(icon, color: foreground, size: 18),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(message, style: TextStyle(color: foreground, fontSize: 13, fontWeight: FontWeight.w600)),
+            child: Text(
+              message,
+              style: TextStyle(
+                color: foreground,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 }
-

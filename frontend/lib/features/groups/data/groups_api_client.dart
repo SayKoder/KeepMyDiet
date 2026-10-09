@@ -24,7 +24,9 @@ class GroupsApiClient {
     final response = await _dio.get<Map<String, dynamic>>('/groups');
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.map((e) => Group.fromJson(e as Map<String, dynamic>)).toList();
+    return members
+        .map((e) => Group.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Group> createGroup({required String name}) async {
@@ -38,10 +40,14 @@ class GroupsApiClient {
   }
 
   Future<List<GroupMember>> fetchMembers(int groupId) async {
-    final response = await _dio.get<Map<String, dynamic>>('/groups/$groupId/memberships');
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/groups/$groupId/memberships',
+    );
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.map((e) => GroupMember.fromJson(e as Map<String, dynamic>)).toList();
+    return members
+        .map((e) => GroupMember.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// Réservé aux admins du groupe — le backend renvoie un 403 sinon (voir

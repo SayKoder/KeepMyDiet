@@ -20,7 +20,8 @@ class RecipeIngredient {
   final double carbs;
   final double fats;
 
-  factory RecipeIngredient.fromJson(Map<String, dynamic> json) => RecipeIngredient(
+  factory RecipeIngredient.fromJson(Map<String, dynamic> json) =>
+      RecipeIngredient(
         name: json['name'] as String,
         quantity: (json['quantity'] as num).toDouble(),
         unit: json['unit'] as String,
@@ -31,12 +32,12 @@ class RecipeIngredient {
       );
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'quantity': quantity,
-        'unit': unit,
-        'calories': calories,
-        'proteins': proteins,
-        'carbs': carbs,
-        'fats': fats,
-      };
+    'name': name,
+    'quantity': quantity,
+    'unit': unit,
+    'calories': calories,
+    'proteins': proteins,
+    'carbs': carbs,
+    'fats': fats,
+  };
 }

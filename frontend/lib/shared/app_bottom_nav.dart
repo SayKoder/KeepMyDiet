@@ -53,7 +53,8 @@ class AppBottomNav extends StatelessWidget {
   /// laisser à tout élément flottant qui lui est propre à l'écran (FAB...)
   /// pour passer AU-DESSUS d'elle plutôt que de se retrouver en partie
   /// dessous, visuellement masqué par elle ou par le dégradé qui la précède.
-  static double floatingClearance(BuildContext context) => bottomMargin(context) + pillHeight;
+  static double floatingClearance(BuildContext context) =>
+      bottomMargin(context) + pillHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +92,40 @@ class AppBottomNav extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// FAB d'écran d'onglet (Recettes, Frigo...) qui flotte juste au-dessus de la
+/// pilule — sans ce décalage, le `Scaffold` imbriqué de l'onglet positionne
+/// déjà correctement le FAB tout seul, mais sa moitié basse reste prise dans
+/// le léger dégradé anti-faux-clic de `HomeShell` (peint par-dessus dans le
+/// `Stack` du shell), qui l'estompe comme s'il était passé dessous. Décalage
+/// de la moitié de `floatingClearance` : exactement la hauteur de ce
+/// dégradé (`fadeHeight` dans `home_shell.dart`), pour passer juste au-dessus.
+class FabAboveNav extends StatelessWidget {
+  const FabAboveNav({
+    super.key,
+    required this.onPressed,
+    required this.tooltip,
+    required this.child,
+  });
+
+  final VoidCallback onPressed;
+  final String tooltip;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: AppBottomNav.floatingClearance(context) / 2,
+      ),
+      child: FloatingActionButton(
+        onPressed: onPressed,
+        tooltip: tooltip,
+        child: child,
       ),
     );
   }

@@ -13,8 +13,6 @@ final nutritionApiClientProvider = Provider<NutritionApiClient>((ref) {
   return NutritionApiClient(ref.watch(dioProvider));
 });
 
-
-
 class NutritionApiClient {
   NutritionApiClient(this._dio);
 
@@ -28,10 +26,12 @@ class NutritionApiClient {
     final response = await _dio.get<Map<String, dynamic>>('/profiles');
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.isEmpty ? null : Profile.fromJson(members.first as Map<String, dynamic>);
+    return members.isEmpty
+        ? null
+        : Profile.fromJson(members.first as Map<String, dynamic>);
   }
 
-    String _iso(DateTime date) => date.toIso8601String().split('T').first;
+  String _iso(DateTime date) => date.toIso8601String().split('T').first;
 
   Future<DailyNutritionLog?> fetchDailyNutritionLog(DateTime date) async {
     final response = await _dio.get<Map<String, dynamic>>(
@@ -40,7 +40,9 @@ class NutritionApiClient {
     );
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.isEmpty ? null : DailyNutritionLog.fromJson(members.first as Map<String, dynamic>);
+    return members.isEmpty
+        ? null
+        : DailyNutritionLog.fromJson(members.first as Map<String, dynamic>);
   }
 
   Future<DailyNutritionLog> addDailyNutritionLog({
@@ -74,9 +76,10 @@ class NutritionApiClient {
     );
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.isEmpty ? null : WaterIntake.fromJson(members.first as Map<String, dynamic>);
+    return members.isEmpty
+        ? null
+        : WaterIntake.fromJson(members.first as Map<String, dynamic>);
   }
-
 
   Future<Profile> createProfile({
     required Sex sex,
@@ -89,7 +92,15 @@ class NutritionApiClient {
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/profiles',
-      data: _toJson(sex, birthDate, heightCm, weightKg, activityLevel, targetWeightKg, weeklyWeightLossGoalKg),
+      data: _toJson(
+        sex,
+        birthDate,
+        heightCm,
+        weightKg,
+        activityLevel,
+        targetWeightKg,
+        weeklyWeightLossGoalKg,
+      ),
       options: _ldJson,
     );
 
@@ -108,30 +119,33 @@ class NutritionApiClient {
   }) async {
     final response = await _dio.patch<Map<String, dynamic>>(
       '/profiles/$id',
-      data: _toJson(sex, birthDate, heightCm, weightKg, activityLevel, targetWeightKg, weeklyWeightLossGoalKg),
+      data: _toJson(
+        sex,
+        birthDate,
+        heightCm,
+        weightKg,
+        activityLevel,
+        targetWeightKg,
+        weeklyWeightLossGoalKg,
+      ),
       options: Options(contentType: 'application/merge-patch+json'),
     );
 
     return Profile.fromJson(response.data!);
   }
-  
 
   /// `deltaMl` : toujours une variation ("+250", ou négatif pour annuler un
   /// ajout), jamais le total absolu — le backend incrémente lui-même la
   /// ligne du jour (la crée si besoin), pas de risque de désynchronisation.
-    Future<WaterIntake> addWater(int deltaMl, {DateTime? date}) async {
+  Future<WaterIntake> addWater(int deltaMl, {DateTime? date}) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/water_intakes/add',
-      data: {
-        'deltaMl': deltaMl,
-        if (date != null) 'date': _iso(date),
-      },
+      data: {'deltaMl': deltaMl, if (date != null) 'date': _iso(date)},
       options: _ldJson,
     );
 
     return WaterIntake.fromJson(response.data!);
   }
-
 
   /// `/water_goals` n'est pas une vraie collection : 0 ou 1 élément, la
   /// surcharge d'objectif d'hydratation de l'utilisateur courant (voir
@@ -141,7 +155,9 @@ class NutritionApiClient {
     final response = await _dio.get<Map<String, dynamic>>('/water_goals');
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.isEmpty ? null : WaterGoal.fromJson(members.first as Map<String, dynamic>);
+    return members.isEmpty
+        ? null
+        : WaterGoal.fromJson(members.first as Map<String, dynamic>);
   }
 
   Future<WaterGoal> setWaterGoal(int goalMl) async {
@@ -159,7 +175,11 @@ class NutritionApiClient {
   /// `goalMl` nul dans `set` cassait la sérialisation côté backend (voir
   /// SetWaterGoalInput).
   Future<void> resetWaterGoal() {
-    return _dio.post<void>('/water_goals/reset', data: const {}, options: _ldJson);
+    return _dio.post<void>(
+      '/water_goals/reset',
+      data: const {},
+      options: _ldJson,
+    );
   }
 
   Map<String, dynamic> _toJson(

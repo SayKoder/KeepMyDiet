@@ -17,8 +17,12 @@ DateTime _today() {
   return DateTime(now.year, now.month, now.day);
 }
 
-final journalDateProvider = NotifierProvider<JournalDateNotifier, DateTime>(JournalDateNotifier.new);
+final journalDateProvider = NotifierProvider<JournalDateNotifier, DateTime>(
+  JournalDateNotifier.new,
+);
 
 /// Pratique pour l'UI : désactiver/masquer ce qui n'a de sens que pour
 /// aujourd'hui (si jamais), sans que chaque écran recalcule `_today()`.
-final isJournalTodayProvider = Provider<bool>((ref) => ref.watch(journalDateProvider) == _today());
+final isJournalTodayProvider = Provider<bool>(
+  (ref) => ref.watch(journalDateProvider) == _today(),
+);

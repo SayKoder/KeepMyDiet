@@ -23,7 +23,9 @@ class RecipesApiClient {
     final response = await _dio.get<Map<String, dynamic>>('/recipes');
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.map((e) => Recipe.fromJson(e as Map<String, dynamic>)).toList();
+    return members
+        .map((e) => Recipe.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Recipe> create({
@@ -62,6 +64,8 @@ class RecipesApiClient {
     );
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>)).toList();
+    return members
+        .map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 }

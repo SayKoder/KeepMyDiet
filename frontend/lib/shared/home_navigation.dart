@@ -16,4 +16,6 @@ class HomeTabIndexNotifier extends Notifier<int> {
   void show(int index) => state = index;
 }
 
-final homeTabIndexProvider = NotifierProvider<HomeTabIndexNotifier, int>(HomeTabIndexNotifier.new);
+final homeTabIndexProvider = NotifierProvider<HomeTabIndexNotifier, int>(
+  HomeTabIndexNotifier.new,
+);

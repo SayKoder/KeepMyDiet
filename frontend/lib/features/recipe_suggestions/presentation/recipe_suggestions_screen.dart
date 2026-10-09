@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/async_value_ui.dart';
 import '../domain/recipe_suggestion.dart';
 import 'recipe_suggestions_controller.dart';
 
 class RecipeSuggestionsScreen extends ConsumerWidget {
-  const RecipeSuggestionsScreen({super.key, required this.groupId, required this.groupName});
+  const RecipeSuggestionsScreen({
+    super.key,
+    required this.groupId,
+    required this.groupName,
+  });
 
   final int groupId;
   final String groupName;
@@ -18,7 +23,7 @@ class RecipeSuggestionsScreen extends ConsumerWidget {
       appBar: AppBar(title: Text('Suggestions — $groupName')),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(recipeSuggestionsProvider(groupId).future),
-        child: suggestionsAsync.when(
+        child: suggestionsAsync.toWidget(
           data: (suggestions) {
             if (suggestions.isEmpty) {
               return ListView(
@@ -37,11 +42,10 @@ class RecipeSuggestionsScreen extends ConsumerWidget {
             return ListView.builder(
               padding: const EdgeInsets.all(12),
               itemCount: suggestions.length,
-              itemBuilder: (context, index) => _SuggestionCard(suggestion: suggestions[index]),
+              itemBuilder: (context, index) =>
+                  _SuggestionCard(suggestion: suggestions[index]),
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Erreur : $error')),
         ),
       ),
     );
@@ -59,7 +63,8 @@ class _SuggestionCard extends StatelessWidget {
     final soonest = suggestion.soonestExpirationDate;
     // Même seuil que FridgeItem.isExpiringSoon (anti-gaspillage) — pas
     // d'import croisé pour un simple seuil, dupliqué volontairement.
-    final isUrgent = soonest != null && soonest.difference(DateTime.now()).inDays < 3;
+    final isUrgent =
+        soonest != null && soonest.difference(DateTime.now()).inDays < 3;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -70,11 +75,19 @@ class _SuggestionCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Expanded(child: Text(suggestion.name, style: theme.textTheme.titleMedium)),
+                Expanded(
+                  child: Text(
+                    suggestion.name,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ),
                 Chip(
-                  label: Text('${suggestion.matchedIngredientsCount}/${suggestion.totalIngredientsCount}'),
-                  backgroundColor:
-                      suggestion.isFullyAvailable ? theme.colorScheme.primaryContainer : null,
+                  label: Text(
+                    '${suggestion.matchedIngredientsCount}/${suggestion.totalIngredientsCount}',
+                  ),
+                  backgroundColor: suggestion.isFullyAvailable
+                      ? theme.colorScheme.primaryContainer
+                      : null,
                 ),
               ],
             ),
@@ -88,13 +101,19 @@ class _SuggestionCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.schedule, size: 16, color: isUrgent ? theme.colorScheme.error : null),
+                  Icon(
+                    Icons.schedule,
+                    size: 16,
+                    color: isUrgent ? theme.colorScheme.error : null,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     'Utilise un ingrédient qui périme le ${soonest.day}/${soonest.month}/${soonest.year}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: isUrgent ? theme.colorScheme.error : theme.colorScheme.secondary,
+                      color: isUrgent
+                          ? theme.colorScheme.error
+                          : theme.colorScheme.secondary,
                     ),
                   ),
                 ],
@@ -106,10 +125,12 @@ class _SuggestionCard extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 6,
                 children: suggestion.missingIngredientNames
-                    .map((name) => Chip(
-                          label: Text(name, style: const TextStyle(fontSize: 12)),
-                          visualDensity: VisualDensity.compact,
-                        ))
+                    .map(
+                      (name) => Chip(
+                        label: Text(name, style: const TextStyle(fontSize: 12)),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    )
                     .toList(),
               ),
             ],

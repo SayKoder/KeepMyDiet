@@ -35,7 +35,9 @@ class ProfileController extends AsyncNotifier<Profile?> {
   }) async {
     final Profile profile;
     try {
-      profile = await ref.read(nutritionApiClientProvider).createProfile(
+      profile = await ref
+          .read(nutritionApiClientProvider)
+          .createProfile(
             sex: sex,
             birthDate: birthDate,
             heightCm: heightCm,
@@ -70,7 +72,9 @@ class ProfileController extends AsyncNotifier<Profile?> {
 
     final Profile profile;
     try {
-      profile = await ref.read(nutritionApiClientProvider).updateProfile(
+      profile = await ref
+          .read(nutritionApiClientProvider)
+          .updateProfile(
             id: current.id,
             sex: sex,
             birthDate: birthDate,

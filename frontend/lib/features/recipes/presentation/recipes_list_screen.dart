@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/app_bottom_nav.dart';
+import '../../../shared/async_value_ui.dart';
 import '../../meal_plan/presentation/meal_plan_screen.dart';
 import 'create_recipe_screen.dart';
 import 'recipe_detail_screen.dart';
@@ -19,9 +20,9 @@ class RecipesListScreen extends ConsumerWidget {
         title: const Text('Recettes'),
         actions: [
           IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MealPlanScreen()),
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const MealPlanScreen())),
             icon: const Icon(Icons.calendar_month_outlined),
             tooltip: 'Planning de la semaine',
           ),
@@ -29,7 +30,7 @@ class RecipesListScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(recipesControllerProvider.notifier).refresh(),
-        child: recipesAsync.when(
+        child: recipesAsync.toWidget(
           data: (recipes) => recipes.isEmpty
               ? ListView(
                   children: const [
@@ -49,31 +50,25 @@ class RecipesListScreen extends ConsumerWidget {
                     return ListTile(
                       leading: const Icon(Icons.restaurant_menu),
                       title: Text(recipe.name),
-                      subtitle: Text('${recipe.totalCalories.toStringAsFixed(0)} kcal au total'),
+                      subtitle: Text(
+                        '${recipe.totalCalories.toStringAsFixed(0)} kcal au total',
+                      ),
                       onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => RecipeDetailScreen(recipe: recipe)),
+                        MaterialPageRoute(
+                          builder: (_) => RecipeDetailScreen(recipe: recipe),
+                        ),
                       ),
                     );
                   },
                 ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Erreur : $error')),
         ),
       ),
-      // Sans ce décalage, le FAB se positionne juste au-dessus de la pilule
-      // (le `Scaffold` imbriqué gère déjà correctement cette marge tout seul)
-      // mais sa moitié basse reste prise dans le dégradé de HomeShell, qui
-      // l'estompe comme s'il était passé dessous — même hauteur que ce
-      // dégradé (`fadeHeight` dans home_shell.dart) pour passer juste au-dessus.
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: AppBottomNav.floatingClearance(context) / 2),
-        child: FloatingActionButton(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const CreateRecipeScreen()),
-          ),
-          tooltip: 'Ajouter une recette',
-          child: const Icon(Icons.add),
-        ),
+      floatingActionButton: FabAboveNav(
+        onPressed: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const CreateRecipeScreen())),
+        tooltip: 'Ajouter une recette',
+        child: const Icon(Icons.add),
       ),
     );
   }

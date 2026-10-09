@@ -8,7 +8,7 @@ enum GroupRole {
   factory GroupRole.fromJson(String value) => GroupRole.values.byName(value);
 
   String get label => switch (this) {
-        GroupRole.admin => 'Admin',
-        GroupRole.member => 'Membre',
-      };
+    GroupRole.admin => 'Admin',
+    GroupRole.member => 'Membre',
+  };
 }

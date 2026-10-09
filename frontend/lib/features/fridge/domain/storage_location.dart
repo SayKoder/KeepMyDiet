@@ -3,10 +3,11 @@ enum StorageLocation {
   fridge,
   pantry;
 
-  factory StorageLocation.fromJson(String value) => StorageLocation.values.byName(value);
+  factory StorageLocation.fromJson(String value) =>
+      StorageLocation.values.byName(value);
 
   String get label => switch (this) {
-        StorageLocation.fridge => 'Frigo',
-        StorageLocation.pantry => 'Placard',
-      };
+    StorageLocation.fridge => 'Frigo',
+    StorageLocation.pantry => 'Placard',
+  };
 }

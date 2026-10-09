@@ -18,7 +18,8 @@ class MealPlanEntry {
 
   /// Contribution réelle de ce créneau aux macros du jour : les totaux de
   /// `Recipe` sont pour `referenceServings`, pas pour `servings` prévus ici.
-  double get ratio => servings / (recipe.referenceServings == 0 ? 1 : recipe.referenceServings);
+  double get ratio =>
+      servings / (recipe.referenceServings == 0 ? 1 : recipe.referenceServings);
 
   double get calories => recipe.totalCalories * ratio;
   double get proteins => recipe.totalProteins * ratio;
@@ -26,10 +27,10 @@ class MealPlanEntry {
   double get fats => recipe.totalFats * ratio;
 
   factory MealPlanEntry.fromJson(Map<String, dynamic> json) => MealPlanEntry(
-        id: json['id'] as int,
-        date: DateTime.parse(json['date'] as String),
-        mealType: MealType.fromJson(json['mealType'] as String),
-        recipe: Recipe.fromJson(json['recipe'] as Map<String, dynamic>),
-        servings: json['servings'] as int,
-      );
+    id: json['id'] as int,
+    date: DateTime.parse(json['date'] as String),
+    mealType: MealType.fromJson(json['mealType'] as String),
+    recipe: Recipe.fromJson(json['recipe'] as Map<String, dynamic>),
+    servings: json['servings'] as int,
+  );
 }

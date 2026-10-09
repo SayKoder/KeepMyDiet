@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../shared/async_value_ui.dart';
+import '../../../shared/group_switcher_menu_button.dart';
 import '../../fridge/presentation/fridge_controller.dart';
-import '../../groups/domain/group.dart';
 import '../../groups/presentation/groups_controller.dart';
 import '../domain/meal_plan_entry.dart';
 import '../domain/meal_type.dart';
@@ -25,7 +26,8 @@ class MealPlanScreen extends ConsumerWidget {
         : (groups.isEmpty ? null : groups.first);
 
     final weekStart = ref.watch(mealPlanWeekStartProvider);
-    final weekLabel = '${DateFormat('d MMM', 'fr_FR').format(weekStart)} — '
+    final weekLabel =
+        '${DateFormat('d MMM', 'fr_FR').format(weekStart)} — '
         '${DateFormat('d MMM', 'fr_FR').format(weekStart.add(const Duration(days: 6)))}';
 
     return Scaffold(
@@ -39,22 +41,22 @@ class MealPlanScreen extends ConsumerWidget {
             ? null
             : [
                 if (groups.length > 1)
-                  PopupMenuButton<Group>(
-                    icon: const Icon(Icons.swap_horiz),
-                    tooltip: 'Changer de groupe',
-                    onSelected: (selected) =>
-                        ref.read(mealPlanSelectedGroupProvider.notifier).select(selected.id),
-                    itemBuilder: (_) => [
-                      for (final g in groups) PopupMenuItem(value: g, child: Text(g.name)),
-                    ],
+                  GroupSwitcherMenuButton(
+                    groups: groups,
+                    onSelected: (selected) => ref
+                        .read(mealPlanSelectedGroupProvider.notifier)
+                        .select(selected.id),
                   ),
                 IconButton(
-                  onPressed: () => ref.read(mealPlanWeekStartProvider.notifier).previousWeek(),
+                  onPressed: () => ref
+                      .read(mealPlanWeekStartProvider.notifier)
+                      .previousWeek(),
                   icon: const Icon(Icons.chevron_left),
                   tooltip: 'Semaine précédente',
                 ),
                 IconButton(
-                  onPressed: () => ref.read(mealPlanWeekStartProvider.notifier).nextWeek(),
+                  onPressed: () =>
+                      ref.read(mealPlanWeekStartProvider.notifier).nextWeek(),
                   icon: const Icon(Icons.chevron_right),
                   tooltip: 'Semaine suivante',
                 ),
@@ -63,9 +65,17 @@ class MealPlanScreen extends ConsumerWidget {
                 // déjà tronquer le titre même raccourci à "Planning".
                 PopupMenuButton<_MealPlanMenuAction>(
                   onSelected: (action) => switch (action) {
-                    _MealPlanMenuAction.missing =>
-                      _showMissingIngredients(context, ref, group.id, weekStart),
-                    _MealPlanMenuAction.generate => _generateShoppingList(context, ref, group.id),
+                    _MealPlanMenuAction.missing => _showMissingIngredients(
+                      context,
+                      ref,
+                      group.id,
+                      weekStart,
+                    ),
+                    _MealPlanMenuAction.generate => _generateShoppingList(
+                      context,
+                      ref,
+                      group.id,
+                    ),
                   },
                   itemBuilder: (_) => const [
                     PopupMenuItem(
@@ -94,25 +104,39 @@ class MealPlanScreen extends ConsumerWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(weekLabel, style: Theme.of(context).textTheme.titleMedium),
+                  child: Text(
+                    weekLabel,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
-                Expanded(child: _WeekList(groupId: group.id, weekStart: weekStart)),
+                Expanded(
+                  child: _WeekList(groupId: group.id, weekStart: weekStart),
+                ),
               ],
             ),
     );
   }
 
-  Future<void> _generateShoppingList(BuildContext context, WidgetRef ref, int groupId) async {
+  Future<void> _generateShoppingList(
+    BuildContext context,
+    WidgetRef ref,
+    int groupId,
+  ) async {
     try {
-      await ref.read(mealPlanControllerProvider).generateShoppingListFromVisibleWeek(groupId);
+      await ref
+          .read(mealPlanControllerProvider)
+          .generateShoppingListFromVisibleWeek(groupId);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Liste de courses mise à jour avec ce qui manque.')),
+          const SnackBar(
+            content: Text('Liste de courses mise à jour avec ce qui manque.'),
+          ),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }
@@ -146,12 +170,17 @@ class MealPlanScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Ce qui manque cette semaine", style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                "Ce qui manque cette semaine",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               if (missing.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text("Tout est déjà au frigo/placard pour les repas prévus."),
+                  child: Text(
+                    "Tout est déjà au frigo/placard pour les repas prévus.",
+                  ),
                 )
               else
                 for (final item in missing)
@@ -159,7 +188,9 @@ class MealPlanScreen extends ConsumerWidget {
                     dense: true,
                     leading: const Icon(Icons.shopping_basket_outlined),
                     title: Text(item.name),
-                    trailing: Text('${item.missingQuantity.toStringAsFixed(0)} ${item.unit}'),
+                    trailing: Text(
+                      '${item.missingQuantity.toStringAsFixed(0)} ${item.unit}',
+                    ),
                   ),
             ],
           ),
@@ -179,7 +210,7 @@ class _WeekList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final entriesAsync = ref.watch(mealPlanEntriesProvider(groupId));
 
-    return entriesAsync.when(
+    return entriesAsync.toWidget(
       data: (entries) => RefreshIndicator(
         onRefresh: () => ref.refresh(mealPlanEntriesProvider(groupId).future),
         child: ListView.builder(
@@ -187,22 +218,27 @@ class _WeekList extends ConsumerWidget {
           itemCount: 7,
           itemBuilder: (context, index) {
             final date = weekStart.add(Duration(days: index));
-            final dayEntries = entries.where((e) => _isSameDay(e.date, date)).toList();
+            final dayEntries = entries
+                .where((e) => _isSameDay(e.date, date))
+                .toList();
 
             return _DayCard(groupId: groupId, date: date, entries: dayEntries);
           },
         ),
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Erreur : $error')),
     );
   }
 }
 
-bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+bool _isSameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
 
 class _DayCard extends ConsumerWidget {
-  const _DayCard({required this.groupId, required this.date, required this.entries});
+  const _DayCard({
+    required this.groupId,
+    required this.date,
+    required this.entries,
+  });
 
   final int groupId;
   final DateTime date;
@@ -248,7 +284,8 @@ class _DayCard extends ConsumerWidget {
   }
 }
 
-String _capitalize(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+String _capitalize(String s) =>
+    s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
 class _MealTypeRow extends ConsumerWidget {
   const _MealTypeRow({
@@ -272,7 +309,10 @@ class _MealTypeRow extends ConsumerWidget {
         children: [
           SizedBox(
             width: 110,
-            child: Text(mealType.label, style: Theme.of(context).textTheme.bodySmall),
+            child: Text(
+              mealType.label,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ),
           Expanded(
             child: entries.isEmpty
@@ -284,7 +324,9 @@ class _MealTypeRow extends ConsumerWidget {
                       for (final entry in entries)
                         InputChip(
                           label: Text(
-                            entry.servings > 1 ? '${entry.recipe.name} ×${entry.servings}' : entry.recipe.name,
+                            entry.servings > 1
+                                ? '${entry.recipe.name} ×${entry.servings}'
+                                : entry.recipe.name,
                           ),
                           onDeleted: () => _delete(context, ref, entry.id),
                         ),
@@ -294,7 +336,11 @@ class _MealTypeRow extends ConsumerWidget {
           IconButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => AddMealPlanEntryScreen(groupId: groupId, date: date, mealType: mealType),
+                builder: (_) => AddMealPlanEntryScreen(
+                  groupId: groupId,
+                  date: date,
+                  mealType: mealType,
+                ),
               ),
             ),
             icon: const Icon(Icons.add_circle_outline, size: 20),
@@ -310,10 +356,13 @@ class _MealTypeRow extends ConsumerWidget {
 
   Future<void> _delete(BuildContext context, WidgetRef ref, int entryId) async {
     try {
-      await ref.read(mealPlanControllerProvider).deleteEntry(groupId: groupId, entryId: entryId);
+      await ref
+          .read(mealPlanControllerProvider)
+          .deleteEntry(groupId: groupId, entryId: entryId);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }

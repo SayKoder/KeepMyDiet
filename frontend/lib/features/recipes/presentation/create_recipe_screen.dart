@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/form_error_text.dart';
 import '../../../shared/ingredient_unit_field.dart';
+import '../../../shared/submit_button_content.dart';
 import '../data/recipes_api_client.dart';
 import '../domain/recipe_ingredient.dart';
 import '../domain/recipe_step.dart';
@@ -21,13 +23,13 @@ class CreateRecipeScreen extends ConsumerStatefulWidget {
 /// parallèles — et pour pouvoir tous les `dispose()` d'un coup.
 class _IngredientRow {
   _IngredientRow()
-      : name = TextEditingController(),
-        quantity = TextEditingController(),
-        unit = TextEditingController(text: 'g'),
-        calories = TextEditingController(text: '0'),
-        proteins = TextEditingController(text: '0'),
-        carbs = TextEditingController(text: '0'),
-        fats = TextEditingController(text: '0');
+    : name = TextEditingController(),
+      quantity = TextEditingController(),
+      unit = TextEditingController(text: 'g'),
+      calories = TextEditingController(text: '0'),
+      proteins = TextEditingController(text: '0'),
+      carbs = TextEditingController(text: '0'),
+      fats = TextEditingController(text: '0');
 
   final TextEditingController name;
   final TextEditingController quantity;
@@ -52,7 +54,9 @@ class _IngredientRow {
   /// le message d'erreur affiché à l'utilisateur.
   RecipeIngredient? toIngredientOrNull() {
     final quantityValue = double.tryParse(quantity.text);
-    if (name.text.trim().isEmpty || quantityValue == null || quantityValue <= 0) {
+    if (name.text.trim().isEmpty ||
+        quantityValue == null ||
+        quantityValue <= 0) {
       return null;
     }
 
@@ -72,8 +76,8 @@ class _IngredientRow {
 /// `Assert\Count` côté backend, contrairement aux ingrédients).
 class _StepRow {
   _StepRow()
-      : instruction = TextEditingController(),
-        durationMinutes = TextEditingController();
+    : instruction = TextEditingController(),
+      durationMinutes = TextEditingController();
 
   final TextEditingController instruction;
   final TextEditingController durationMinutes;
@@ -146,14 +150,20 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
       return;
     }
     if (servings == null || servings <= 0) {
-      setState(() => _errorMessage = 'Le nombre de personnes doit être positif.');
+      setState(
+        () => _errorMessage = 'Le nombre de personnes doit être positif.',
+      );
       return;
     }
 
-    final ingredients = _ingredientRows.map((row) => row.toIngredientOrNull()).toList();
+    final ingredients = _ingredientRows
+        .map((row) => row.toIngredientOrNull())
+        .toList();
     if (ingredients.isEmpty || ingredients.any((i) => i == null)) {
-      setState(() => _errorMessage =
-          'Chaque ingrédient a besoin d\'un nom et d\'une quantité positive.');
+      setState(
+        () => _errorMessage =
+            'Chaque ingrédient a besoin d\'un nom et d\'une quantité positive.',
+      );
       return;
     }
 
@@ -169,7 +179,9 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
     });
 
     try {
-      await ref.read(recipesControllerProvider.notifier).create(
+      await ref
+          .read(recipesControllerProvider.notifier)
+          .create(
             name: name,
             referenceServings: servings,
             ingredients: ingredients.cast<RecipeIngredient>(),
@@ -210,7 +222,9 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
           for (var i = 0; i < _ingredientRows.length; i++)
             _IngredientForm(
               row: _ingredientRows[i],
-              onRemove: _ingredientRows.length > 1 ? () => _removeIngredientRow(i) : null,
+              onRemove: _ingredientRows.length > 1
+                  ? () => _removeIngredientRow(i)
+                  : null,
             ),
           TextButton.icon(
             onPressed: _addIngredientRow,
@@ -218,7 +232,10 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
             label: const Text('Ajouter un ingrédient'),
           ),
           const SizedBox(height: 24),
-          Text('Étapes de préparation (facultatif)', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Étapes de préparation (facultatif)',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           for (var i = 0; i < _stepRows.length; i++)
             _StepForm(
@@ -232,23 +249,13 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
             label: const Text('Ajouter une étape'),
           ),
           const SizedBox(height: 16),
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
+          if (_errorMessage != null) FormErrorText(_errorMessage!),
           FilledButton(
             onPressed: _isSubmitting ? null : _submit,
-            child: _isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Créer la recette'),
+            child: SubmitButtonContent(
+              isSubmitting: _isSubmitting,
+              label: const Text('Créer la recette'),
+            ),
           ),
         ],
       ),
@@ -291,7 +298,9 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
     }
 
     _debounce = Timer(const Duration(milliseconds: 300), () async {
-      final results = await ref.read(recipesApiClientProvider).suggestIngredients(value.trim());
+      final results = await ref
+          .read(recipesApiClientProvider)
+          .suggestIngredients(value.trim());
       if (mounted) {
         setState(() => _suggestions = results);
       }
@@ -313,8 +322,9 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
     setState(() => _suggestions = []);
   }
 
-  String _formatNumber(double value) =>
-      value == value.roundToDouble() ? value.toStringAsFixed(0) : value.toString();
+  String _formatNumber(double value) => value == value.roundToDouble()
+      ? value.toStringAsFixed(0)
+      : value.toString();
 
   @override
   Widget build(BuildContext context) {
@@ -336,7 +346,10 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
                   ),
                 ),
                 if (widget.onRemove != null)
-                  IconButton(onPressed: widget.onRemove, icon: const Icon(Icons.delete_outline)),
+                  IconButton(
+                    onPressed: widget.onRemove,
+                    icon: const Icon(Icons.delete_outline),
+                  ),
               ],
             ),
             if (_suggestions.isNotEmpty)
@@ -348,10 +361,14 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
                     spacing: 6,
                     runSpacing: 6,
                     children: _suggestions
-                        .map((s) => ActionChip(
-                              label: Text('${s.name} (${_formatNumber(s.quantity)}${s.unit})'),
-                              onPressed: () => _applySuggestion(s),
-                            ))
+                        .map(
+                          (s) => ActionChip(
+                            label: Text(
+                              '${s.name} (${_formatNumber(s.quantity)}${s.unit})',
+                            ),
+                            onPressed: () => _applySuggestion(s),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -361,14 +378,14 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.quantity,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Quantité'),
                   ),
                 ),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: IngredientUnitField(controller: row.unit),
-                ),
+                Expanded(child: IngredientUnitField(controller: row.unit)),
               ],
             ),
             const SizedBox(height: 8),
@@ -377,7 +394,9 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.calories,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Kcal'),
                   ),
                 ),
@@ -385,7 +404,9 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.proteins,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Protéines'),
                   ),
                 ),
@@ -393,7 +414,9 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.carbs,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Glucides'),
                   ),
                 ),
@@ -401,7 +424,9 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.fats,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Lipides'),
                   ),
                 ),
@@ -417,7 +442,11 @@ class _IngredientFormState extends ConsumerState<_IngredientForm> {
 /// Une carte par étape : numéro (juste l'index, pas éditable — l'ordre suit
 /// l'ordre des cartes), texte de l'instruction, durée facultative.
 class _StepForm extends StatelessWidget {
-  const _StepForm({required this.index, required this.row, required this.onRemove});
+  const _StepForm({
+    required this.index,
+    required this.row,
+    required this.onRemove,
+  });
 
   final int index;
   final _StepRow row;
@@ -453,7 +482,10 @@ class _StepForm extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(onPressed: onRemove, icon: const Icon(Icons.delete_outline)),
+            IconButton(
+              onPressed: onRemove,
+              icon: const Icon(Icons.delete_outline),
+            ),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/async_value_ui.dart';
 import '../domain/profile.dart';
 import 'profile_controller.dart';
 import 'profile_form_screen.dart';
@@ -14,14 +15,14 @@ class NutritionDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Nutrition')),
-      body: profileAsync.when(
+      body: profileAsync.toWidget(
         data: (profile) => profile == null
-            ? _NoProfileView(onCreate: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ProfileFormScreen()),
-              ))
+            ? _NoProfileView(
+                onCreate: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ProfileFormScreen()),
+                ),
+              )
             : _DashboardView(profile: profile),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erreur : $error')),
       ),
     );
   }
@@ -45,7 +46,10 @@ class _NoProfileView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            FilledButton(onPressed: onCreate, child: const Text('Créer mon profil')),
+            FilledButton(
+              onPressed: onCreate,
+              child: const Text('Créer mon profil'),
+            ),
           ],
         ),
       ),
@@ -100,11 +104,26 @@ class _DashboardView extends StatelessWidget {
         const SizedBox(height: 32),
         Row(
           children: [
-            Expanded(child: _StatCard(label: 'Métabolisme de base', value: profile.bmr)),
+            Expanded(
+              child: _StatCard(
+                label: 'Métabolisme de base',
+                value: profile.bmr,
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: _StatCard(label: 'Dépense totale (TDEE)', value: profile.tdee)),
+            Expanded(
+              child: _StatCard(
+                label: 'Dépense totale (TDEE)',
+                value: profile.tdee,
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: _StatCard(label: 'Plancher de sécurité', value: profile.calorieFloor)),
+            Expanded(
+              child: _StatCard(
+                label: 'Plancher de sécurité',
+                value: profile.calorieFloor,
+              ),
+            ),
           ],
         ),
         if (profile.estimatedWeeksToTarget != null) ...[
@@ -128,7 +147,9 @@ class _DashboardView extends StatelessWidget {
         Center(
           child: TextButton(
             onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => ProfileFormScreen(existingProfile: profile)),
+              MaterialPageRoute(
+                builder: (_) => ProfileFormScreen(existingProfile: profile),
+              ),
             ),
             child: const Text('Modifier mon profil'),
           ),
@@ -151,9 +172,16 @@ class _StatCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text('${value.toStringAsFixed(0)} kcal', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              '${value.toStringAsFixed(0)} kcal',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 4),
-            Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
         ),
       ),

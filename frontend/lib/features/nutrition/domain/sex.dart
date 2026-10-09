@@ -8,7 +8,7 @@ enum Sex {
   factory Sex.fromJson(String value) => Sex.values.byName(value);
 
   String get label => switch (this) {
-        Sex.male => 'Homme',
-        Sex.female => 'Femme',
-      };
+    Sex.male => 'Homme',
+    Sex.female => 'Femme',
+  };
 }

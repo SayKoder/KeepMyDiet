@@ -8,12 +8,12 @@ class RecipeStep {
   final int? durationMinutes;
 
   factory RecipeStep.fromJson(Map<String, dynamic> json) => RecipeStep(
-        instruction: json['instruction'] as String,
-        durationMinutes: json['durationMinutes'] as int?,
-      );
+    instruction: json['instruction'] as String,
+    durationMinutes: json['durationMinutes'] as int?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'instruction': instruction,
-        'durationMinutes': durationMinutes,
-      };
+    'instruction': instruction,
+    'durationMinutes': durationMinutes,
+  };
 }
