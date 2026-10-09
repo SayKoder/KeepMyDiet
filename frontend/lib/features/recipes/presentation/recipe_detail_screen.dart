@@ -21,7 +21,8 @@ class RecipeDetailScreen extends ConsumerWidget {
         // Réservé au créateur (403 sinon) — voir CreateRecipeProcessor/security
         // côté backend. Pas de moyen simple de savoir côté client si on est
         // l'auteur avant de tenter, donc on laisse le backend trancher.
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }
@@ -42,8 +43,10 @@ class RecipeDetailScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Pour ${recipe.referenceServings} personne(s)',
-              style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            'Pour ${recipe.referenceServings} personne(s)',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           const SizedBox(height: 16),
           Card(
             child: Padding(
@@ -127,7 +130,10 @@ class _Macro extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value.toStringAsFixed(0), style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          value.toStringAsFixed(0),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );

@@ -43,22 +43,23 @@ class Profile {
   final int? estimatedWeeksToTarget;
 
   factory Profile.fromJson(Map<String, dynamic> json) => Profile(
-        id: json['id'] as int,
-        sex: Sex.fromJson(json['sex'] as String),
-        birthDate: DateTime.parse(json['birthDate'] as String),
-        heightCm: (json['heightCm'] as num).toDouble(),
-        weightKg: (json['weightKg'] as num).toDouble(),
-        activityLevel: ActivityLevel.fromJson(json['activityLevel'] as String),
-        age: json['age'] as int,
-        bmr: (json['bmr'] as num).toDouble(),
-        tdee: (json['tdee'] as num).toDouble(),
-        calorieGoal: (json['calorieGoal'] as num).toDouble(),
-        calorieFloor: (json['calorieFloor'] as num).toDouble(),
-        proteinTargetG: (json['proteinTargetG'] as num).toDouble(),
-        carbTargetG: (json['carbTargetG'] as num).toDouble(),
-        fatTargetG: (json['fatTargetG'] as num).toDouble(),
-        targetWeightKg: (json['targetWeightKg'] as num?)?.toDouble(),
-        weeklyWeightLossGoalKg: (json['weeklyWeightLossGoalKg'] as num?)?.toDouble(),
-        estimatedWeeksToTarget: json['estimatedWeeksToTarget'] as int?,
-      );
+    id: json['id'] as int,
+    sex: Sex.fromJson(json['sex'] as String),
+    birthDate: DateTime.parse(json['birthDate'] as String),
+    heightCm: (json['heightCm'] as num).toDouble(),
+    weightKg: (json['weightKg'] as num).toDouble(),
+    activityLevel: ActivityLevel.fromJson(json['activityLevel'] as String),
+    age: json['age'] as int,
+    bmr: (json['bmr'] as num).toDouble(),
+    tdee: (json['tdee'] as num).toDouble(),
+    calorieGoal: (json['calorieGoal'] as num).toDouble(),
+    calorieFloor: (json['calorieFloor'] as num).toDouble(),
+    proteinTargetG: (json['proteinTargetG'] as num).toDouble(),
+    carbTargetG: (json['carbTargetG'] as num).toDouble(),
+    fatTargetG: (json['fatTargetG'] as num).toDouble(),
+    targetWeightKg: (json['targetWeightKg'] as num?)?.toDouble(),
+    weeklyWeightLossGoalKg: (json['weeklyWeightLossGoalKg'] as num?)
+        ?.toDouble(),
+    estimatedWeeksToTarget: json['estimatedWeeksToTarget'] as int?,
+  );
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/app_bottom_nav.dart';
+import '../../../shared/async_value_ui.dart';
+import '../../../shared/group_switcher_menu_button.dart';
 import '../../groups/domain/group.dart';
 import '../../groups/presentation/group_detail_screen.dart';
 import '../../groups/presentation/groups_controller.dart';
@@ -25,7 +27,8 @@ class FridgeScreen extends ConsumerStatefulWidget {
   ConsumerState<FridgeScreen> createState() => _FridgeScreenState();
 }
 
-class _FridgeScreenState extends ConsumerState<FridgeScreen> with SingleTickerProviderStateMixin {
+class _FridgeScreenState extends ConsumerState<FridgeScreen>
+    with SingleTickerProviderStateMixin {
   late final _tabController = TabController(length: 2, vsync: this);
 
   @override
@@ -45,24 +48,18 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen> with SingleTickerPr
         title: Text(widget.group.name),
         actions: [
           if (groups.length > 1)
-            PopupMenuButton<Group>(
-              icon: const Icon(Icons.swap_horiz),
-              tooltip: 'Changer de groupe',
+            GroupSwitcherMenuButton(
+              groups: groups,
               onSelected: (selected) =>
                   ref.read(activeGroupProvider.notifier).select(selected),
-              itemBuilder: (_) => [
-                for (final g in groups)
-                  PopupMenuItem(
-                    value: g,
-                    child: Text(g.name),
-                  ),
-              ],
             ),
           IconButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) =>
-                    ShoppingListScreen(groupId: groupId, groupName: widget.group.name),
+                builder: (_) => ShoppingListScreen(
+                  groupId: groupId,
+                  groupName: widget.group.name,
+                ),
               ),
             ),
             icon: const Icon(Icons.checklist),
@@ -71,8 +68,10 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen> with SingleTickerPr
           IconButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) =>
-                    RecipeSuggestionsScreen(groupId: groupId, groupName: widget.group.name),
+                builder: (_) => RecipeSuggestionsScreen(
+                  groupId: groupId,
+                  groupName: widget.group.name,
+                ),
               ),
             ),
             icon: const Icon(Icons.auto_awesome),
@@ -80,7 +79,9 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen> with SingleTickerPr
           ),
           IconButton(
             onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => GroupDetailScreen(group: widget.group)),
+              MaterialPageRoute(
+                builder: (_) => GroupDetailScreen(group: widget.group),
+              ),
             ),
             icon: const Icon(Icons.group_outlined),
             tooltip: 'Membres et invitation',
@@ -88,46 +89,44 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen> with SingleTickerPr
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [Tab(text: 'Frigo'), Tab(text: 'Placard')],
+          tabs: const [
+            Tab(text: 'Frigo'),
+            Tab(text: 'Placard'),
+          ],
         ),
       ),
-      body: itemsAsync.when(
+      body: itemsAsync.toWidget(
         data: (items) => TabBarView(
           controller: _tabController,
           children: [
             _ItemsList(
-              items: items.where((i) => i.storageLocation == StorageLocation.fridge).toList(),
+              items: items
+                  .where((i) => i.storageLocation == StorageLocation.fridge)
+                  .toList(),
               groupId: groupId,
             ),
             _ItemsList(
-              items: items.where((i) => i.storageLocation == StorageLocation.pantry).toList(),
+              items: items
+                  .where((i) => i.storageLocation == StorageLocation.pantry)
+                  .toList(),
               groupId: groupId,
             ),
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erreur : $error')),
       ),
-      // Sans ce décalage, le FAB se positionne juste au-dessus de la pilule
-      // (le `Scaffold` imbriqué gère déjà correctement cette marge tout seul)
-      // mais sa moitié basse reste prise dans le dégradé de HomeShell, qui
-      // l'estompe comme s'il était passé dessous — même hauteur que ce
-      // dégradé (`fadeHeight` dans home_shell.dart) pour passer juste au-dessus.
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: AppBottomNav.floatingClearance(context) / 2),
-        child: FloatingActionButton(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => AddFridgeItemScreen(
-                groupId: groupId,
-                defaultLocation:
-                    _tabController.index == 0 ? StorageLocation.fridge : StorageLocation.pantry,
-              ),
+      floatingActionButton: FabAboveNav(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => AddFridgeItemScreen(
+              groupId: groupId,
+              defaultLocation: _tabController.index == 0
+                  ? StorageLocation.fridge
+                  : StorageLocation.pantry,
             ),
           ),
-          tooltip: 'Ajouter un aliment',
-          child: const Icon(Icons.add),
         ),
+        tooltip: 'Ajouter un aliment',
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -151,7 +150,9 @@ class _ItemsList extends ConsumerWidget {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
-          final expiryColor = item.isExpiringSoon ? Theme.of(context).colorScheme.error : null;
+          final expiryColor = item.isExpiringSoon
+              ? Theme.of(context).colorScheme.error
+              : null;
 
           return ListTile(
             title: Text(item.foodReference.name),
@@ -161,10 +162,14 @@ class _ItemsList extends ConsumerWidget {
               children: [
                 Text(
                   '${item.expirationDate.day}/${item.expirationDate.month}/${item.expirationDate.year}',
-                  style: TextStyle(color: expiryColor, fontWeight: item.isExpiringSoon ? FontWeight.bold : null),
+                  style: TextStyle(
+                    color: expiryColor,
+                    fontWeight: item.isExpiringSoon ? FontWeight.bold : null,
+                  ),
                 ),
                 IconButton(
-                  onPressed: () => deleteFridgeItem(ref, groupId: groupId, itemId: item.id),
+                  onPressed: () =>
+                      deleteFridgeItem(ref, groupId: groupId, itemId: item.id),
                   icon: const Icon(Icons.delete_outline),
                 ),
               ],

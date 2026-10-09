@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/api_client.dart';
+import '../../../shared/form_error_text.dart';
+import '../../../shared/submit_button_content.dart';
 import '../data/groups_api_client.dart';
 import '../domain/group_failure.dart';
 import 'groups_controller.dart';
@@ -65,7 +67,9 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text("Colle le code d'invitation reçu de la personne qui t'invite."),
+            const Text(
+              "Colle le code d'invitation reçu de la personne qui t'invite.",
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: _tokenController,
@@ -74,23 +78,13 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen> {
               onSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 24),
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  _errorMessage!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
+            if (_errorMessage != null) FormErrorText(_errorMessage!),
             FilledButton(
               onPressed: _isSubmitting ? null : _submit,
-              child: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Rejoindre'),
+              child: SubmitButtonContent(
+                isSubmitting: _isSubmitting,
+                label: const Text('Rejoindre'),
+              ),
             ),
           ],
         ),

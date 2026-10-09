@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme.dart';
+import '../../../shared/async_value_ui.dart';
+import '../../../shared/round_back_button.dart';
 import '../../recipes/domain/recipe.dart';
 import '../../recipes/presentation/recipes_controller.dart';
 import '../domain/shopping_list_item.dart';
@@ -9,7 +11,11 @@ import 'shopping_list_checkout_screen.dart';
 import 'shopping_list_controller.dart';
 
 class ShoppingListScreen extends ConsumerStatefulWidget {
-  const ShoppingListScreen({super.key, required this.groupId, required this.groupName});
+  const ShoppingListScreen({
+    super.key,
+    required this.groupId,
+    required this.groupName,
+  });
 
   final int groupId;
   final String groupName;
@@ -32,19 +38,29 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
     }
 
     try {
-      await generateShoppingList(ref, groupId: widget.groupId, recipeIds: recipeIds);
+      await generateShoppingList(
+        ref,
+        groupId: widget.groupId,
+        recipeIds: recipeIds,
+      );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }
 
   Future<void> _goToCheckout(List<ShoppingListItem> allItems) async {
-    final selected = allItems.where((i) => _selectedItemIds.contains(i.id)).toList();
+    final selected = allItems
+        .where((i) => _selectedItemIds.contains(i.id))
+        .toList();
     final success = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => ShoppingListCheckoutScreen(groupId: widget.groupId, items: selected),
+        builder: (_) => ShoppingListCheckoutScreen(
+          groupId: widget.groupId,
+          items: selected,
+        ),
       ),
     );
     if (success == true) {
@@ -62,8 +78,9 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
         child: Stack(
           children: [
             RefreshIndicator(
-              onRefresh: () => ref.refresh(shoppingListProvider(widget.groupId).future),
-              child: listAsync.when(
+              onRefresh: () =>
+                  ref.refresh(shoppingListProvider(widget.groupId).future),
+              child: listAsync.toWidget(
                 data: (list) {
                   final items = list?.items ?? [];
                   final total = items.length;
@@ -72,33 +89,41 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
 
                   final grouped = <String, List<ShoppingListItem>>{};
                   for (final item in items) {
-                    grouped.putIfAbsent(item.sourceRecipeName ?? 'Autres articles', () => []).add(item);
+                    grouped
+                        .putIfAbsent(
+                          item.sourceRecipeName ?? 'Autres articles',
+                          () => [],
+                        )
+                        .add(item);
                   }
 
                   return ListView(
-                    padding: EdgeInsets.fromLTRB(20, 8, 20, _selectedItemIds.isEmpty ? 32 : 120),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      8,
+                      20,
+                      _selectedItemIds.isEmpty ? 32 : 120,
+                    ),
                     children: [
                       Row(
                         children: [
-                          IconButton(
-                            onPressed: () => Navigator.of(context).maybePop(),
-                            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              side: const BorderSide(color: AppColors.border),
-                              minimumSize: const Size(44, 44),
-                              shape: const CircleBorder(),
-                            ),
-                          ),
+                          const RoundBackButton(),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Liste de courses', style: Theme.of(context).textTheme.titleLarge),
+                                Text(
+                                  'Liste de courses',
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
                                 Text(
                                   'Groupe ${widget.groupName}',
-                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                               ],
                             ),
@@ -118,11 +143,19 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: const [
-                                Icon(Icons.restaurant_menu, size: 20, color: AppColors.brandDark),
+                                Icon(
+                                  Icons.restaurant_menu,
+                                  size: 20,
+                                  color: AppColors.brandDark,
+                                ),
                                 SizedBox(width: 8),
                                 Text(
                                   'Choisir des recettes',
-                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.brandDark),
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.brandDark,
+                                  ),
                                 ),
                               ],
                             ),
@@ -143,10 +176,21 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Dans le panier', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                            const Text(
+                              'Dans le panier',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.ink,
+                              ),
+                            ),
                             Text(
                               '$checkedCount / $total',
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
@@ -157,13 +201,18 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
                             value: progress,
                             minHeight: 8,
                             backgroundColor: const Color(0xFFE3E9E1),
-                            valueColor: const AlwaysStoppedAnimation(AppColors.brand),
+                            valueColor: const AlwaysStoppedAnimation(
+                              AppColors.brand,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 18),
                         ...grouped.entries.expand(
                           (entry) => [
-                            Text(entry.key.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
+                            Text(
+                              entry.key.toUpperCase(),
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
                             const SizedBox(height: 10),
                             _ItemGroupCard(
                               items: entry.value,
@@ -183,8 +232,6 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
                     ],
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => Center(child: Text('Erreur : $error')),
               ),
             ),
             if (_selectedItemIds.isNotEmpty)
@@ -205,7 +252,11 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
 }
 
 class _ItemGroupCard extends StatelessWidget {
-  const _ItemGroupCard({required this.items, required this.selectedIds, required this.onToggle});
+  const _ItemGroupCard({
+    required this.items,
+    required this.selectedIds,
+    required this.onToggle,
+  });
 
   final List<ShoppingListItem> items;
   final Set<int> selectedIds;
@@ -256,7 +307,9 @@ class _ShoppingItemRow extends StatelessWidget {
         height: 56,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          border: showDivider ? const Border(top: BorderSide(color: Color(0xFFEEF2EC))) : null,
+          border: showDivider
+              ? const Border(top: BorderSide(color: Color(0xFFEEF2EC)))
+              : null,
         ),
         child: Row(
           children: [
@@ -267,9 +320,13 @@ class _ShoppingItemRow extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: checked ? AppColors.brand : null,
-                border: checked ? null : Border.all(color: const Color(0xFFC9D1C8), width: 2),
+                border: checked
+                    ? null
+                    : Border.all(color: const Color(0xFFC9D1C8), width: 2),
               ),
-              child: checked ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+              child: checked
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  : null,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -311,7 +368,13 @@ class _CheckoutBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.ink,
         borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: AppColors.ink.withValues(alpha: 0.25), blurRadius: 32, offset: const Offset(0, 14))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.ink.withValues(alpha: 0.25),
+            blurRadius: 32,
+            offset: const Offset(0, 14),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -322,12 +385,20 @@ class _CheckoutBar extends StatelessWidget {
               children: [
                 Text(
                   '$count article${count > 1 ? 's' : ''} coché${count > 1 ? 's' : ''}',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'À ranger au frigo ou au placard',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.7)),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
                 ),
               ],
             ),
@@ -343,7 +414,14 @@ class _CheckoutBar extends StatelessWidget {
                 height: 52,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 alignment: Alignment.center,
-                child: const Text('Valider', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                child: const Text(
+                  'Valider',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
+                ),
               ),
             ),
           ),
@@ -379,7 +457,10 @@ class _RecipePickerSheetState extends ConsumerState<_RecipePickerSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Choisir des recettes', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Choisir des recettes',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             Flexible(
               child: recipesAsync.when(
@@ -406,7 +487,9 @@ class _RecipePickerSheetState extends ConsumerState<_RecipePickerSheet> {
             ),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: _selected.isEmpty ? null : () => Navigator.of(context).pop(_selected.toList()),
+              onPressed: _selected.isEmpty
+                  ? null
+                  : () => Navigator.of(context).pop(_selected.toList()),
               child: Text('Ajouter ${_selected.length} recette(s) à la liste'),
             ),
           ],
@@ -417,7 +500,11 @@ class _RecipePickerSheetState extends ConsumerState<_RecipePickerSheet> {
 }
 
 class _RecipeCheckboxList extends StatelessWidget {
-  const _RecipeCheckboxList({required this.recipes, required this.selected, required this.onToggle});
+  const _RecipeCheckboxList({
+    required this.recipes,
+    required this.selected,
+    required this.onToggle,
+  });
 
   final List<Recipe> recipes;
   final Set<int> selected;
@@ -428,7 +515,9 @@ class _RecipeCheckboxList extends StatelessWidget {
     if (recipes.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(24),
-        child: Text('Aucune recette disponible — crée-en une avant de générer une liste.'),
+        child: Text(
+          'Aucune recette disponible — crée-en une avant de générer une liste.',
+        ),
       );
     }
 
@@ -442,7 +531,9 @@ class _RecipeCheckboxList extends StatelessWidget {
           value: selected.contains(recipe.id),
           onChanged: (value) => onToggle(recipe.id, value ?? false),
           title: Text(recipe.name),
-          subtitle: Text('${recipe.ingredients.length} ingrédients — pour ${recipe.referenceServings} pers.'),
+          subtitle: Text(
+            '${recipe.ingredients.length} ingrédients — pour ${recipe.referenceServings} pers.',
+          ),
         );
       },
     );

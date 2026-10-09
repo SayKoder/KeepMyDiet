@@ -10,9 +10,9 @@ enum MealType {
   String toJson() => name;
 
   String get label => switch (this) {
-        MealType.breakfast => 'Petit-déjeuner',
-        MealType.lunch => 'Déjeuner',
-        MealType.dinner => 'Dîner',
-        MealType.snack => 'Collation',
-      };
+    MealType.breakfast => 'Petit-déjeuner',
+    MealType.lunch => 'Déjeuner',
+    MealType.dinner => 'Dîner',
+    MealType.snack => 'Collation',
+  };
 }

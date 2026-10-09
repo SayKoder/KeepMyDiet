@@ -20,12 +20,12 @@ class FoodReference {
   final String? barcode;
 
   factory FoodReference.fromJson(Map<String, dynamic> json) => FoodReference(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        caloriesPer100g: (json['caloriesPer100g'] as num).toDouble(),
-        proteinsPer100g: (json['proteinsPer100g'] as num).toDouble(),
-        carbsPer100g: (json['carbsPer100g'] as num).toDouble(),
-        fatsPer100g: (json['fatsPer100g'] as num).toDouble(),
-        barcode: json['barcode'] as String?,
-      );
+    id: json['id'] as int,
+    name: json['name'] as String,
+    caloriesPer100g: (json['caloriesPer100g'] as num).toDouble(),
+    proteinsPer100g: (json['proteinsPer100g'] as num).toDouble(),
+    carbsPer100g: (json['carbsPer100g'] as num).toDouble(),
+    fatsPer100g: (json['fatsPer100g'] as num).toDouble(),
+    barcode: json['barcode'] as String?,
+  );
 }

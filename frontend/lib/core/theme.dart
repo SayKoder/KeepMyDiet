@@ -91,15 +91,16 @@ class AppTheme {
       // On garde ce mécanisme standard Material 3 plutôt que de le remplacer :
       // seuls `primary` et `error` sont forcés sur les couleurs exactes de la
       // maquette, le reste (surfaces, teintes dérivées) peut rester calculé.
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.brand,
-        brightness: Brightness.light,
-      ).copyWith(
-        primary: AppColors.brand,
-        onPrimary: Colors.white,
-        surface: Colors.white,
-        error: AppColors.errorText,
-      ),
+      colorScheme:
+          ColorScheme.fromSeed(
+            seedColor: AppColors.brand,
+            brightness: Brightness.light,
+          ).copyWith(
+            primary: AppColors.brand,
+            onPrimary: Colors.white,
+            surface: Colors.white,
+            error: AppColors.errorText,
+          ),
       scaffoldBackgroundColor: AppColors.background,
     );
 
@@ -205,8 +206,15 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.fieldFill,
-        hintStyle: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500),
-        labelStyle: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w700, fontSize: 13),
+        hintStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
+        ),
+        labelStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide.none,
@@ -223,22 +231,31 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppColors.errorText, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xl),
+          ),
         ),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.ink,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
       ),
     );
   }

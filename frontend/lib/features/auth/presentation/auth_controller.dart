@@ -34,9 +34,14 @@ class AuthController extends AsyncNotifier<AuthSession?> {
     state = AsyncData(await _loginAndPersist(email, password));
   }
 
-  Future<void> register({required String email, required String password}) async {
+  Future<void> register({
+    required String email,
+    required String password,
+  }) async {
     try {
-      await ref.read(authApiClientProvider).register(email: email, password: password);
+      await ref
+          .read(authApiClientProvider)
+          .register(email: email, password: password);
     } on DioException catch (e) {
       throw AuthFailure(extractErrorMessage(e));
     }
@@ -46,7 +51,9 @@ class AuthController extends AsyncNotifier<AuthSession?> {
   Future<AuthSession> _loginAndPersist(String email, String password) async {
     final String token;
     try {
-      token = await ref.read(authApiClientProvider).login(email: email, password: password);
+      token = await ref
+          .read(authApiClientProvider)
+          .login(email: email, password: password);
     } on DioException catch (e) {
       throw AuthFailure(extractErrorMessage(e));
     }

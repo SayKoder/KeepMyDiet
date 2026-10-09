@@ -8,9 +8,9 @@ class ShoppingList {
   final List<ShoppingListItem> items;
 
   factory ShoppingList.fromJson(Map<String, dynamic> json) => ShoppingList(
-        id: json['id'] as int,
-        items: (json['items'] as List<dynamic>)
-            .map((e) => ShoppingListItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    id: json['id'] as int,
+    items: (json['items'] as List<dynamic>)
+        .map((e) => ShoppingListItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }

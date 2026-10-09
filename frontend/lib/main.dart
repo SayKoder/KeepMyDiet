@@ -56,13 +56,12 @@ class _AuthGate extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
 
     return authState.when(
-      data: (session) => session == null ? const LoginScreen() : const HomeShell(),
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (error, _) => Scaffold(
-        body: Center(child: Text('Erreur de démarrage : $error')),
-      ),
+      data: (session) =>
+          session == null ? const LoginScreen() : const HomeShell(),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (error, _) =>
+          Scaffold(body: Center(child: Text('Erreur de démarrage : $error'))),
     );
   }
 }

@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/async_value_ui.dart';
+import '../../../shared/form_error_text.dart';
+import '../../../shared/submit_button_content.dart';
 import '../../recipes/data/recipes_api_client.dart';
 import '../../recipes/domain/recipe.dart';
 import '../../recipes/domain/recipe_ingredient.dart';
@@ -35,7 +38,8 @@ class AddMealPlanEntryScreen extends ConsumerStatefulWidget {
   final int? existingEntryId;
 
   @override
-  ConsumerState<AddMealPlanEntryScreen> createState() => _AddMealPlanEntryScreenState();
+  ConsumerState<AddMealPlanEntryScreen> createState() =>
+      _AddMealPlanEntryScreenState();
 }
 
 class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
@@ -65,7 +69,10 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
     super.dispose();
   }
 
-  Future<MealPlanEntry> _saveEntry({required int recipeId, required int servings}) {
+  Future<MealPlanEntry> _saveEntry({
+    required int recipeId,
+    required int servings,
+  }) {
     final existingEntryId = widget.existingEntryId;
     final controller = ref.read(mealPlanControllerProvider);
 
@@ -118,9 +125,14 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
   }
 
   Future<void> _submitQuickAdd() async {
-    final ingredients = _quickIngredientRows.map((row) => row.toIngredientOrNull()).toList();
+    final ingredients = _quickIngredientRows
+        .map((row) => row.toIngredientOrNull())
+        .toList();
     if (ingredients.isEmpty || ingredients.any((i) => i == null)) {
-      setState(() => _error = "Chaque aliment a besoin d'un nom et d'une quantité positive.");
+      setState(
+        () => _error =
+            "Chaque aliment a besoin d'un nom et d'une quantité positive.",
+      );
       return;
     }
 
@@ -134,7 +146,9 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
     });
 
     try {
-      final recipe = await ref.read(recipesControllerProvider.notifier).create(
+      final recipe = await ref
+          .read(recipesControllerProvider.notifier)
+          .create(
             name: name,
             referenceServings: 1,
             ingredients: ingredients.cast<RecipeIngredient>(),
@@ -170,15 +184,15 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [Tab(text: 'Recette existante'), Tab(text: 'Ajout rapide')],
+          tabs: const [
+            Tab(text: 'Recette existante'),
+            Tab(text: 'Ajout rapide'),
+          ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildExistingTab(),
-          _buildQuickAddTab(),
-        ],
+        children: [_buildExistingTab(), _buildQuickAddTab()],
       ),
     );
   }
@@ -192,7 +206,8 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
           padding: const EdgeInsets.all(16),
           child: TextField(
             controller: _filterController,
-            onChanged: (value) => setState(() => _filter = value.trim().toLowerCase()),
+            onChanged: (value) =>
+                setState(() => _filter = value.trim().toLowerCase()),
             decoration: const InputDecoration(
               labelText: 'Rechercher une recette',
               prefixIcon: Icon(Icons.search),
@@ -200,14 +215,18 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
           ),
         ),
         Expanded(
-          child: recipesAsync.when(
+          child: recipesAsync.toWidget(
             data: (recipes) {
               final filtered = _filter.isEmpty
                   ? recipes
-                  : recipes.where((r) => r.name.toLowerCase().contains(_filter)).toList();
+                  : recipes
+                        .where((r) => r.name.toLowerCase().contains(_filter))
+                        .toList();
 
               if (filtered.isEmpty) {
-                return const Center(child: Text('Aucune recette ne correspond.'));
+                return const Center(
+                  child: Text('Aucune recette ne correspond.'),
+                );
               }
 
               return ListView.builder(
@@ -218,7 +237,9 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
                   return ListTile(
                     selected: isSelected,
                     onTap: () => setState(() => _selectedRecipe = recipe),
-                    leading: Icon(isSelected ? Icons.check_circle : Icons.circle_outlined),
+                    leading: Icon(
+                      isSelected ? Icons.check_circle : Icons.circle_outlined,
+                    ),
                     title: Text(recipe.name),
                     subtitle: Text(
                       '${recipe.totalCalories.toStringAsFixed(0)} kcal pour ${recipe.referenceServings} pers.',
@@ -227,8 +248,6 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
                 },
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => Center(child: Text('Erreur : $error')),
           ),
         ),
         Padding(
@@ -239,23 +258,18 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
               TextField(
                 controller: _servingsController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Nombre de portions prévues'),
+                decoration: const InputDecoration(
+                  labelText: 'Nombre de portions prévues',
+                ),
               ),
               const SizedBox(height: 12),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                ),
+              if (_error != null) FormErrorText(_error!),
               FilledButton(
                 onPressed: _isSubmitting ? null : _submitExisting,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Ajouter au planning'),
+                child: SubmitButtonContent(
+                  isSubmitting: _isSubmitting,
+                  label: const Text('Ajouter au planning'),
+                ),
               ),
             ],
           ),
@@ -279,7 +293,9 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
         for (var i = 0; i < _quickIngredientRows.length; i++)
           _QuickIngredientForm(
             row: _quickIngredientRows[i],
-            onRemove: _quickIngredientRows.length > 1 ? () => _removeQuickIngredientRow(i) : null,
+            onRemove: _quickIngredientRows.length > 1
+                ? () => _removeQuickIngredientRow(i)
+                : null,
           ),
         TextButton.icon(
           onPressed: _addQuickIngredientRow,
@@ -287,16 +303,13 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
           label: const Text('Ajouter un aliment'),
         ),
         const SizedBox(height: 16),
-        if (_error != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-          ),
+        if (_error != null) FormErrorText(_error!),
         FilledButton(
           onPressed: _isSubmitting ? null : _submitQuickAdd,
-          child: _isSubmitting
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('Ajouter au planning'),
+          child: SubmitButtonContent(
+            isSubmitting: _isSubmitting,
+            label: const Text('Ajouter au planning'),
+          ),
         ),
       ],
     );
@@ -310,13 +323,13 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
 /// retire.
 class _IngredientRow {
   _IngredientRow()
-      : name = TextEditingController(),
-        quantity = TextEditingController(),
-        unit = TextEditingController(text: 'g'),
-        calories = TextEditingController(text: '0'),
-        proteins = TextEditingController(text: '0'),
-        carbs = TextEditingController(text: '0'),
-        fats = TextEditingController(text: '0');
+    : name = TextEditingController(),
+      quantity = TextEditingController(),
+      unit = TextEditingController(text: 'g'),
+      calories = TextEditingController(text: '0'),
+      proteins = TextEditingController(text: '0'),
+      carbs = TextEditingController(text: '0'),
+      fats = TextEditingController(text: '0');
 
   final TextEditingController name;
   final TextEditingController quantity;
@@ -338,7 +351,9 @@ class _IngredientRow {
 
   RecipeIngredient? toIngredientOrNull() {
     final quantityValue = double.tryParse(quantity.text);
-    if (name.text.trim().isEmpty || quantityValue == null || quantityValue <= 0) {
+    if (name.text.trim().isEmpty ||
+        quantityValue == null ||
+        quantityValue <= 0) {
       return null;
     }
 
@@ -361,7 +376,8 @@ class _QuickIngredientForm extends ConsumerStatefulWidget {
   final VoidCallback? onRemove;
 
   @override
-  ConsumerState<_QuickIngredientForm> createState() => _QuickIngredientFormState();
+  ConsumerState<_QuickIngredientForm> createState() =>
+      _QuickIngredientFormState();
 }
 
 class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
@@ -382,7 +398,9 @@ class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
     }
 
     _debounce = Timer(const Duration(milliseconds: 300), () async {
-      final results = await ref.read(recipesApiClientProvider).suggestIngredients(value.trim());
+      final results = await ref
+          .read(recipesApiClientProvider)
+          .suggestIngredients(value.trim());
       if (mounted) {
         setState(() => _suggestions = results);
       }
@@ -400,8 +418,9 @@ class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
     setState(() => _suggestions = []);
   }
 
-  String _formatNumber(double value) =>
-      value == value.roundToDouble() ? value.toStringAsFixed(0) : value.toString();
+  String _formatNumber(double value) => value == value.roundToDouble()
+      ? value.toStringAsFixed(0)
+      : value.toString();
 
   @override
   Widget build(BuildContext context) {
@@ -423,7 +442,10 @@ class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
                   ),
                 ),
                 if (widget.onRemove != null)
-                  IconButton(onPressed: widget.onRemove, icon: const Icon(Icons.delete_outline)),
+                  IconButton(
+                    onPressed: widget.onRemove,
+                    icon: const Icon(Icons.delete_outline),
+                  ),
               ],
             ),
             if (_suggestions.isNotEmpty)
@@ -435,10 +457,14 @@ class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
                     spacing: 6,
                     runSpacing: 6,
                     children: _suggestions
-                        .map((s) => ActionChip(
-                              label: Text('${s.name} (${_formatNumber(s.quantity)}${s.unit})'),
-                              onPressed: () => _applySuggestion(s),
-                            ))
+                        .map(
+                          (s) => ActionChip(
+                            label: Text(
+                              '${s.name} (${_formatNumber(s.quantity)}${s.unit})',
+                            ),
+                            onPressed: () => _applySuggestion(s),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -448,7 +474,9 @@ class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.quantity,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Quantité'),
                   ),
                 ),
@@ -467,7 +495,9 @@ class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.calories,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Kcal'),
                   ),
                 ),
@@ -475,7 +505,9 @@ class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.proteins,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Protéines'),
                   ),
                 ),
@@ -483,7 +515,9 @@ class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.carbs,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Glucides'),
                   ),
                 ),
@@ -491,7 +525,9 @@ class _QuickIngredientFormState extends ConsumerState<_QuickIngredientForm> {
                 Expanded(
                   child: TextField(
                     controller: row.fats,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Lipides'),
                   ),
                 ),

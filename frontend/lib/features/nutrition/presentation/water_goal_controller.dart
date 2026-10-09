@@ -5,7 +5,9 @@ import '../data/nutrition_api_client.dart';
 import '../domain/water_goal.dart';
 
 final waterGoalControllerProvider =
-    AsyncNotifierProvider<WaterGoalController, WaterGoal?>(WaterGoalController.new);
+    AsyncNotifierProvider<WaterGoalController, WaterGoal?>(
+      WaterGoalController.new,
+    );
 
 /// `null` = pas de surcharge d'objectif (le client utilise son calcul par
 /// défaut). Observe la session comme `ProfileController`.
@@ -18,7 +20,9 @@ class WaterGoalController extends AsyncNotifier<WaterGoal?> {
   }
 
   Future<void> set(int goalMl) async {
-    final goal = await ref.read(nutritionApiClientProvider).setWaterGoal(goalMl);
+    final goal = await ref
+        .read(nutritionApiClientProvider)
+        .setWaterGoal(goalMl);
     state = AsyncData(goal);
   }
 

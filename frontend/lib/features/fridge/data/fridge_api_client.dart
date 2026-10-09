@@ -17,10 +17,14 @@ class FridgeApiClient {
   static final _ldJson = Options(contentType: 'application/ld+json');
 
   Future<List<FoodReference>> fetchCatalog(int groupId) async {
-    final response = await _dio.get<Map<String, dynamic>>('/groups/$groupId/food_references');
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/groups/$groupId/food_references',
+    );
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.map((e) => FoodReference.fromJson(e as Map<String, dynamic>)).toList();
+    return members
+        .map((e) => FoodReference.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<FoodReference> createCustomFood({
@@ -50,10 +54,14 @@ class FridgeApiClient {
   }
 
   Future<List<FridgeItem>> fetchItems(int groupId) async {
-    final response = await _dio.get<Map<String, dynamic>>('/groups/$groupId/fridge_items');
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/groups/$groupId/fridge_items',
+    );
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.map((e) => FridgeItem.fromJson(e as Map<String, dynamic>)).toList();
+    return members
+        .map((e) => FridgeItem.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// Ne retourne rien : la réponse de ce POST n'embarque que l'IRI de

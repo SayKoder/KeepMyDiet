@@ -21,8 +21,9 @@ class IngredientUnitField extends StatelessWidget {
     // Une suggestion ou une valeur déjà enregistrée peut porter une unité
     // hors de cette liste (ancienne saisie libre) — on l'ajoute en tête
     // plutôt que de la perdre silencieusement.
-    final options =
-        current.isEmpty || ingredientUnits.contains(current) ? ingredientUnits : [current, ...ingredientUnits];
+    final options = current.isEmpty || ingredientUnits.contains(current)
+        ? ingredientUnits
+        : [current, ...ingredientUnits];
 
     return DropdownButtonFormField<String>(
       // `DropdownButtonFormField` n'est pas "contrôlé" : son état interne ne
@@ -32,7 +33,9 @@ class IngredientUnitField extends StatelessWidget {
       key: ValueKey(current),
       initialValue: current.isEmpty ? ingredientUnits.first : current,
       decoration: const InputDecoration(labelText: 'Unité'),
-      items: options.map((unit) => DropdownMenuItem(value: unit, child: Text(unit))).toList(),
+      items: options
+          .map((unit) => DropdownMenuItem(value: unit, child: Text(unit)))
+          .toList(),
       onChanged: (value) {
         if (value != null) {
           controller.text = value;

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/async_value_ui.dart';
+import '../../../shared/form_error_text.dart';
 import '../../../shared/ingredient_unit_field.dart';
+import '../../../shared/submit_button_content.dart';
 import '../data/fridge_api_client.dart';
 import '../data/open_food_facts_client.dart';
 import '../domain/food_reference.dart';
@@ -13,13 +16,18 @@ import 'fridge_controller.dart';
 /// 1. Choisir un aliment du catalogue (recherche) ou en créer un nouveau.
 /// 2. Une fois choisi, renseigner quantité/unité/lieu/DLC et valider.
 class AddFridgeItemScreen extends ConsumerStatefulWidget {
-  const AddFridgeItemScreen({super.key, required this.groupId, required this.defaultLocation});
+  const AddFridgeItemScreen({
+    super.key,
+    required this.groupId,
+    required this.defaultLocation,
+  });
 
   final int groupId;
   final StorageLocation defaultLocation;
 
   @override
-  ConsumerState<AddFridgeItemScreen> createState() => _AddFridgeItemScreenState();
+  ConsumerState<AddFridgeItemScreen> createState() =>
+      _AddFridgeItemScreenState();
 }
 
 class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
@@ -57,7 +65,8 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
     final name = _searchController.text.trim();
     final result = await showDialog<FoodReference>(
       context: context,
-      builder: (context) => _CreateFoodDialog(groupId: widget.groupId, initialName: name),
+      builder: (context) =>
+          _CreateFoodDialog(groupId: widget.groupId, initialName: name),
     );
     if (result != null) {
       setState(() => _selectedFood = result);
@@ -78,7 +87,8 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
       return;
     }
 
-    final catalog = ref.read(foodCatalogProvider(widget.groupId)).value ?? const [];
+    final catalog =
+        ref.read(foodCatalogProvider(widget.groupId)).value ?? const [];
     final existing = catalog.where((f) => f.barcode == code).firstOrNull;
     if (existing != null) {
       setState(() => _selectedFood = existing);
@@ -161,7 +171,9 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Ajouter un aliment')),
-      body: _selectedFood == null ? _buildSearchStep(context) : _buildDetailsStep(context),
+      body: _selectedFood == null
+          ? _buildSearchStep(context)
+          : _buildDetailsStep(context),
     );
   }
 
@@ -189,12 +201,14 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
           ),
           const SizedBox(height: 12),
           Expanded(
-            child: catalogAsync.when(
+            child: catalogAsync.toWidget(
               data: (catalog) {
                 final query = _searchController.text.trim().toLowerCase();
                 final matches = query.isEmpty
                     ? catalog
-                    : catalog.where((f) => f.name.toLowerCase().contains(query)).toList();
+                    : catalog
+                          .where((f) => f.name.toLowerCase().contains(query))
+                          .toList();
 
                 return ListView.builder(
                   itemCount: matches.length + 1,
@@ -210,14 +224,14 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
 
                     return ListTile(
                       title: Text(food.name),
-                      subtitle: Text('${food.caloriesPer100g.toStringAsFixed(0)} kcal / 100g'),
+                      subtitle: Text(
+                        '${food.caloriesPer100g.toStringAsFixed(0)} kcal / 100g',
+                      ),
                       onTap: () => setState(() => _selectedFood = food),
                     );
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(child: Text('Erreur : $error')),
             ),
           ),
         ],
@@ -234,7 +248,9 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
         Card(
           child: ListTile(
             title: Text(food.name),
-            subtitle: Text('${food.caloriesPer100g.toStringAsFixed(0)} kcal / 100g'),
+            subtitle: Text(
+              '${food.caloriesPer100g.toStringAsFixed(0)} kcal / 100g',
+            ),
             trailing: TextButton(
               onPressed: () => setState(() => _selectedFood = null),
               child: const Text('Changer'),
@@ -247,23 +263,27 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
             Expanded(
               child: TextField(
                 controller: _quantityController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(labelText: 'Quantité'),
               ),
             ),
             const SizedBox(width: 8),
-            Expanded(
-              child: IngredientUnitField(controller: _unitController),
-            ),
+            Expanded(child: IngredientUnitField(controller: _unitController)),
           ],
         ),
         const SizedBox(height: 16),
         SegmentedButton<StorageLocation>(
           segments: StorageLocation.values
-              .map((location) => ButtonSegment(value: location, label: Text(location.label)))
+              .map(
+                (location) =>
+                    ButtonSegment(value: location, label: Text(location.label)),
+              )
               .toList(),
           selected: {_storageLocation},
-          onSelectionChanged: (selection) => setState(() => _storageLocation = selection.first),
+          onSelectionChanged: (selection) =>
+              setState(() => _storageLocation = selection.first),
         ),
         const SizedBox(height: 16),
         ListTile(
@@ -278,19 +298,13 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
           onTap: _pickExpirationDate,
         ),
         const SizedBox(height: 16),
-        if (_errorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text(
-              _errorMessage!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
+        if (_errorMessage != null) FormErrorText(_errorMessage!),
         FilledButton(
           onPressed: _isSubmitting ? null : _submit,
-          child: _isSubmitting
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('Ajouter'),
+          child: SubmitButtonContent(
+            isSubmitting: _isSubmitting,
+            label: const Text('Ajouter'),
+          ),
         ),
       ],
     );
@@ -328,10 +342,18 @@ class _CreateFoodDialog extends ConsumerStatefulWidget {
 
 class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
   late final _nameController = TextEditingController(text: widget.initialName);
-  late final _caloriesController = TextEditingController(text: _fmt(widget.initialCalories));
-  late final _proteinsController = TextEditingController(text: _fmt(widget.initialProteins));
-  late final _carbsController = TextEditingController(text: _fmt(widget.initialCarbs));
-  late final _fatsController = TextEditingController(text: _fmt(widget.initialFats));
+  late final _caloriesController = TextEditingController(
+    text: _fmt(widget.initialCalories),
+  );
+  late final _proteinsController = TextEditingController(
+    text: _fmt(widget.initialProteins),
+  );
+  late final _carbsController = TextEditingController(
+    text: _fmt(widget.initialCarbs),
+  );
+  late final _fatsController = TextEditingController(
+    text: _fmt(widget.initialFats),
+  );
   bool _isSubmitting = false;
   String? _errorMessage;
 
@@ -360,7 +382,9 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
     });
 
     try {
-      final food = await ref.read(fridgeApiClientProvider).createCustomFood(
+      final food = await ref
+          .read(fridgeApiClientProvider)
+          .createCustomFood(
             groupId: widget.groupId,
             name: name,
             caloriesPer100g: double.tryParse(_caloriesController.text) ?? 0,
@@ -397,7 +421,10 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
                   widget.initialName.isEmpty
                       ? "Code-barres ${widget.barcode} — introuvable sur Open Food Facts, à saisir manuellement"
                       : 'Pré-rempli depuis Open Food Facts (code ${widget.barcode}), vérifie avant de valider',
-                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.secondary),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
               ),
             TextField(
@@ -408,31 +435,36 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
             const Text('Valeurs pour 100g :', style: TextStyle(fontSize: 12)),
             TextField(
               controller: _caloriesController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(labelText: 'Kcal'),
             ),
             TextField(
               controller: _proteinsController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(labelText: 'Protéines'),
             ),
             TextField(
               controller: _carbsController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(labelText: 'Glucides'),
             ),
             TextField(
               controller: _fatsController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(labelText: 'Lipides'),
             ),
             if (_errorMessage != null)
-              Padding(
+              FormErrorText(
+                _errorMessage!,
                 padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  _errorMessage!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
               ),
           ],
         ),
@@ -444,9 +476,11 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
         ),
         FilledButton(
           onPressed: _isSubmitting ? null : _submit,
-          child: _isSubmitting
-              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('Créer'),
+          child: SubmitButtonContent(
+            isSubmitting: _isSubmitting,
+            label: const Text('Créer'),
+            size: 16,
+          ),
         ),
       ],
     );

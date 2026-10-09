@@ -6,7 +6,9 @@ import '../data/nutrition_api_client.dart';
 import '../domain/water_intake.dart';
 
 final waterIntakeControllerProvider =
-    AsyncNotifierProvider<WaterIntakeController, WaterIntake?>(WaterIntakeController.new);
+    AsyncNotifierProvider<WaterIntakeController, WaterIntake?>(
+      WaterIntakeController.new,
+    );
 
 /// `null` = rien de bu enregistré ce jour-là (pas une erreur, voir
 /// `fetchWaterIntakeForDate`). Observe la session comme avant, ET le jour
@@ -23,7 +25,9 @@ class WaterIntakeController extends AsyncNotifier<WaterIntake?> {
 
   Future<void> add(int deltaMl) async {
     final date = ref.read(journalDateProvider);
-    final intake = await ref.read(nutritionApiClientProvider).addWater(deltaMl, date: date);
+    final intake = await ref
+        .read(nutritionApiClientProvider)
+        .addWater(deltaMl, date: date);
     state = AsyncData(intake);
   }
 }

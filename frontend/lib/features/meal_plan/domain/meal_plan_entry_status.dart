@@ -4,7 +4,8 @@ enum MealPlanEntryStatus {
   skipped,
   replaced;
 
-  factory MealPlanEntryStatus.fromJson(String value) => MealPlanEntryStatus.values.byName(value);
+  factory MealPlanEntryStatus.fromJson(String value) =>
+      MealPlanEntryStatus.values.byName(value);
 
   String toJson() => name;
 }

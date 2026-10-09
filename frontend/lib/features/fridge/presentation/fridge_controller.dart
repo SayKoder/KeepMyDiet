@@ -11,11 +11,17 @@ import '../domain/storage_location.dart';
 
 /// `.family` par `groupId` : le frigo est propre à chaque groupe, pas à
 /// l'utilisateur (contrairement aux recettes, pool global).
-final foodCatalogProvider = FutureProvider.family<List<FoodReference>, int>((ref, groupId) {
+final foodCatalogProvider = FutureProvider.family<List<FoodReference>, int>((
+  ref,
+  groupId,
+) {
   return ref.watch(fridgeApiClientProvider).fetchCatalog(groupId);
 });
 
-final fridgeItemsProvider = FutureProvider.family<List<FridgeItem>, int>((ref, groupId) {
+final fridgeItemsProvider = FutureProvider.family<List<FridgeItem>, int>((
+  ref,
+  groupId,
+) {
   return ref.watch(fridgeApiClientProvider).fetchItems(groupId);
 });
 
@@ -33,7 +39,9 @@ Future<void> addFridgeItem(
   required DateTime expirationDate,
 }) async {
   try {
-    await ref.read(fridgeApiClientProvider).addItem(
+    await ref
+        .read(fridgeApiClientProvider)
+        .addItem(
           groupId: groupId,
           foodReferenceId: foodReferenceId,
           storageLocation: storageLocation,
@@ -52,7 +60,11 @@ Future<void> addFridgeItem(
   ref.invalidate(recipeSuggestionsProvider(groupId));
 }
 
-Future<void> deleteFridgeItem(WidgetRef ref, {required int groupId, required int itemId}) async {
+Future<void> deleteFridgeItem(
+  WidgetRef ref, {
+  required int groupId,
+  required int itemId,
+}) async {
   try {
     await ref.read(fridgeApiClientProvider).deleteItem(itemId);
   } on DioException catch (e) {

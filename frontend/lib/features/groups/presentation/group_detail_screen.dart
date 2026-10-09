@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/api_client.dart';
+import '../../../shared/async_value_ui.dart';
+import '../../../shared/group_switcher_menu_button.dart';
 import '../data/groups_api_client.dart';
 import '../domain/group.dart';
 import 'groups_controller.dart';
@@ -15,7 +17,9 @@ class GroupDetailScreen extends ConsumerWidget {
 
   Future<void> _invite(BuildContext context, WidgetRef ref) async {
     try {
-      final invitation = await ref.read(groupsApiClientProvider).createInvitation(group.id);
+      final invitation = await ref
+          .read(groupsApiClientProvider)
+          .createInvitation(group.id);
       if (context.mounted) {
         await showDialog<void>(
           context: context,
@@ -39,14 +43,12 @@ class GroupDetailScreen extends ConsumerWidget {
         );
       }
     } on DioException catch (e) {
+      // Seuls les admins du groupe peuvent inviter (403 sinon) — voir
+      // CreateInvitationProcessor côté backend. Pas encore de moyen simple
+      // de savoir côté client si on est admin avant de tenter, donc on
+      // laisse le backend trancher et on affiche l'erreur telle quelle.
       if (context.mounted) {
-        // Seuls les admins du groupe peuvent inviter (403 sinon) — voir
-        // CreateInvitationProcessor côté backend. Pas encore de moyen simple
-        // de savoir côté client si on est admin avant de tenter, donc on
-        // laisse le backend trancher et on affiche l'erreur telle quelle.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(extractErrorMessage(e))),
-        );
+        showErrorSnackBar(context, e);
       }
     }
   }
@@ -61,18 +63,10 @@ class GroupDetailScreen extends ConsumerWidget {
         title: Text(group.name),
         actions: [
           if (groups.length > 1)
-            PopupMenuButton<Group>(
-              icon: const Icon(Icons.swap_horiz),
-              tooltip: 'Changer de groupe',
+            GroupSwitcherMenuButton(
+              groups: groups,
               onSelected: (selected) =>
                   ref.read(activeGroupProvider.notifier).select(selected),
-              itemBuilder: (_) => [
-                for (final g in groups)
-                  PopupMenuItem(
-                    value: g,
-                    child: Text(g.name),
-                  ),
-              ],
             ),
           IconButton(
             onPressed: () => _invite(context, ref),
@@ -83,7 +77,7 @@ class GroupDetailScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(groupMembersProvider(group.id).future),
-        child: membersAsync.when(
+        child: membersAsync.toWidget(
           data: (members) => ListView.builder(
             itemCount: members.length,
             itemBuilder: (context, index) {
@@ -95,8 +89,6 @@ class GroupDetailScreen extends ConsumerWidget {
               );
             },
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Erreur : $error')),
         ),
       ),
     );

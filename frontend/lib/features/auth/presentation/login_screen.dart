@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/theme.dart';
 
 import 'auth_controller.dart';
@@ -81,7 +82,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             }),
                     ),
                     const SizedBox(height: 20),
-                    Text('Email', style: Theme.of(context).textTheme.labelSmall),
+                    Text(
+                      'Email',
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _emailController,
@@ -91,7 +95,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text('Mot de passe', style: Theme.of(context).textTheme.labelSmall),
+                    Text(
+                      'Mot de passe',
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _passwordController,
@@ -99,8 +106,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                       ),
                     ),
@@ -115,10 +128,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : const Icon(Icons.arrow_forward, size: 18),
-                      label: Text(_isRegisterMode ? 'Créer mon compte' : 'Se connecter'),
+                      label: Text(
+                        _isRegisterMode ? 'Créer mon compte' : 'Se connecter',
+                      ),
                     ),
                     if (!_isRegisterMode)
                       TextButton(
@@ -164,7 +182,10 @@ class _Header extends StatelessWidget {
               height: 220,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.limeAccent.withValues(alpha: 0.16), width: 28),
+                border: Border.all(
+                  color: AppColors.limeAccent.withValues(alpha: 0.16),
+                  width: 28,
+                ),
               ),
             ),
           ),
@@ -195,7 +216,10 @@ class _Header extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 const Text(
@@ -211,7 +235,11 @@ class _Header extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Tes calories, ton frigo et tes courses, au même endroit.',
-                  style: TextStyle(fontSize: 15, height: 1.5, color: Colors.white.withValues(alpha: 0.78)),
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                    color: Colors.white.withValues(alpha: 0.78),
+                  ),
                 ),
               ],
             ),
@@ -221,7 +249,6 @@ class _Header extends StatelessWidget {
     );
   }
 }
-
 
 class _ModeSwitch extends StatelessWidget {
   const _ModeSwitch({required this.isRegisterMode, required this.onChanged});
@@ -239,8 +266,20 @@ class _ModeSwitch extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: _ModeTab(label: 'Connexion', selected: !isRegisterMode, onTap: onChanged == null ? null : () => onChanged!(false))),
-          Expanded(child: _ModeTab(label: 'Créer un compte', selected: isRegisterMode, onTap: onChanged == null ? null : () => onChanged!(true))),
+          Expanded(
+            child: _ModeTab(
+              label: 'Connexion',
+              selected: !isRegisterMode,
+              onTap: onChanged == null ? null : () => onChanged!(false),
+            ),
+          ),
+          Expanded(
+            child: _ModeTab(
+              label: 'Créer un compte',
+              selected: isRegisterMode,
+              onTap: onChanged == null ? null : () => onChanged!(true),
+            ),
+          ),
         ],
       ),
     );
@@ -248,7 +287,11 @@ class _ModeSwitch extends StatelessWidget {
 }
 
 class _ModeTab extends StatelessWidget {
-  const _ModeTab({required this.label, required this.selected, required this.onTap});
+  const _ModeTab({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -300,7 +343,11 @@ class _ErrorBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(color: AppColors.errorText, fontSize: 13, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                color: AppColors.errorText,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

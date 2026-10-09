@@ -30,7 +30,9 @@ class MealPlanApiClient {
     );
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.map((e) => MealPlanEntry.fromJson(e as Map<String, dynamic>)).toList();
+    return members
+        .map((e) => MealPlanEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<MealPlanEntry> createEntry({
@@ -90,7 +92,7 @@ class MealPlanApiClient {
     );
   }
 
-    Future<MealPlanEntryLog> submitMealPlanEntryLog({
+  Future<MealPlanEntryLog> submitMealPlanEntryLog({
     required int entryId,
     required MealPlanEntryStatus status,
     String? replacementDescription,
@@ -123,7 +125,8 @@ class MealPlanApiClient {
     );
     final members = response.data!['member'] as List<dynamic>;
 
-    return members.map((e) => MealPlanEntryLog.fromJson(e as Map<String, dynamic>)).toList();
+    return members
+        .map((e) => MealPlanEntryLog.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
-
 }

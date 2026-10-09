@@ -5,7 +5,6 @@ class GroupInvitation {
 
   final String token;
 
-  factory GroupInvitation.fromJson(Map<String, dynamic> json) => GroupInvitation(
-        token: json['token'] as String,
-      );
+  factory GroupInvitation.fromJson(Map<String, dynamic> json) =>
+      GroupInvitation(token: json['token'] as String);
 }

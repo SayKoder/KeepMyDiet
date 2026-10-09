@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/form_error_text.dart';
+import '../../../shared/submit_button_content.dart';
 import '../../fridge/domain/storage_location.dart';
 import '../data/shopping_list_api_client.dart';
 import '../domain/shopping_list_item.dart';
@@ -11,21 +13,28 @@ import 'shopping_list_controller.dart';
 /// manuelle...)" — pas d'estimation automatique par catégorie en v1, voir
 /// JOURNAL.md). Valide tout d'un coup via `checkout`.
 class ShoppingListCheckoutScreen extends ConsumerStatefulWidget {
-  const ShoppingListCheckoutScreen({super.key, required this.groupId, required this.items});
+  const ShoppingListCheckoutScreen({
+    super.key,
+    required this.groupId,
+    required this.items,
+  });
 
   final int groupId;
   final List<ShoppingListItem> items;
 
   @override
-  ConsumerState<ShoppingListCheckoutScreen> createState() => _ShoppingListCheckoutScreenState();
+  ConsumerState<ShoppingListCheckoutScreen> createState() =>
+      _ShoppingListCheckoutScreenState();
 }
 
-class _ShoppingListCheckoutScreenState extends ConsumerState<ShoppingListCheckoutScreen> {
+class _ShoppingListCheckoutScreenState
+    extends ConsumerState<ShoppingListCheckoutScreen> {
   late final Map<int, StorageLocation> _locations = {
     for (final item in widget.items) item.id: StorageLocation.fridge,
   };
   late final Map<int, DateTime> _expirationDates = {
-    for (final item in widget.items) item.id: DateTime.now().add(const Duration(days: 7)),
+    for (final item in widget.items)
+      item.id: DateTime.now().add(const Duration(days: 7)),
   };
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -54,11 +63,13 @@ class _ShoppingListCheckoutScreenState extends ConsumerState<ShoppingListCheckou
         ref,
         groupId: widget.groupId,
         items: widget.items
-            .map((item) => CheckoutItem(
-                  itemId: item.id,
-                  storageLocation: _locations[item.id]!,
-                  expirationDate: _expirationDates[item.id]!,
-                ))
+            .map(
+              (item) => CheckoutItem(
+                itemId: item.id,
+                storageLocation: _locations[item.id]!,
+                expirationDate: _expirationDates[item.id]!,
+              ),
+            )
             .toList(),
       );
       if (mounted) {
@@ -94,10 +105,16 @@ class _ShoppingListCheckoutScreenState extends ConsumerState<ShoppingListCheckou
                     const SizedBox(height: 12),
                     SegmentedButton<StorageLocation>(
                       segments: StorageLocation.values
-                          .map((location) => ButtonSegment(value: location, label: Text(location.label)))
+                          .map(
+                            (location) => ButtonSegment(
+                              value: location,
+                              label: Text(location.label),
+                            ),
+                          )
                           .toList(),
                       selected: {_locations[item.id]!},
-                      onSelectionChanged: (selection) => setState(() => _locations[item.id] = selection.first),
+                      onSelectionChanged: (selection) =>
+                          setState(() => _locations[item.id] = selection.first),
                     ),
                     const SizedBox(height: 8),
                     ListTile(
@@ -115,19 +132,15 @@ class _ShoppingListCheckoutScreenState extends ConsumerState<ShoppingListCheckou
             ),
             const SizedBox(height: 12),
           ],
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
+          if (_errorMessage != null) FormErrorText(_errorMessage!),
           FilledButton(
             onPressed: _isSubmitting ? null : _submit,
-            child: _isSubmitting
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : Text('Ajouter ${widget.items.length} aliment(s) au frigo/placard'),
+            child: SubmitButtonContent(
+              isSubmitting: _isSubmitting,
+              label: Text(
+                'Ajouter ${widget.items.length} aliment(s) au frigo/placard',
+              ),
+            ),
           ),
         ],
       ),
