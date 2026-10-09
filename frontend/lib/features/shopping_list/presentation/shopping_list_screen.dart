@@ -81,6 +81,7 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
               onRefresh: () =>
                   ref.refresh(shoppingListProvider(widget.groupId).future),
               child: listAsync.toWidget(
+                onRetry: () => ref.invalidate(shoppingListProvider(widget.groupId)),
                 data: (list) {
                   final items = list?.items ?? [];
                   final total = items.length;
@@ -164,13 +165,11 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
                       ),
                       const SizedBox(height: 18),
                       if (items.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 24),
-                          child: Text(
-                            "Aucune ligne pour l'instant. Choisis des recettes pour générer la liste.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: AppColors.textSecondary),
-                          ),
+                        const EmptyState(
+                          icon: Icons.shopping_cart_outlined,
+                          title: 'Liste vide',
+                          message:
+                              'Choisis des recettes pour générer la liste.',
                         )
                       else ...[
                         Row(
@@ -513,11 +512,10 @@ class _RecipeCheckboxList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (recipes.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(24),
-        child: Text(
-          'Aucune recette disponible — crée-en une avant de générer une liste.',
-        ),
+      return const EmptyState(
+        icon: Icons.menu_book_outlined,
+        title: 'Aucune recette disponible',
+        message: 'Crée-en une avant de générer une liste.',
       );
     }
 

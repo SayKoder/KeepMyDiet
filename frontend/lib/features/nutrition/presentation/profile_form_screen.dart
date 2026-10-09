@@ -181,314 +181,28 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            WhiteCard(
-              radius: AppRadius.xl,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'TOI',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: AppColors.fieldFill,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      children: Sex.values.map((sex) {
-                        final selected = _sex == sex;
-                        return Expanded(
-                          child: Material(
-                            color: selected
-                                ? AppColors.ink
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(999),
-                            child: InkWell(
-                              onTap: () => setState(() => _sex = sex),
-                              borderRadius: BorderRadius.circular(999),
-                              child: Container(
-                                height: 44,
-                                alignment: Alignment.center,
-                                child: Text(
-                                  sex.label,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: selected
-                                        ? Colors.white
-                                        : AppColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  InkWell(
-                    onTap: _pickBirthDate,
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    child: Container(
-                      height: 56,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.fieldFill,
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Date de naissance',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              Text(
-                                _birthDate == null
-                                    ? 'Non renseignée'
-                                    : '${_birthDate!.day.toString().padLeft(2, '0')}/${_birthDate!.month.toString().padLeft(2, '0')}/${_birthDate!.year}',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.ink,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Icon(
-                            Icons.calendar_today_outlined,
-                            size: 20,
-                            color: AppColors.brand,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MiniNumberField(
-                          label: 'Taille',
-                          unit: 'cm',
-                          controller: _heightController,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _MiniNumberField(
-                          label: 'Poids',
-                          unit: 'kg',
-                          controller: _weightController,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            ProfileBasicsCard(
+              sex: _sex,
+              onSexChanged: (value) => setState(() => _sex = value),
+              birthDate: _birthDate,
+              onPickBirthDate: _pickBirthDate,
+              heightController: _heightController,
+              weightController: _weightController,
             ),
             const SizedBox(height: 16),
-            WhiteCard(
-              radius: AppRadius.xl,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "NIVEAU D'ACTIVITÉ",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: ActivityLevel.values.map((level) {
-                      final selected = _activityLevel == level;
-                      return Material(
-                        color: selected ? AppColors.brandLight : Colors.white,
-                        borderRadius: BorderRadius.circular(999),
-                        child: InkWell(
-                          onTap: () => setState(() => _activityLevel = level),
-                          borderRadius: BorderRadius.circular(999),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: selected
-                                    ? AppColors.brand
-                                    : AppColors.border,
-                              ),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              level.shortLabel,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: selected
-                                    ? AppColors.brandDark
-                                    : const Color(0xFF3E4A43),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
+            ActivityLevelCard(
+              activityLevel: _activityLevel,
+              onChanged: (value) => setState(() => _activityLevel = value),
             ),
             const SizedBox(height: 16),
-            WhiteCard(
-              radius: AppRadius.xl,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'OBJECTIF',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  _MiniNumberField(
-                    label: 'Poids visé — optionnel',
-                    unit: 'kg',
-                    controller: _targetWeightController,
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    "Sert uniquement à estimer le délai, n'influence pas l'objectif calorique.",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Rythme de perte personnalisé',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.ink,
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Sinon : déficit fixe de 20% du maintien.',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Switch(
-                        value: _customPace,
-                        onChanged: (value) =>
-                            setState(() => _customPace = value),
-                      ),
-                    ],
-                  ),
-                  if (_customPace) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      '${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg / semaine',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                    Slider(
-                      value: _weeklyWeightLossGoalKg,
-                      min: 0.25,
-                      max: 1,
-                      divisions: 3,
-                      label: '${_weeklyWeightLossGoalKg.toStringAsFixed(2)} kg',
-                      onChanged: (value) =>
-                          setState(() => _weeklyWeightLossGoalKg = value),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text(
-                            '0.25',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          Text(
-                            '0.50',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          Text(
-                            '0.75',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          Text(
-                            '1.00',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const _Banner(
-                      message: "L'objectif ne descendra jamais sous ton métabolisme de base (plancher de sécurité).",
-                      icon: Icons.info_outline,
-                      background: AppColors.brandLight,
-                      foreground: AppColors.brandDark,
-                    ),
-                  ],
-                ],
-              ),
+            GoalCard(
+              targetWeightController: _targetWeightController,
+              customPace: _customPace,
+              onCustomPaceChanged: (value) =>
+                  setState(() => _customPace = value),
+              weeklyGoal: _weeklyWeightLossGoalKg,
+              onWeeklyGoalChanged: (value) =>
+                  setState(() => _weeklyWeightLossGoalKg = value),
             ),
             const SizedBox(height: 24),
             if (_errorMessage != null)
@@ -638,6 +352,368 @@ class _Banner extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Carte "TOI" (sexe, date de naissance, taille, poids) — extraite pour être
+/// réutilisée telle quelle par `ProfileFormScreen` (formulaire complet,
+/// modification) ET `ProfileOnboardingScreen` (étape 1 du parcours guidé à
+/// la création) sans dupliquer ce bloc.
+class ProfileBasicsCard extends StatelessWidget {
+  const ProfileBasicsCard({
+    super.key,
+    required this.sex,
+    required this.onSexChanged,
+    required this.birthDate,
+    required this.onPickBirthDate,
+    required this.heightController,
+    required this.weightController,
+  });
+
+  final Sex sex;
+  final ValueChanged<Sex> onSexChanged;
+  final DateTime? birthDate;
+  final VoidCallback onPickBirthDate;
+  final TextEditingController heightController;
+  final TextEditingController weightController;
+
+  @override
+  Widget build(BuildContext context) {
+    return WhiteCard(
+      radius: AppRadius.xl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'TOI',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: AppColors.fieldFill,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              children: Sex.values.map((value) {
+                final selected = sex == value;
+                return Expanded(
+                  child: Material(
+                    color: selected ? AppColors.ink : Colors.transparent,
+                    borderRadius: BorderRadius.circular(999),
+                    child: InkWell(
+                      onTap: () => onSexChanged(value),
+                      borderRadius: BorderRadius.circular(999),
+                      child: Container(
+                        height: 44,
+                        alignment: Alignment.center,
+                        child: Text(
+                          value.label,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: selected
+                                ? Colors.white
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 14),
+          InkWell(
+            onTap: onPickBirthDate,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            child: Container(
+              height: 56,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppColors.fieldFill,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Date de naissance',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      Text(
+                        birthDate == null
+                            ? 'Non renseignée'
+                            : '${birthDate!.day.toString().padLeft(2, '0')}/${birthDate!.month.toString().padLeft(2, '0')}/${birthDate!.year}',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 20,
+                    color: AppColors.brand,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _MiniNumberField(
+                  label: 'Taille',
+                  unit: 'cm',
+                  controller: heightController,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MiniNumberField(
+                  label: 'Poids',
+                  unit: 'kg',
+                  controller: weightController,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Carte "NIVEAU D'ACTIVITÉ" — voir `ProfileBasicsCard`, même principe de
+/// partage entre formulaire complet et parcours guidé.
+class ActivityLevelCard extends StatelessWidget {
+  const ActivityLevelCard({
+    super.key,
+    required this.activityLevel,
+    required this.onChanged,
+  });
+
+  final ActivityLevel activityLevel;
+  final ValueChanged<ActivityLevel> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return WhiteCard(
+      radius: AppRadius.xl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "NIVEAU D'ACTIVITÉ",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: ActivityLevel.values.map((level) {
+              final selected = activityLevel == level;
+              return Material(
+                color: selected ? AppColors.brandLight : Colors.white,
+                borderRadius: BorderRadius.circular(999),
+                child: InkWell(
+                  onTap: () => onChanged(level),
+                  borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: selected ? AppColors.brand : AppColors.border,
+                      ),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      level.shortLabel,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: selected
+                            ? AppColors.brandDark
+                            : const Color(0xFF3E4A43),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Carte "OBJECTIF" — voir `ProfileBasicsCard`, même principe de partage
+/// entre formulaire complet et parcours guidé.
+class GoalCard extends StatelessWidget {
+  const GoalCard({
+    super.key,
+    required this.targetWeightController,
+    required this.customPace,
+    required this.onCustomPaceChanged,
+    required this.weeklyGoal,
+    required this.onWeeklyGoalChanged,
+  });
+
+  final TextEditingController targetWeightController;
+  final bool customPace;
+  final ValueChanged<bool> onCustomPaceChanged;
+  final double weeklyGoal;
+  final ValueChanged<double> onWeeklyGoalChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return WhiteCard(
+      radius: AppRadius.xl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'OBJECTIF',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _MiniNumberField(
+            label: 'Poids visé — optionnel',
+            unit: 'kg',
+            controller: targetWeightController,
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Sert uniquement à estimer le délai, n'influence pas l'objectif calorique.",
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Rythme de perte personnalisé',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Sinon : déficit fixe de 20% du maintien.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(value: customPace, onChanged: onCustomPaceChanged),
+            ],
+          ),
+          if (customPace) ...[
+            const SizedBox(height: 10),
+            Text(
+              '${weeklyGoal.toStringAsFixed(2)} kg / semaine',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: AppColors.ink,
+              ),
+            ),
+            Slider(
+              value: weeklyGoal,
+              min: 0.25,
+              max: 1,
+              divisions: 3,
+              label: '${weeklyGoal.toStringAsFixed(2)} kg',
+              onChanged: onWeeklyGoalChanged,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text(
+                    '0.25',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    '0.50',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    '0.75',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    '1.00',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const _Banner(
+              message: "L'objectif ne descendra jamais sous ton métabolisme de base (plancher de sécurité).",
+              icon: Icons.info_outline,
+              background: AppColors.brandLight,
+              foreground: AppColors.brandDark,
+            ),
+          ],
         ],
       ),
     );

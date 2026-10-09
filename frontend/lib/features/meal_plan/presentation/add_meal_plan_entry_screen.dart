@@ -216,6 +216,7 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
         ),
         Expanded(
           child: recipesAsync.toWidget(
+            onRetry: () => ref.invalidate(recipesControllerProvider),
             data: (recipes) {
               final filtered = _filter.isEmpty
                   ? recipes
@@ -224,8 +225,9 @@ class _AddMealPlanEntryScreenState extends ConsumerState<AddMealPlanEntryScreen>
                         .toList();
 
               if (filtered.isEmpty) {
-                return const Center(
-                  child: Text('Aucune recette ne correspond.'),
+                return const EmptyState(
+                  icon: Icons.search_off_rounded,
+                  title: 'Aucune recette ne correspond',
                 );
               }
 

@@ -31,36 +31,31 @@ class RecipesListScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.read(recipesControllerProvider.notifier).refresh(),
         child: recipesAsync.toWidget(
-          data: (recipes) => recipes.isEmpty
-              ? ListView(
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Text(
-                        "Aucune recette pour l'instant. Ajoute la première !",
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                )
-              : ListView.builder(
-                  itemCount: recipes.length,
-                  itemBuilder: (context, index) {
-                    final recipe = recipes[index];
-                    return ListTile(
-                      leading: const Icon(Icons.restaurant_menu),
-                      title: Text(recipe.name),
-                      subtitle: Text(
-                        '${recipe.totalCalories.toStringAsFixed(0)} kcal au total',
-                      ),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => RecipeDetailScreen(recipe: recipe),
-                        ),
-                      ),
-                    );
-                  },
+          onRetry: () => ref.invalidate(recipesControllerProvider),
+          isEmpty: (recipes) => recipes.isEmpty,
+          empty: const EmptyState(
+            icon: Icons.menu_book_outlined,
+            title: 'Aucune recette',
+            message: 'Ajoute la première avec le bouton +.',
+          ),
+          data: (recipes) => ListView.builder(
+            itemCount: recipes.length,
+            itemBuilder: (context, index) {
+              final recipe = recipes[index];
+              return ListTile(
+                leading: const Icon(Icons.restaurant_menu),
+                title: Text(recipe.name),
+                subtitle: Text(
+                  '${recipe.totalCalories.toStringAsFixed(0)} kcal au total',
                 ),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => RecipeDetailScreen(recipe: recipe),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ),
       floatingActionButton: FabAboveNav(

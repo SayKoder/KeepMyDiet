@@ -61,13 +61,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      // `_Header()` était un sibling FIXE de la zone scrollable (hors
+      // `SingleChildScrollView`) : il gardait toute sa hauteur même quand le
+      // clavier apparaissait, ne laissant quasi plus de place pour voir le
+      // champ en cours de saisie en dessous. En le mettant DANS le
+      // scrollable, il peut défiler hors écran comme le reste quand le
+      // clavier pousse le contenu, et `Scrollable.ensureVisible` (déclenché
+      // automatiquement au focus d'un `TextField`) peut vraiment amener le
+      // champ actif au-dessus du clavier.
       body: SafeArea(
         top: false,
-        child: Column(
-          children: [
-            _Header(),
-            Expanded(
-              child: SingleChildScrollView(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _Header(),
+              Padding(
                 padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -146,8 +155,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

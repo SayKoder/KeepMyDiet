@@ -24,28 +24,19 @@ class RecipeSuggestionsScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(recipeSuggestionsProvider(groupId).future),
         child: suggestionsAsync.toWidget(
-          data: (suggestions) {
-            if (suggestions.isEmpty) {
-              return ListView(
-                children: const [
-                  Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Text(
-                      'Aucune recette dans le pool pour le moment.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            return ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: suggestions.length,
-              itemBuilder: (context, index) =>
-                  _SuggestionCard(suggestion: suggestions[index]),
-            );
-          },
+          onRetry: () => ref.invalidate(recipeSuggestionsProvider(groupId)),
+          isEmpty: (suggestions) => suggestions.isEmpty,
+          empty: const EmptyState(
+            icon: Icons.lightbulb_outline,
+            title: 'Aucune suggestion',
+            message: 'Aucune recette dans le pool pour le moment.',
+          ),
+          data: (suggestions) => ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: suggestions.length,
+            itemBuilder: (context, index) =>
+                _SuggestionCard(suggestion: suggestions[index]),
+          ),
         ),
       ),
     );

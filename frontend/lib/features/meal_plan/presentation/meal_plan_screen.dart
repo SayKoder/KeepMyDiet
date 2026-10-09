@@ -211,6 +211,7 @@ class _WeekList extends ConsumerWidget {
     final entriesAsync = ref.watch(mealPlanEntriesProvider(groupId));
 
     return entriesAsync.toWidget(
+      onRetry: () => ref.invalidate(mealPlanEntriesProvider(groupId)),
       data: (entries) => RefreshIndicator(
         onRefresh: () => ref.refresh(mealPlanEntriesProvider(groupId).future),
         child: ListView.builder(

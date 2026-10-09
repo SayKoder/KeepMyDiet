@@ -9,6 +9,7 @@ import '../../../shared/api_client.dart';
 import '../../../shared/async_value_ui.dart';
 import '../../../shared/home_navigation.dart';
 import '../../../shared/white_card.dart';
+import '../../auth/presentation/auth_controller.dart';
 import '../../groups/presentation/groups_controller.dart';
 import '../../meal_plan/domain/meal_plan_entry.dart';
 import '../../meal_plan/domain/meal_plan_entry_status.dart';
@@ -20,6 +21,7 @@ import '../../nutrition/presentation/daily_nutrition_log_controller.dart';
 import '../../nutrition/presentation/nutrition_dashboard_screen.dart';
 import '../../nutrition/presentation/profile_controller.dart';
 import '../../nutrition/presentation/profile_form_screen.dart';
+import '../../nutrition/presentation/profile_onboarding_screen.dart';
 import '../../nutrition/presentation/water_goal_controller.dart';
 import '../../nutrition/presentation/water_intake_controller.dart';
 import 'journal_date_controller.dart';
@@ -30,10 +32,32 @@ class HomeDashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Juste après une inscription, on saute l'étape manuelle "Créer mon
+    // profil" et on lance directement le parcours guidé. Le flag passe à
+    // `true` PENDANT `register()`, à un moment où cet écran n'existe pas
+    // encore dans l'arbre (toujours sur `LoginScreen`) — un `ref.listen`
+    // classique ne réagit qu'aux CHANGEMENTS survenus après qu'il commence à
+    // écouter, donc il ratait ce cas (`justRegistered` était déjà `true` dès
+    // le tout premier build de cet écran, pas de transition à détecter). On
+    // lit directement la valeur courante à chaque build à la place, et on la
+    // consomme (repasse à `false`) dans un post-frame callback pour ne pas
+    // déclencher une navigation pendant un build.
+    final justRegistered = ref.watch(justRegisteredProvider);
+    if (justRegistered) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
+        ref.read(justRegisteredProvider.notifier).set(false);
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ProfileOnboardingScreen()),
+        );
+      });
+    }
+
     final profileAsync = ref.watch(profileControllerProvider);
 
     return Scaffold(
       body: profileAsync.toWidget(
+        onRetry: () => ref.invalidate(profileControllerProvider),
         data: (profile) => profile == null
             ? _NoProfileScroll(
                 onCreate: () => Navigator.of(context).push(
