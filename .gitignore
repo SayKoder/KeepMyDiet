@@ -8,3 +8,6 @@ infra/.env
 infra/.env.prod
 infra/.env.prod.local
 infra/.env.web
+
+.env
+.env.*
