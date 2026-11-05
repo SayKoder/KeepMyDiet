@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/groups/data/groups_repository.dart';
 import 'package:keepmydiet/features/groups/domain/group.dart';
 import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/groups/presentation/rename_group_screen.dart';
 import 'package:keepmydiet/shared/api_client.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
 
@@ -52,11 +53,20 @@ class GroupDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final membersAsync = ref.watch(groupMembersProvider(group.id));
     final groups = ref.watch(groupsControllerProvider).value ?? [];
+    final current = groups.where((g) => g.id == group.id).firstOrNull ?? group;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(group.name),
+        title: Text(current.name),
         actions: [
+          if (current.canEdit)
+            EditIconButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => RenameGroupScreen(group: current),
+                ),
+              ),
+            ),
           if (groups.length > 1)
             GroupSwitcherMenuButton(
               groups: groups,

@@ -38,6 +38,16 @@ class GroupsApiClient {
     return Group.fromJson(response.data!);
   }
 
+  Future<Group> updateGroup(int groupId, {required String name}) async {
+    final response = await _dio.patch<Map<String, dynamic>>(
+      '/groups/$groupId',
+      data: {'name': name},
+      options: mergePatchOptions,
+    );
+
+    return Group.fromJson(response.data!);
+  }
+
   Future<List<GroupMember>> fetchMembers(int groupId) async {
     final response = await _dio.get<Map<String, dynamic>>(
       '/groups/$groupId/memberships',

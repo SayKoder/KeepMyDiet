@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/recipes/data/recipes_api_client.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_draft.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
-import 'package:keepmydiet/features/recipes/domain/recipe_step.dart';
 import 'package:keepmydiet/shared/local_database.dart';
 import 'package:keepmydiet/shared/network_first.dart';
 
@@ -30,17 +30,9 @@ class RecipesRepository {
     ],
   );
 
-  Future<Recipe> create({
-    required String name,
-    required int referenceServings,
-    required List<RecipeIngredient> ingredients,
-    List<RecipeStep> steps = const [],
-  }) => _api.create(
-    name: name,
-    referenceServings: referenceServings,
-    ingredients: ingredients,
-    steps: steps,
-  );
+  Future<Recipe> create(RecipeDraft draft) => _api.create(draft);
+
+  Future<Recipe> update(int id, RecipeDraft draft) => _api.update(id, draft);
 
   Future<void> delete(int id) => _api.delete(id);
 

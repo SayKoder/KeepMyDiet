@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keepmydiet/features/fridge/data/fridge_repository.dart';
 import 'package:keepmydiet/features/fridge/data/open_food_facts_client.dart';
+import 'package:keepmydiet/features/fridge/domain/food_draft.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
 import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
@@ -17,7 +17,7 @@ Future<FoodReference?> showCreateFoodDialog(
 }) {
   return showDialog<FoodReference>(
     context: context,
-    builder: (_) => _CreateFoodDialog(
+    builder: (_) => _FoodFormDialog(
       groupId: groupId,
       initialName: product?.name ?? name,
       product: product,
@@ -26,31 +26,56 @@ Future<FoodReference?> showCreateFoodDialog(
   );
 }
 
-class _CreateFoodDialog extends ConsumerStatefulWidget {
-  const _CreateFoodDialog({
+Future<FoodReference?> showEditFoodDialog(
+  BuildContext context, {
+  required int groupId,
+  required FoodReference food,
+}) {
+  return showDialog<FoodReference>(
+    context: context,
+    builder: (_) => _FoodFormDialog(groupId: groupId, food: food),
+  );
+}
+
+class _FoodFormDialog extends ConsumerStatefulWidget {
+  const _FoodFormDialog({
     required this.groupId,
-    required this.initialName,
+    this.food,
+    this.initialName = '',
     this.product,
     this.barcode,
   });
 
   final int groupId;
+  final FoodReference? food;
   final String initialName;
   final OpenFoodFactsProduct? product;
   final String? barcode;
 
   @override
-  ConsumerState<_CreateFoodDialog> createState() => _CreateFoodDialogState();
+  ConsumerState<_FoodFormDialog> createState() => _FoodFormDialogState();
 }
 
-class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
-  late final _name = TextEditingController(text: widget.initialName);
-  late final _calories = _numberController(widget.product?.caloriesPer100g);
-  late final _proteins = _numberController(widget.product?.proteinsPer100g);
-  late final _carbs = _numberController(widget.product?.carbsPer100g);
-  late final _fats = _numberController(widget.product?.fatsPer100g);
+class _FoodFormDialogState extends ConsumerState<_FoodFormDialog> {
+  late final _name = TextEditingController(
+    text: widget.food?.name ?? widget.initialName,
+  );
+  late final _calories = _numberController(
+    widget.food?.caloriesPer100g ?? widget.product?.caloriesPer100g,
+  );
+  late final _proteins = _numberController(
+    widget.food?.proteinsPer100g ?? widget.product?.proteinsPer100g,
+  );
+  late final _carbs = _numberController(
+    widget.food?.carbsPer100g ?? widget.product?.carbsPer100g,
+  );
+  late final _fats = _numberController(
+    widget.food?.fatsPer100g ?? widget.product?.fatsPer100g,
+  );
   bool _isSubmitting = false;
   String? _errorMessage;
+
+  bool get _isEdit => widget.food != null;
 
   static TextEditingController _numberController(double? value) =>
       TextEditingController(text: (value ?? 0).toString());
@@ -74,6 +99,19 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
         : 'Pré-rempli depuis Open Food Facts (code $barcode), vérifie avant de valider';
   }
 
+  Future<FoodReference> _save(FoodDraft draft) {
+    final food = widget.food;
+
+    return food == null
+        ? createCustomFood(ref, groupId: widget.groupId, draft: draft)
+        : updateCustomFood(
+            ref,
+            groupId: widget.groupId,
+            foodId: food.id,
+            draft: draft,
+          );
+  }
+
   Future<void> _submit() async {
     final name = _name.text.trim();
     if (name.isEmpty) {
@@ -87,18 +125,16 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
     });
 
     try {
-      final food = await ref
-          .read(fridgeRepositoryProvider)
-          .createCustomFood(
-            groupId: widget.groupId,
-            name: name,
-            caloriesPer100g: _parse(_calories),
-            proteinsPer100g: _parse(_proteins),
-            carbsPer100g: _parse(_carbs),
-            fatsPer100g: _parse(_fats),
-            barcode: widget.barcode,
-          );
-      ref.invalidate(foodCatalogProvider(widget.groupId));
+      final food = await _save(
+        FoodDraft(
+          name: name,
+          caloriesPer100g: _parse(_calories),
+          proteinsPer100g: _parse(_proteins),
+          carbsPer100g: _parse(_carbs),
+          fatsPer100g: _parse(_fats),
+          barcode: widget.barcode,
+        ),
+      );
       if (mounted) Navigator.of(context).pop(food);
     } catch (e) {
       setState(() => _errorMessage = '$e');
@@ -110,9 +146,10 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
   @override
   Widget build(BuildContext context) {
     final hint = _barcodeHint;
+    final confirmLabel = _isEdit ? 'Enregistrer' : 'Créer';
 
     return AlertDialog(
-      title: const Text('Nouveau produit'),
+      title: Text(_isEdit ? 'Modifier le produit' : 'Nouveau produit'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -144,11 +181,11 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
         DialogActionButtons(
           cancelLabel: 'Annuler',
           onCancel: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          confirmLabel: 'Créer',
+          confirmLabel: confirmLabel,
           onConfirm: _isSubmitting ? null : _submit,
           confirmChild: SubmitButtonContent(
             isSubmitting: _isSubmitting,
-            label: const Text('Créer'),
+            label: Text(confirmLabel),
             size: 16,
           ),
         ),

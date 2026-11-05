@@ -8,7 +8,7 @@ import 'package:keepmydiet/features/fridge/data/open_food_facts_client.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
 import 'package:keepmydiet/features/fridge/presentation/barcode_scanner_screen.dart';
 import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
-import 'package:keepmydiet/features/fridge/presentation/widgets/create_food_dialog.dart';
+import 'package:keepmydiet/features/fridge/presentation/widgets/food_form_dialog.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class FoodSearchView extends ConsumerStatefulWidget {
@@ -84,6 +84,9 @@ class _FoodSearchViewState extends ConsumerState<FoodSearchView> {
     );
     if (food != null) widget.onSelected(food);
   }
+
+  Future<void> _editFood(FoodReference food) =>
+      showEditFoodDialog(context, groupId: widget.groupId, food: food);
 
   // Produit déjà connu du groupe → sélection directe, sinon création
   // pré-remplie depuis Open Food Facts.
@@ -169,6 +172,9 @@ class _FoodSearchViewState extends ConsumerState<FoodSearchView> {
           ListTile(
             title: Text(food.name),
             subtitle: Text(_kcalLabel(food.caloriesPer100g)),
+            trailing: food.canEdit
+                ? EditIconButton(onPressed: () => _editFood(food))
+                : null,
             onTap: () => widget.onSelected(food),
           ),
         if (query.isNotEmpty) ...[

@@ -13,6 +13,11 @@ class StepFormRow {
     durationMinutes.dispose();
   }
 
+  void fill(RecipeStep step) {
+    instruction.text = step.instruction;
+    durationMinutes.text = step.durationMinutes?.toString() ?? '';
+  }
+
   // Une étape sans texte est ignorée (les étapes sont facultatives).
   RecipeStep? toStepOrNull() {
     final text = instruction.text.trim();

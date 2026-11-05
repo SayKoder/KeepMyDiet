@@ -1,6 +1,7 @@
 export 'app_bottom_nav.dart';
 export 'async_value_ui.dart';
 export 'dialog_action_buttons.dart';
+export 'edit_icon_button.dart';
 export 'form_error_text.dart';
 export 'group_switcher_menu_button.dart';
 export 'icon_badge.dart';

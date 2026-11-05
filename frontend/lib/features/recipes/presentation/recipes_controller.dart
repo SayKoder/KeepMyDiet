@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/meal_plan_controller.dart';
+import 'package:keepmydiet/features/recipe_suggestions/presentation/recipe_suggestions_controller.dart';
 import 'package:keepmydiet/features/recipes/data/recipes_repository.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_draft.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_failure.dart';
-import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
-import 'package:keepmydiet/features/recipes/domain/recipe_step.dart';
 import 'package:keepmydiet/shared/api_client.dart';
 
 final recipesControllerProvider =
@@ -21,27 +22,35 @@ class RecipesController extends AsyncNotifier<List<Recipe>> {
     return ref.read(recipesRepositoryProvider).fetchAll();
   }
 
-  Future<Recipe> create({
-    required String name,
-    required int referenceServings,
-    required List<RecipeIngredient> ingredients,
-    List<RecipeStep> steps = const [],
-  }) async {
+  Future<Recipe> create(RecipeDraft draft) async {
     final Recipe recipe;
     try {
-      recipe = await ref
-          .read(recipesRepositoryProvider)
-          .create(
-            name: name,
-            referenceServings: referenceServings,
-            ingredients: ingredients,
-            steps: steps,
-          );
+      recipe = await ref.read(recipesRepositoryProvider).create(draft);
     } on DioException catch (e) {
       throw RecipeFailure(extractErrorMessage(e));
     }
 
     state = AsyncData([...state.value ?? [], recipe]);
+
+    return recipe;
+  }
+
+  Future<Recipe> updateRecipe(int id, RecipeDraft draft) async {
+    final Recipe recipe;
+    try {
+      recipe = await ref.read(recipesRepositoryProvider).update(id, draft);
+    } on DioException catch (e) {
+      throw RecipeFailure(extractErrorMessage(e));
+    }
+
+    state = AsyncData([
+      for (final r in state.value ?? <Recipe>[]) r.id == id ? recipe : r,
+    ]);
+    // Le planning et les suggestions affichent aussi cette recette.
+    ref
+      ..invalidate(mealPlanEntriesProvider)
+      ..invalidate(mealPlanEntriesForDateProvider)
+      ..invalidate(recipeSuggestionsProvider);
 
     return recipe;
   }

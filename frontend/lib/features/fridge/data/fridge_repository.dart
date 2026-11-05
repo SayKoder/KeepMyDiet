@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/fridge/data/fridge_api_client.dart';
 import 'package:keepmydiet/features/fridge/data/open_food_facts_client.dart';
+import 'package:keepmydiet/features/fridge/domain/food_draft.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
 import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
 import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
@@ -33,23 +34,11 @@ class FridgeRepository {
     ],
   );
 
-  Future<FoodReference> createCustomFood({
-    required int groupId,
-    required String name,
-    required double caloriesPer100g,
-    required double proteinsPer100g,
-    required double carbsPer100g,
-    required double fatsPer100g,
-    String? barcode,
-  }) => _api.createCustomFood(
-    groupId: groupId,
-    name: name,
-    caloriesPer100g: caloriesPer100g,
-    proteinsPer100g: proteinsPer100g,
-    carbsPer100g: carbsPer100g,
-    fatsPer100g: fatsPer100g,
-    barcode: barcode,
-  );
+  Future<FoodReference> createCustomFood(int groupId, FoodDraft draft) =>
+      _api.createCustomFood(groupId, draft);
+
+  Future<FoodReference> updateCustomFood(int foodId, FoodDraft draft) =>
+      _api.updateCustomFood(foodId, draft);
 
   Future<List<FridgeItem>> fetchItems(int groupId) => networkFirst(
     _database,

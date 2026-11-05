@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/fridge/data/fridge_repository.dart';
+import 'package:keepmydiet/features/fridge/domain/food_draft.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
 import 'package:keepmydiet/features/fridge/domain/fridge_failure.dart';
 import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
@@ -57,6 +58,49 @@ Future<void> addFridgeItem(
   // recettes (ingrédients disponibles, DLC la plus proche) : sans ça, la
   // liste de suggestions reste figée sur l'état d'avant l'ajout.
   ref.invalidate(recipeSuggestionsProvider(groupId));
+}
+
+Future<FoodReference> createCustomFood(
+  WidgetRef ref, {
+  required int groupId,
+  required FoodDraft draft,
+}) async {
+  final FoodReference food;
+  try {
+    food = await ref
+        .read(fridgeRepositoryProvider)
+        .createCustomFood(groupId, draft);
+  } on DioException catch (e) {
+    throw FridgeFailure(extractErrorMessage(e));
+  }
+
+  ref.invalidate(foodCatalogProvider(groupId));
+
+  return food;
+}
+
+Future<FoodReference> updateCustomFood(
+  WidgetRef ref, {
+  required int groupId,
+  required int foodId,
+  required FoodDraft draft,
+}) async {
+  final FoodReference food;
+  try {
+    food = await ref
+        .read(fridgeRepositoryProvider)
+        .updateCustomFood(foodId, draft);
+  } on DioException catch (e) {
+    throw FridgeFailure(extractErrorMessage(e));
+  }
+
+  ref.invalidate(foodCatalogProvider(groupId));
+  // Les articles du frigo et les suggestions de recettes affichent le nom et
+  // les macros de l'aliment : ils doivent se recharger eux aussi.
+  ref.invalidate(fridgeItemsProvider(groupId));
+  ref.invalidate(recipeSuggestionsProvider(groupId));
+
+  return food;
 }
 
 Future<void> deleteFridgeItem(

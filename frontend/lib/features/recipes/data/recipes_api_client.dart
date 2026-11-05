@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_draft.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
-import 'package:keepmydiet/features/recipes/domain/recipe_step.dart';
 import 'package:keepmydiet/shared/api_client.dart';
 
 final recipesApiClientProvider = Provider<RecipesApiClient>((ref) {
@@ -27,21 +27,23 @@ class RecipesApiClient {
         .toList();
   }
 
-  Future<Recipe> create({
-    required String name,
-    required int referenceServings,
-    required List<RecipeIngredient> ingredients,
-    List<RecipeStep> steps = const [],
-  }) async {
+  Future<Recipe> create(RecipeDraft draft) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/recipes',
-      data: {
-        'name': name,
-        'referenceServings': referenceServings,
-        'ingredients': ingredients.map((i) => i.toJson()).toList(),
-        'steps': steps.map((s) => s.toJson()).toList(),
-      },
+      data: draft.toJson(),
       options: _ldJson,
+    );
+
+    return Recipe.fromJson(response.data!);
+  }
+
+  /// Réservé au créateur (403 sinon) : les ingrédients et les étapes envoyés
+  /// remplacent ceux de la recette.
+  Future<Recipe> update(int id, RecipeDraft draft) async {
+    final response = await _dio.patch<Map<String, dynamic>>(
+      '/recipes/$id',
+      data: draft.toJson(),
+      options: mergePatchOptions,
     );
 
     return Recipe.fromJson(response.data!);

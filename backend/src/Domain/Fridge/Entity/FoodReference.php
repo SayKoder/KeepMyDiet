@@ -5,6 +5,7 @@ namespace App\Domain\Fridge\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Domain\Fridge\Repository\FoodReferenceRepository;
 use App\Domain\Fridge\State\CreateFoodReferenceProcessor;
@@ -42,6 +43,11 @@ use Symfony\Component\Validator\Constraints as Assert;
             provider: FoodReferenceCollectionProvider::class,
         ),
         new Post(processor: CreateFoodReferenceProcessor::class, validationContext: ['groups' => ['food_reference:write']]),
+        new Patch(
+            security: "is_granted('EDIT', object)",
+            denormalizationContext: ['groups' => ['food_reference:update']],
+            validationContext: ['groups' => ['food_reference:write']],
+        ),
     ],
     normalizationContext: ['groups' => ['food_reference:read']],
     denormalizationContext: ['groups' => ['food_reference:write']],
@@ -60,27 +66,27 @@ class FoodReference
     // et/ou minéraux (aliment moyen)", 149 caractères) — élargi plutôt que
     // de tronquer ces noms officiels, voir migration Version20261009185900.
     #[ORM\Column(length: 255)]
-    #[Groups(['food_reference:read', 'food_reference:write', 'fridge_item:read'])]
+    #[Groups(['food_reference:read', 'food_reference:write', 'food_reference:update', 'fridge_item:read'])]
     #[Assert\NotBlank(groups: ['food_reference:write'])]
     private string $name = '';
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['food_reference:read', 'food_reference:write', 'fridge_item:read'])]
+    #[Groups(['food_reference:read', 'food_reference:write', 'food_reference:update', 'fridge_item:read'])]
     #[Assert\PositiveOrZero(groups: ['food_reference:write'])]
     private float $caloriesPer100g = 0;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['food_reference:read', 'food_reference:write', 'fridge_item:read'])]
+    #[Groups(['food_reference:read', 'food_reference:write', 'food_reference:update', 'fridge_item:read'])]
     #[Assert\PositiveOrZero(groups: ['food_reference:write'])]
     private float $proteinsPer100g = 0;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['food_reference:read', 'food_reference:write', 'fridge_item:read'])]
+    #[Groups(['food_reference:read', 'food_reference:write', 'food_reference:update', 'fridge_item:read'])]
     #[Assert\PositiveOrZero(groups: ['food_reference:write'])]
     private float $carbsPer100g = 0;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['food_reference:read', 'food_reference:write', 'fridge_item:read'])]
+    #[Groups(['food_reference:read', 'food_reference:write', 'food_reference:update', 'fridge_item:read'])]
     #[Assert\PositiveOrZero(groups: ['food_reference:write'])]
     private float $fatsPer100g = 0;
 
