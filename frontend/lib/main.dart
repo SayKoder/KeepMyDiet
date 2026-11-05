@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:keepmydiet/core/riverpod_config.dart';
 import 'package:keepmydiet/core/theme.dart';
 import 'package:keepmydiet/features/auth/domain/auth_session.dart';
 import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
@@ -25,7 +26,7 @@ void main() async {
 
   // ProviderScope doit envelopper toute l'app : c'est lui qui porte l'état de
   // tous les providers Riverpod (dioProvider, authControllerProvider, ...).
-  runApp(const ProviderScope(child: KeepMyDietApp()));
+  runApp(const ProviderScope(retry: noAutoRetry, child: KeepMyDietApp()));
 }
 
 class KeepMyDietApp extends StatelessWidget {

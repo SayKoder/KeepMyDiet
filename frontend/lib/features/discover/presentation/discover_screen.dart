@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/discover/presentation/discover_controller.dart';
@@ -60,14 +61,24 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       barrierDismissible: false,
       builder: (_) => const LoadingState(),
     );
-    final product = await ref.read(openFoodFactsClientProvider).lookup(code);
+    OpenFoodFactsProduct? product;
+    var failed = false;
+    try {
+      product = await ref.read(openFoodFactsClientProvider).product(code);
+    } on DioException {
+      failed = true;
+    }
     if (!mounted) return;
     Navigator.of(context).pop();
 
     if (product == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Produit introuvable sur Open Food Facts.'),
+        SnackBar(
+          content: Text(
+            failed
+                ? 'Chargement impossible, vérifie ta connexion.'
+                : 'Produit introuvable sur Open Food Facts.',
+          ),
         ),
       );
       return;

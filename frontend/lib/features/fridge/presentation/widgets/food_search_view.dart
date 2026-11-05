@@ -30,6 +30,7 @@ class _FoodSearchViewState extends ConsumerState<FoodSearchView> {
   Timer? _onlineDebounce;
   List<OpenFoodFactsProduct> _onlineResults = const [];
   bool _onlineSearching = false;
+  bool _onlineFailed = false;
 
   String get _query => _searchController.text.trim();
 
@@ -47,17 +48,23 @@ class _FoodSearchViewState extends ConsumerState<FoodSearchView> {
 
     setState(() {
       _onlineSearching = query.isNotEmpty;
+      _onlineFailed = false;
       if (query.isEmpty) _onlineResults = const [];
     });
     if (query.isEmpty) return;
 
     _onlineDebounce = Timer(const Duration(milliseconds: 450), () async {
-      final results = await ref
-          .read(fridgeRepositoryProvider)
-          .searchOnline(query);
+      var results = const <OpenFoodFactsProduct>[];
+      var failed = false;
+      try {
+        results = await ref.read(fridgeRepositoryProvider).searchOnline(query);
+      } catch (_) {
+        failed = true;
+      }
       if (!mounted || _query != query) return;
       setState(() {
         _onlineResults = results;
+        _onlineFailed = failed;
         _onlineSearching = false;
       });
     });
@@ -176,6 +183,17 @@ class _FoodSearchViewState extends ConsumerState<FoodSearchView> {
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
               child: LoadingState(),
+            )
+          else if (_onlineFailed)
+            ListTile(
+              title: const Text(
+                'Recherche en ligne impossible.',
+                style: TextStyle(color: AppColors.errorText),
+              ),
+              trailing: TextButton(
+                onPressed: () => _onSearchChanged(_query),
+                child: const Text('Réessayer'),
+              ),
             )
           else if (onlineMatches.isEmpty)
             const ListTile(

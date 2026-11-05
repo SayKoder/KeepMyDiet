@@ -100,5 +100,5 @@ class DiscoverController extends AsyncNotifier<DiscoverState> {
 
 final productDetailProvider = FutureProvider.autoDispose
     .family<OpenFoodFactsProduct?, String>(
-      (ref, barcode) => ref.watch(openFoodFactsClientProvider).lookup(barcode),
+      (ref, barcode) => ref.watch(openFoodFactsClientProvider).product(barcode),
     );

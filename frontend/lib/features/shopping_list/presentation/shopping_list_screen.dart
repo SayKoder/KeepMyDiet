@@ -160,9 +160,12 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Dans le panier',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              const Expanded(
+                child: Text(
+                  'Dans le panier',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
               ),
               Text(
                 '${_selectedIds.length} / ${items.length}',

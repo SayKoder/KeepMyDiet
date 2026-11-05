@@ -11,6 +11,7 @@ extension AsyncValueUi<T> on AsyncValue<T> {
     Widget? empty,
   }) {
     return when(
+      skipError: true,
       data: (value) {
         if (isEmpty != null && isEmpty(value)) {
           return empty ?? const EmptyState();

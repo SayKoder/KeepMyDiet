@@ -21,18 +21,19 @@ class ProductDetailScreen extends ConsumerWidget {
       null => null,
     };
     final detail = detailAsync?.value ?? product;
-    final unavailable = _Unavailable(
-      onRetry: () => ref.invalidate(productDetailProvider(product.barcode!)),
-    );
 
     final info = _ProductInfo(
       product: detail,
       extras: detailAsync?.when(
-        data: (loaded) =>
-            loaded == null ? unavailable : _ProductExtras(product: loaded),
+        data: (loaded) => loaded == null
+            ? const Text('Aucun détail disponible pour ce produit.')
+            : _ProductExtras(product: loaded),
         loading: () =>
             const Padding(padding: EdgeInsets.all(24), child: LoadingState()),
-        error: (_, _) => unavailable,
+        error: (_, _) => _DetailError(
+          onRetry: () =>
+              ref.invalidate(productDetailProvider(product.barcode!)),
+        ),
       ),
     );
     final image = ClipRRect(
@@ -164,8 +165,8 @@ class _ProductExtras extends StatelessWidget {
   }
 }
 
-class _Unavailable extends StatelessWidget {
-  const _Unavailable({required this.onRetry});
+class _DetailError extends StatelessWidget {
+  const _DetailError({required this.onRetry});
 
   final VoidCallback onRetry;
 
@@ -174,7 +175,7 @@ class _Unavailable extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Détails indisponibles pour ce produit.'),
+        const Text('Chargement des détails impossible.'),
         TextButton(onPressed: onRetry, child: const Text('Réessayer')),
       ],
     );
