@@ -1,11 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Flutter ne la met QUE dans src/debug et src/profile (suffisant pour
+         `flutter run`, qui tourne toujours en debug/profile) — un vrai build
+         release en a besoin explicitement ici, sinon AUCUNE requête réseau
+         ne part (toute connexion/inscription échoue silencieusement avec
+         une erreur réseau générique, jamais une vraie réponse du serveur). -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
         android:label="keepmydiet"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:networkSecurityConfig="@xml/network_security_config">
         <activity
             android:name=".MainActivity"
             android:exported="true"
