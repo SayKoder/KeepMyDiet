@@ -175,8 +175,8 @@ class _DashboardView extends ConsumerWidget {
             Expanded(
               child: ShortcutCard(
                 icon: Icons.restaurant_menu,
-                iconBg: const Color(0xFFFFE8DD),
-                iconColor: const Color(0xFFC8501C),
+                iconBg: AppColors.recipeBg,
+                iconColor: AppColors.recipeIcon,
                 label: 'Recettes',
                 subtitle: 'Tes recettes',
                 onTap: () => showTab(2),
