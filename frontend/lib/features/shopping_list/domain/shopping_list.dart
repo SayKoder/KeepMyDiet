@@ -13,4 +13,9 @@ class ShoppingList {
         .map((e) => ShoppingListItem.fromJson(e as Map<String, dynamic>))
         .toList(),
   );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'items': [for (final item in items) item.toJson()],
+  };
 }

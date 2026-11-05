@@ -49,4 +49,19 @@ class MealPlanEntryLog {
         appliedCarbG: (json['appliedCarbG'] as num).toDouble(),
         appliedFatG: (json['appliedFatG'] as num).toDouble(),
       );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'mealPlanEntry': '/api/meal_plan_entries/$mealPlanEntryId',
+    'status': status.toJson(),
+    'replacementDescription': replacementDescription,
+    'replacementCalories': replacementCalories,
+    'replacementProteinG': replacementProteinG,
+    'replacementCarbG': replacementCarbG,
+    'replacementFatG': replacementFatG,
+    'appliedCalories': appliedCalories,
+    'appliedProteinG': appliedProteinG,
+    'appliedCarbG': appliedCarbG,
+    'appliedFatG': appliedFatG,
+  };
 }

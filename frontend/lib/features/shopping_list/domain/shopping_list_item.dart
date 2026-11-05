@@ -37,4 +37,16 @@ class ShoppingListItem {
         fatsPer100g: (json['fatsPer100g'] as num).toDouble(),
         sourceRecipeName: json['sourceRecipeName'] as String?,
       );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'quantity': quantity,
+    'unit': unit,
+    'caloriesPer100g': caloriesPer100g,
+    'proteinsPer100g': proteinsPer100g,
+    'carbsPer100g': carbsPer100g,
+    'fatsPer100g': fatsPer100g,
+    'sourceRecipeName': sourceRecipeName,
+  };
 }

@@ -27,4 +27,11 @@ class GroupMember {
       joinedAt: DateTime.parse(json['joinedAt'] as String),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'user': {'email': userEmail},
+    'role': role.name,
+    'joinedAt': joinedAt.toIso8601String(),
+  };
 }

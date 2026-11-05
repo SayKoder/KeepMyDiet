@@ -62,4 +62,24 @@ class Profile {
         ?.toDouble(),
     estimatedWeeksToTarget: json['estimatedWeeksToTarget'] as int?,
   );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'sex': sex.name,
+    'birthDate': birthDate.toIso8601String(),
+    'heightCm': heightCm,
+    'weightKg': weightKg,
+    'activityLevel': activityLevel.toJson(),
+    'age': age,
+    'bmr': bmr,
+    'tdee': tdee,
+    'calorieGoal': calorieGoal,
+    'calorieFloor': calorieFloor,
+    'proteinTargetG': proteinTargetG,
+    'carbTargetG': carbTargetG,
+    'fatTargetG': fatTargetG,
+    'targetWeightKg': targetWeightKg,
+    'weeklyWeightLossGoalKg': weeklyWeightLossGoalKg,
+    'estimatedWeeksToTarget': estimatedWeeksToTarget,
+  };
 }

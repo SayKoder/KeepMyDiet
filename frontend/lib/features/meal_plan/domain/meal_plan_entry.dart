@@ -33,4 +33,12 @@ class MealPlanEntry {
     recipe: Recipe.fromJson(json['recipe'] as Map<String, dynamic>),
     servings: json['servings'] as int,
   );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'date': date.toIso8601String(),
+    'mealType': mealType.toJson(),
+    'recipe': recipe.toJson(),
+    'servings': servings,
+  };
 }
