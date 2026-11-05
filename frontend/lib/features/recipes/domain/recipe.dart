@@ -15,6 +15,7 @@ class Recipe {
     required this.totalProteins,
     required this.totalCarbs,
     required this.totalFats,
+    this.canEdit = false,
   });
 
   final int id;
@@ -26,6 +27,7 @@ class Recipe {
   final double totalProteins;
   final double totalCarbs;
   final double totalFats;
+  final bool canEdit;
 
   int get _servings => referenceServings <= 0 ? 1 : referenceServings;
 
@@ -58,6 +60,7 @@ class Recipe {
       totalProteins: (json['totalProteins'] as num).toDouble(),
       totalCarbs: (json['totalCarbs'] as num).toDouble(),
       totalFats: (json['totalFats'] as num).toDouble(),
+      canEdit: json['canEdit'] as bool? ?? false,
     );
   }
 
@@ -71,5 +74,6 @@ class Recipe {
     'totalProteins': totalProteins,
     'totalCarbs': totalCarbs,
     'totalFats': totalFats,
+    'canEdit': canEdit,
   };
 }

@@ -9,6 +9,7 @@ class FoodReference {
     required this.carbsPer100g,
     required this.fatsPer100g,
     this.barcode,
+    this.canEdit = false,
   });
 
   final int id;
@@ -18,6 +19,7 @@ class FoodReference {
   final double carbsPer100g;
   final double fatsPer100g;
   final String? barcode;
+  final bool canEdit;
 
   factory FoodReference.fromJson(Map<String, dynamic> json) => FoodReference(
     id: json['id'] as int,
@@ -27,6 +29,7 @@ class FoodReference {
     carbsPer100g: (json['carbsPer100g'] as num).toDouble(),
     fatsPer100g: (json['fatsPer100g'] as num).toDouble(),
     barcode: json['barcode'] as String?,
+    canEdit: json['canEdit'] as bool? ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -37,5 +40,6 @@ class FoodReference {
     'carbsPer100g': carbsPer100g,
     'fatsPer100g': fatsPer100g,
     'barcode': barcode,
+    'canEdit': canEdit,
   };
 }

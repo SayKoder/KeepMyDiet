@@ -39,6 +39,25 @@ class GroupsController extends AsyncNotifier<List<Group>> {
     return group;
   }
 
+  Future<void> renameGroup(Group group, String name) async {
+    final Group updated;
+    try {
+      updated = await ref
+          .read(groupsRepositoryProvider)
+          .updateGroup(group.id, name: name);
+    } on DioException catch (e) {
+      throw GroupFailure(extractErrorMessage(e));
+    }
+
+    state = AsyncData([
+      for (final g in state.value ?? <Group>[])
+        g.id == updated.id ? updated : g,
+    ]);
+    if (ref.read(activeGroupProvider)?.id == updated.id) {
+      ref.read(activeGroupProvider.notifier).select(updated);
+    }
+  }
+
   Future<void> refresh() async {
     state = await AsyncValue.guard(
       () => ref.read(groupsRepositoryProvider).fetchMyGroups(),

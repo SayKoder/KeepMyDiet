@@ -44,6 +44,9 @@ final dioProvider = Provider<Dio>((ref) {
   return dio;
 });
 
+/// Corps d'un `PATCH` API Platform (modification d'une ressource existante).
+final mergePatchOptions = Options(contentType: 'application/merge-patch+json');
+
 /// Message lisible extrait d'une erreur API : API Platform renvoie `detail`
 /// (ex: erreurs de validation), le firewall json_login de Symfony renvoie
 /// `message` (ex: "Invalid credentials."). Quand il n'y a PAS de réponse du

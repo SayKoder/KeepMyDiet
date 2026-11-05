@@ -13,6 +13,7 @@ class SingleFieldFormScreen extends StatefulWidget {
     required this.emptyError,
     required this.onSubmit,
     this.intro,
+    this.initialValue,
   });
 
   final String title;
@@ -20,6 +21,7 @@ class SingleFieldFormScreen extends StatefulWidget {
   final String submitLabel;
   final String emptyError;
   final String? intro;
+  final String? initialValue;
   final Future<void> Function(String value) onSubmit;
 
   @override
@@ -27,7 +29,7 @@ class SingleFieldFormScreen extends StatefulWidget {
 }
 
 class _SingleFieldFormScreenState extends State<SingleFieldFormScreen> {
-  final _controller = TextEditingController();
+  late final _controller = TextEditingController(text: widget.initialValue);
   bool _isSubmitting = false;
   String? _errorMessage;
 

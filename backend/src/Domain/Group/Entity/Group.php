@@ -5,6 +5,7 @@ namespace App\Domain\Group\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Domain\Group\Repository\GroupRepository;
 use App\Domain\Group\State\CreateGroupProcessor;
@@ -23,6 +24,11 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(provider: MyGroupsProvider::class),
         new Get(provider: GroupItemProvider::class),
         new Post(processor: CreateGroupProcessor::class, validationContext: ['groups' => ['group:write']]),
+        new Patch(
+            provider: GroupItemProvider::class,
+            security: "is_granted('EDIT', object)",
+            validationContext: ['groups' => ['group:write']],
+        ),
     ],
     normalizationContext: ['groups' => ['group:read']],
     denormalizationContext: ['groups' => ['group:write']],

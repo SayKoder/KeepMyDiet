@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_draft.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_step.dart';
 import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
@@ -7,20 +9,34 @@ import 'package:keepmydiet/features/recipes/presentation/widgets/ingredient_form
 import 'package:keepmydiet/features/recipes/presentation/widgets/step_form_card.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
 
-class CreateRecipeScreen extends ConsumerStatefulWidget {
-  const CreateRecipeScreen({super.key});
+/// Crée une recette, ou modifie `recipe` si elle est fournie (formulaire
+/// pré-rempli ; les ingrédients et étapes envoyés remplacent les anciens).
+class RecipeFormScreen extends ConsumerStatefulWidget {
+  const RecipeFormScreen({super.key, this.recipe});
+
+  final Recipe? recipe;
 
   @override
-  ConsumerState<CreateRecipeScreen> createState() => _CreateRecipeScreenState();
+  ConsumerState<RecipeFormScreen> createState() => _RecipeFormScreenState();
 }
 
-class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
-  final _nameController = TextEditingController();
-  final _servingsController = TextEditingController(text: '4');
-  final List<IngredientFormRow> _ingredients = [IngredientFormRow()];
-  final List<StepFormRow> _steps = [];
+class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
+  late final _nameController = TextEditingController(text: widget.recipe?.name);
+  late final _servingsController = TextEditingController(
+    text: '${widget.recipe?.referenceServings ?? 4}',
+  );
+  late final List<IngredientFormRow> _ingredients =
+      widget.recipe?.ingredients
+          .map((ingredient) => IngredientFormRow()..fill(ingredient))
+          .toList() ??
+      [IngredientFormRow()];
+  late final List<StepFormRow> _steps =
+      widget.recipe?.steps.map((step) => StepFormRow()..fill(step)).toList() ??
+      [];
   bool _isSubmitting = false;
   String? _errorMessage;
+
+  bool get _isEdit => widget.recipe != null;
 
   @override
   void dispose() {
@@ -68,15 +84,19 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
     });
     if (error != null) return;
 
+    final draft = RecipeDraft(
+      name: name,
+      referenceServings: servings!,
+      ingredients: ingredients.cast<RecipeIngredient>(),
+      steps: steps,
+    );
+    final controller = ref.read(recipesControllerProvider.notifier);
+    final recipe = widget.recipe;
+
     try {
-      await ref
-          .read(recipesControllerProvider.notifier)
-          .create(
-            name: name,
-            referenceServings: servings!,
-            ingredients: ingredients.cast<RecipeIngredient>(),
-            steps: steps,
-          );
+      await (recipe == null
+          ? controller.create(draft)
+          : controller.updateRecipe(recipe.id, draft));
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       setState(() => _errorMessage = '$e');
@@ -100,7 +120,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                 const RoundBackButton(),
                 Expanded(
                   child: Text(
-                    'Nouvelle recette',
+                    _isEdit ? 'Modifier la recette' : 'Nouvelle recette',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
@@ -175,7 +195,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
               onPressed: _isSubmitting ? null : _submit,
               child: SubmitButtonContent(
                 isSubmitting: _isSubmitting,
-                label: const Text('Créer la recette'),
+                label: Text(_isEdit ? 'Enregistrer' : 'Créer la recette'),
               ),
             ),
           ],

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/core/theme.dart';
 import 'package:keepmydiet/features/meal_plan/presentation/meal_plan_screen.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe.dart';
-import 'package:keepmydiet/features/recipes/presentation/create_recipe_screen.dart';
 import 'package:keepmydiet/features/recipes/presentation/recipe_detail_screen.dart';
+import 'package:keepmydiet/features/recipes/presentation/recipe_form_screen.dart';
 import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
 import 'package:keepmydiet/features/recipes/presentation/widgets/macro_bar.dart';
 import 'package:keepmydiet/features/recipes/presentation/widgets/recipe_card.dart';
@@ -120,7 +120,7 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> {
         ),
       ),
       floatingActionButton: FabAboveNav(
-        onPressed: () => _open(const CreateRecipeScreen()),
+        onPressed: () => _open(const RecipeFormScreen()),
         tooltip: 'Nouvelle recette',
         label: 'Nouvelle recette',
         child: const Icon(Icons.add),

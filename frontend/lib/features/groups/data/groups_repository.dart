@@ -33,6 +33,9 @@ class GroupsRepository {
   Future<Group> createGroup({required String name}) =>
       _api.createGroup(name: name);
 
+  Future<Group> updateGroup(int groupId, {required String name}) =>
+      _api.updateGroup(groupId, name: name);
+
   Future<List<GroupMember>> fetchMembers(int groupId) => networkFirst(
     _database,
     key: 'group_members_$groupId',

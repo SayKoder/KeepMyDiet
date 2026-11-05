@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/meal_plan/presentation/widgets/existing_recipe_tab.dart';
 import 'package:keepmydiet/features/recipes/data/recipes_repository.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_draft.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
 import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
@@ -58,9 +59,11 @@ class _QuickAddTabState extends ConsumerState<QuickAddTab> {
       final recipe = await ref
           .read(recipesControllerProvider.notifier)
           .create(
-            name: name.isEmpty ? widget.defaultName : name,
-            referenceServings: 1,
-            ingredients: ingredients.cast<RecipeIngredient>(),
+            RecipeDraft(
+              name: name.isEmpty ? widget.defaultName : name,
+              referenceServings: 1,
+              ingredients: ingredients.cast<RecipeIngredient>(),
+            ),
           );
       final entry = await widget.saveEntry(recipeId: recipe.id, servings: 1);
       if (mounted) Navigator.of(context).pop(entry);

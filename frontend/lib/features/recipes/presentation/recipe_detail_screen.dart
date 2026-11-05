@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/core/theme.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
+import 'package:keepmydiet/features/recipes/presentation/recipe_form_screen.dart';
 import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
 import 'package:keepmydiet/features/recipes/presentation/widgets/recipe_macros_card.dart';
 import 'package:keepmydiet/features/recipes/presentation/widgets/recipe_step_card.dart';
@@ -14,12 +15,16 @@ class RecipeDetailScreen extends ConsumerWidget {
   final Recipe recipe;
 
   // Seul l'auteur peut supprimer : le backend renvoie 403 sinon.
-  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+  Future<void> _delete(
+    BuildContext context,
+    WidgetRef ref,
+    Recipe target,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Supprimer cette recette ?'),
-        content: Text('« ${recipe.name} » sera supprimée définitivement.'),
+        content: Text('« ${target.name} » sera supprimée définitivement.'),
         actions: [
           DialogActionButtons(
             cancelLabel: 'Annuler',
@@ -33,7 +38,7 @@ class RecipeDetailScreen extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      await ref.read(recipesControllerProvider.notifier).delete(recipe.id);
+      await ref.read(recipesControllerProvider.notifier).delete(target.id);
       if (context.mounted) Navigator.of(context).pop();
     } catch (e) {
       if (context.mounted) {
@@ -46,19 +51,35 @@ class RecipeDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sectionTitle = Theme.of(context).textTheme.titleLarge;
-    final count = recipe.ingredients.length;
+    // La liste porte la version à jour (après une modification).
+    final current =
+        ref
+            .watch(recipesControllerProvider)
+            .value
+            ?.where((r) => r.id == recipe.id)
+            .firstOrNull ??
+        recipe;
+    final count = current.ingredients.length;
 
     return Scaffold(
       body: ListView(
         padding: EdgeInsets.zero,
         children: [
-          _Header(recipe: recipe, onDelete: () => _delete(context, ref)),
+          _Header(
+            recipe: current,
+            onEdit: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => RecipeFormScreen(recipe: current),
+              ),
+            ),
+            onDelete: () => _delete(context, ref, current),
+          ),
           // La carte remonte sur l'en-tête coloré.
           Transform.translate(
             offset: const Offset(0, -36),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: RecipeMacrosCard(recipe: recipe),
+              child: RecipeMacrosCard(recipe: current),
             ),
           ),
           Padding(
@@ -80,12 +101,12 @@ class RecipeDetailScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                _IngredientsCard(ingredients: recipe.ingredients),
-                if (recipe.steps.isNotEmpty) ...[
+                _IngredientsCard(ingredients: current.ingredients),
+                if (current.steps.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text('Préparation', style: sectionTitle),
-                  for (var i = 0; i < recipe.steps.length; i++)
-                    RecipeStepCard(number: i + 1, step: recipe.steps[i]),
+                  for (var i = 0; i < current.steps.length; i++)
+                    RecipeStepCard(number: i + 1, step: current.steps[i]),
                 ],
               ],
             ),
@@ -97,9 +118,14 @@ class RecipeDetailScreen extends ConsumerWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.recipe, required this.onDelete});
+  const _Header({
+    required this.recipe,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   final Recipe recipe;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
@@ -131,16 +157,20 @@ class _Header extends StatelessWidget {
                     children: [
                       const RoundBackButton(),
                       const Spacer(),
-                      IconButton(
-                        onPressed: onDelete,
-                        icon: const Icon(Icons.delete_outline),
-                        color: AppColors.errorText,
-                        tooltip: 'Supprimer',
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          minimumSize: const Size(44, 44),
+                      if (recipe.canEdit) ...[
+                        _HeaderAction(
+                          icon: Icons.edit_outlined,
+                          tooltip: 'Modifier',
+                          onPressed: onEdit,
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        _HeaderAction(
+                          icon: Icons.delete_outline,
+                          tooltip: 'Supprimer',
+                          color: AppColors.errorText,
+                          onPressed: onDelete,
+                        ),
+                      ],
                     ],
                   ),
                   Text(
@@ -171,6 +201,34 @@ class _Header extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HeaderAction extends StatelessWidget {
+  const _HeaderAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.color,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(icon),
+      color: color,
+      tooltip: tooltip,
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.white,
+        minimumSize: const Size(44, 44),
       ),
     );
   }

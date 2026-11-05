@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keepmydiet/features/fridge/domain/food_draft.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
 import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
 import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
@@ -26,27 +27,22 @@ class FridgeApiClient {
         .toList();
   }
 
-  Future<FoodReference> createCustomFood({
-    required int groupId,
-    required String name,
-    required double caloriesPer100g,
-    required double proteinsPer100g,
-    required double carbsPer100g,
-    required double fatsPer100g,
-    String? barcode,
-  }) async {
+  Future<FoodReference> createCustomFood(int groupId, FoodDraft draft) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/food_references',
-      data: {
-        'name': name,
-        'caloriesPer100g': caloriesPer100g,
-        'proteinsPer100g': proteinsPer100g,
-        'carbsPer100g': carbsPer100g,
-        'fatsPer100g': fatsPer100g,
-        'group': '/api/groups/$groupId',
-        'barcode': ?barcode,
-      },
+      data: {...draft.toJson(), 'group': '/api/groups/$groupId'},
       options: _ldJson,
+    );
+
+    return FoodReference.fromJson(response.data!);
+  }
+
+  /// Réservé au créateur d'un aliment personnalisé (403 sinon).
+  Future<FoodReference> updateCustomFood(int foodId, FoodDraft draft) async {
+    final response = await _dio.patch<Map<String, dynamic>>(
+      '/food_references/$foodId',
+      data: draft.toJson(),
+      options: mergePatchOptions,
     );
 
     return FoodReference.fromJson(response.data!);
