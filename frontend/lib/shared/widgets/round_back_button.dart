@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme.dart';
+import '../../core/theme.dart';
 
-/// Bouton retour rond blanc utilisé en haut des écrans construits "pleine
-/// page" (sans `AppBar` Material standard, juste une `Row` manuelle) —
-/// dupliqué à l'identique sur plusieurs de ces écrans.
 class RoundBackButton extends StatelessWidget {
   const RoundBackButton({super.key});
 

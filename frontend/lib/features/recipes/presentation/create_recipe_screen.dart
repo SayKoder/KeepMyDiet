@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/form_error_text.dart';
-import '../../../shared/ingredient_unit_field.dart';
-import '../../../shared/submit_button_content.dart';
+import '../../../shared/widgets/form_error_text.dart';
+import '../../../shared/widgets/ingredient_unit_field.dart';
+import '../../../shared/widgets/submit_button_content.dart';
 import '../data/recipes_api_client.dart';
 import '../domain/recipe_ingredient.dart';
 import '../domain/recipe_step.dart';

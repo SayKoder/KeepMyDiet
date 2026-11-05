@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme.dart';
+import '../../core/theme.dart';
 
-/// Deux boutons d'action de popup de confirmation, toujours côte à côte —
-/// contrairement à `actions:` passé directement à `AlertDialog` (son
-/// `OverflowBar` interne empile les boutons à la verticale dès que leur
-/// texte ne tient pas sur une seule ligne à la largeur du dialog). Le
-/// secondaire est un `OutlinedButton` avec un contour `AppColors.border`
-/// (toujours visible sur le fond blanc d'un dialog, pas juste du texte qui
-/// se fond dedans), le principal un `FilledButton` classique.
+// Toujours côte à côte : les `actions` d'un AlertDialog s'empilent si le
+// texte est trop long.
 class DialogActionButtons extends StatelessWidget {
   const DialogActionButtons({
     super.key,
@@ -24,9 +19,6 @@ class DialogActionButtons extends StatelessWidget {
   final String confirmLabel;
   final VoidCallback? onConfirm;
 
-  /// Remplace `Text(confirmLabel)` quand le bouton principal doit afficher
-  /// autre chose qu'un simple libellé (ex: un spinner de soumission via
-  /// `SubmitButtonContent`).
   final Widget? confirmChild;
 
   @override

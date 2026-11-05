@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Message d'erreur sous un formulaire ("nom vide", échec réseau...) — même
-/// padding/style recopiés dans la quasi-totalité des formulaires
-/// d'ajout/création de l'appli.
 class FormErrorText extends StatelessWidget {
   const FormErrorText(
     this.message, {

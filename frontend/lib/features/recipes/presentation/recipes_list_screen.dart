@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/app_bottom_nav.dart';
-import '../../../shared/async_value_ui.dart';
+import '../../../shared/widgets/app_bottom_nav.dart';
+import '../../../shared/widgets/async_value_ui.dart';
 import '../../meal_plan/presentation/meal_plan_screen.dart';
 import 'create_recipe_screen.dart';
 import 'recipe_detail_screen.dart';

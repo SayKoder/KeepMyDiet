@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/app_bottom_nav.dart';
-import '../../../shared/async_value_ui.dart';
-import '../../../shared/group_switcher_menu_button.dart';
+import '../../../core/theme.dart';
+import '../../../shared/widgets/app_bottom_nav.dart';
+import '../../../shared/widgets/async_value_ui.dart';
+import '../../../shared/widgets/segmented_pill.dart';
 import '../../groups/domain/group.dart';
-import '../../groups/presentation/group_detail_screen.dart';
-import '../../groups/presentation/groups_controller.dart';
 import '../../recipe_suggestions/presentation/recipe_suggestions_screen.dart';
-import '../../shopping_list/presentation/shopping_list_screen.dart';
+import '../domain/fridge_failure.dart';
 import '../domain/fridge_item.dart';
 import '../domain/storage_location.dart';
 import 'add_fridge_item_screen.dart';
 import 'fridge_controller.dart';
+import 'widgets/expiring_banner.dart';
+import 'widgets/fridge_header.dart';
+import 'widgets/fridge_item_card.dart';
 
-/// Contenu de l'onglet Frigo (`HomeShell`) : atterrit directement sur le
-/// frigo/placard du groupe actif, avec les actions liées au groupe (courses,
-/// suggestions, infos/invitation) en accès direct dans l'AppBar — pas besoin
-/// de passer par un écran intermédiaire pour y arriver.
 class FridgeScreen extends ConsumerStatefulWidget {
   const FridgeScreen({super.key, required this.group});
 
@@ -27,90 +25,50 @@ class FridgeScreen extends ConsumerStatefulWidget {
   ConsumerState<FridgeScreen> createState() => _FridgeScreenState();
 }
 
-class _FridgeScreenState extends ConsumerState<FridgeScreen>
-    with SingleTickerProviderStateMixin {
-  late final _tabController = TabController(length: 2, vsync: this);
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+class _FridgeScreenState extends ConsumerState<FridgeScreen> {
+  StorageLocation _selected = StorageLocation.fridge;
 
   @override
   Widget build(BuildContext context) {
     final groupId = widget.group.id;
     final itemsAsync = ref.watch(fridgeItemsProvider(groupId));
-    final groups = ref.watch(groupsControllerProvider).value ?? [];
+    final allItems = itemsAsync.value ?? [];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.group.name),
-        actions: [
-          if (groups.length > 1)
-            GroupSwitcherMenuButton(
-              groups: groups,
-              onSelected: (selected) =>
-                  ref.read(activeGroupProvider.notifier).select(selected),
-            ),
-          IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ShoppingListScreen(
-                  groupId: groupId,
-                  groupName: widget.group.name,
-                ),
-              ),
-            ),
-            icon: const Icon(Icons.checklist),
-            tooltip: 'Liste de courses',
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => RecipeSuggestionsScreen(
-                  groupId: groupId,
-                  groupName: widget.group.name,
-                ),
-              ),
-            ),
-            icon: const Icon(Icons.auto_awesome),
-            tooltip: 'Suggestions de recettes',
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => GroupDetailScreen(group: widget.group),
-              ),
-            ),
-            icon: const Icon(Icons.group_outlined),
-            tooltip: 'Membres et invitation',
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Frigo'),
-            Tab(text: 'Placard'),
-          ],
-        ),
-      ),
-      body: itemsAsync.toWidget(
-        onRetry: () => ref.invalidate(fridgeItemsProvider(groupId)),
-        data: (items) => TabBarView(
-          controller: _tabController,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
           children: [
-            _ItemsList(
-              items: items
-                  .where((i) => i.storageLocation == StorageLocation.fridge)
-                  .toList(),
-              groupId: groupId,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+              child: Column(
+                children: [
+                  FridgeHeader(group: widget.group),
+                  const SizedBox(height: 20),
+                  SegmentedPill<StorageLocation>(
+                    values: StorageLocation.values,
+                    selected: _selected,
+                    labelOf: (location) => location.label,
+                    badgeOf: (location) => allItems
+                        .where((i) => i.storageLocation == location)
+                        .length
+                        .toString(),
+                    onChanged: (location) =>
+                        setState(() => _selected = location),
+                  ),
+                ],
+              ),
             ),
-            _ItemsList(
-              items: items
-                  .where((i) => i.storageLocation == StorageLocation.pantry)
-                  .toList(),
-              groupId: groupId,
+            Expanded(
+              child: itemsAsync.toWidget(
+                onRetry: () => ref.invalidate(fridgeItemsProvider(groupId)),
+                data: (items) => _ItemsList(
+                  items: items
+                      .where((i) => i.storageLocation == _selected)
+                      .toList(),
+                  group: widget.group,
+                ),
+              ),
             ),
           ],
         ),
@@ -120,9 +78,7 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen>
           MaterialPageRoute(
             builder: (_) => AddFridgeItemScreen(
               groupId: groupId,
-              defaultLocation: _tabController.index == 0
-                  ? StorageLocation.fridge
-                  : StorageLocation.pantry,
+              defaultLocation: _selected,
             ),
           ),
         ),
@@ -134,10 +90,10 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen>
 }
 
 class _ItemsList extends ConsumerWidget {
-  const _ItemsList({required this.items, required this.groupId});
+  const _ItemsList({required this.items, required this.group});
 
   final List<FridgeItem> items;
-  final int groupId;
+  final Group group;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -149,39 +105,80 @@ class _ItemsList extends ConsumerWidget {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: () => ref.refresh(fridgeItemsProvider(groupId).future),
-      child: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final item = items[index];
-          final expiryColor = item.isExpiringSoon
-              ? Theme.of(context).colorScheme.error
-              : null;
+    final sorted = [...items]
+      ..sort((a, b) => a.expirationDate.compareTo(b.expirationDate));
+    final expiringCount = sorted.where((i) => i.isExpiringSoon).length;
 
-          return ListTile(
-            title: Text(item.foodReference.name),
-            subtitle: Text('${item.quantity.toStringAsFixed(0)} ${item.unit}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${item.expirationDate.day}/${item.expirationDate.month}/${item.expirationDate.year}',
-                  style: TextStyle(
-                    color: expiryColor,
-                    fontWeight: item.isExpiringSoon ? FontWeight.bold : null,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () =>
-                      deleteFridgeItem(ref, groupId: groupId, itemId: item.id),
-                  icon: const Icon(Icons.delete_outline),
-                ),
-              ],
+    final rows = [
+      if (expiringCount > 0)
+        ExpiringBanner(
+          count: expiringCount,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => RecipeSuggestionsScreen(
+                groupId: group.id,
+                groupName: group.name,
+              ),
             ),
-          );
-        },
+          ),
+        ),
+      for (final item in sorted)
+        Dismissible(
+          key: ValueKey(item.id),
+          direction: DismissDirection.endToStart,
+          background: const _DeleteBackground(),
+          confirmDismiss: (_) => _delete(context, ref, item),
+          child: FridgeItemCard(item: item),
+        ),
+      const Text(
+        'Glisser une ligne vers la gauche pour la supprimer',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
       ),
+    ];
+
+    return RefreshIndicator(
+      onRefresh: () => ref.refresh(fridgeItemsProvider(group.id).future),
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 96),
+        itemCount: rows.length,
+        itemBuilder: (_, index) => rows[index],
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
+      ),
+    );
+  }
+
+  Future<bool> _delete(
+    BuildContext context,
+    WidgetRef ref,
+    FridgeItem item,
+  ) async {
+    try {
+      await deleteFridgeItem(ref, groupId: group.id, itemId: item.id);
+      return true;
+    } on FridgeFailure catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+      return false;
+    }
+  }
+}
+
+class _DeleteBackground extends StatelessWidget {
+  const _DeleteBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 24),
+      decoration: BoxDecoration(
+        color: AppColors.errorBg,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: const Icon(Icons.delete_outline, color: AppColors.errorText),
     );
   }
 }

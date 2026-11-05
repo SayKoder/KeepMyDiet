@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme.dart';
-import '../../../shared/async_value_ui.dart';
-import '../../../shared/round_back_button.dart';
-import '../../recipes/domain/recipe.dart';
-import '../../recipes/presentation/recipes_controller.dart';
+import '../../../shared/widgets/async_value_ui.dart';
+import '../../../shared/widgets/round_back_button.dart';
 import '../domain/shopping_list_item.dart';
 import 'shopping_list_checkout_screen.dart';
 import 'shopping_list_controller.dart';
+import 'widgets/checkout_bar.dart';
+import 'widgets/recipe_picker_sheet.dart';
+import 'widgets/shopping_item_group.dart';
 
 class ShoppingListScreen extends ConsumerStatefulWidget {
   const ShoppingListScreen({
@@ -25,17 +26,15 @@ class ShoppingListScreen extends ConsumerStatefulWidget {
 }
 
 class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
-  final Set<int> _selectedItemIds = {};
+  final Set<int> _selectedIds = {};
+
+  void _toggle(int id) => setState(() {
+    if (!_selectedIds.remove(id)) _selectedIds.add(id);
+  });
 
   Future<void> _pickRecipes() async {
-    final recipeIds = await showModalBottomSheet<List<int>>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => _RecipePickerSheet(groupId: widget.groupId),
-    );
-    if (recipeIds == null || recipeIds.isEmpty || !mounted) {
-      return;
-    }
+    final recipeIds = await showRecipePickerSheet(context);
+    if (recipeIds == null || recipeIds.isEmpty || !mounted) return;
 
     try {
       await generateShoppingList(
@@ -51,489 +50,129 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
     }
   }
 
-  Future<void> _goToCheckout(List<ShoppingListItem> allItems) async {
-    final selected = allItems
-        .where((i) => _selectedItemIds.contains(i.id))
-        .toList();
+  Future<void> _goToCheckout(List<ShoppingListItem> items) async {
     final success = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => ShoppingListCheckoutScreen(
           groupId: widget.groupId,
-          items: selected,
+          items: items.where((i) => _selectedIds.contains(i.id)).toList(),
         ),
       ),
     );
-    if (success == true) {
-      setState(() => _selectedItemIds.clear());
-    }
+    if (success == true) setState(_selectedIds.clear);
   }
 
   @override
   Widget build(BuildContext context) {
     final listAsync = ref.watch(shoppingListProvider(widget.groupId));
+    final items = listAsync.value?.items ?? const <ShoppingListItem>[];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Stack(
-          children: [
-            RefreshIndicator(
-              onRefresh: () =>
-                  ref.refresh(shoppingListProvider(widget.groupId).future),
-              child: listAsync.toWidget(
-                onRetry: () => ref.invalidate(shoppingListProvider(widget.groupId)),
-                data: (list) {
-                  final items = list?.items ?? [];
-                  final total = items.length;
-                  final checkedCount = _selectedItemIds.length;
-                  final progress = total == 0 ? 0.0 : checkedCount / total;
-
-                  final grouped = <String, List<ShoppingListItem>>{};
-                  for (final item in items) {
-                    grouped
-                        .putIfAbsent(
-                          item.sourceRecipeName ?? 'Autres articles',
-                          () => [],
-                        )
-                        .add(item);
-                  }
-
-                  return ListView(
-                    padding: EdgeInsets.fromLTRB(
-                      20,
-                      8,
-                      20,
-                      _selectedItemIds.isEmpty ? 32 : 120,
-                    ),
-                    children: [
-                      Row(
-                        children: [
-                          const RoundBackButton(),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Liste de courses',
-                                  style: Theme.of(context).textTheme.titleLarge,
-                                ),
-                                Text(
-                                  'Groupe ${widget.groupName}',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      Material(
-                        color: AppColors.brandLight,
-                        borderRadius: BorderRadius.circular(999),
-                        child: InkWell(
-                          onTap: _pickRecipes,
-                          borderRadius: BorderRadius.circular(999),
-                          child: Container(
-                            height: 52,
-                            alignment: Alignment.center,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(
-                                  Icons.restaurant_menu,
-                                  size: 20,
-                                  color: AppColors.brandDark,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Choisir des recettes',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.brandDark,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      if (items.isEmpty)
-                        const EmptyState(
-                          icon: Icons.shopping_cart_outlined,
-                          title: 'Liste vide',
-                          message:
-                              'Choisis des recettes pour générer la liste.',
-                        )
-                      else ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Dans le panier',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.ink,
-                              ),
-                            ),
-                            Text(
-                              '$checkedCount / $total',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(999),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            minHeight: 8,
-                            backgroundColor: const Color(0xFFE3E9E1),
-                            valueColor: const AlwaysStoppedAnimation(
-                              AppColors.brand,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        ...grouped.entries.expand(
-                          (entry) => [
-                            Text(
-                              entry.key.toUpperCase(),
-                              style: Theme.of(context).textTheme.labelSmall,
-                            ),
-                            const SizedBox(height: 10),
-                            _ItemGroupCard(
-                              items: entry.value,
-                              selectedIds: _selectedItemIds,
-                              onToggle: (id, value) => setState(() {
-                                if (value) {
-                                  _selectedItemIds.add(id);
-                                } else {
-                                  _selectedItemIds.remove(id);
-                                }
-                              }),
-                            ),
-                            const SizedBox(height: 18),
-                          ],
-                        ),
-                      ],
-                    ],
-                  );
-                },
-              ),
-            ),
-            if (_selectedItemIds.isNotEmpty)
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: 16,
-                child: _CheckoutBar(
-                  count: _selectedItemIds.length,
-                  onValidate: () => _goToCheckout(listAsync.value?.items ?? []),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ItemGroupCard extends StatelessWidget {
-  const _ItemGroupCard({
-    required this.items,
-    required this.selectedIds,
-    required this.onToggle,
-  });
-
-  final List<ShoppingListItem> items;
-  final Set<int> selectedIds;
-  final void Function(int id, bool value) onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Column(
-        children: [
-          for (var i = 0; i < items.length; i++)
-            _ShoppingItemRow(
-              item: items[i],
-              checked: selectedIds.contains(items[i].id),
-              showDivider: i > 0,
-              onChanged: (value) => onToggle(items[i].id, value),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ShoppingItemRow extends StatelessWidget {
-  const _ShoppingItemRow({
-    required this.item,
-    required this.checked,
-    required this.showDivider,
-    required this.onChanged,
-  });
-
-  final ShoppingListItem item;
-  final bool checked;
-  final bool showDivider;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => onChanged(!checked),
-      child: Container(
-        height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          border: showDivider
-              ? const Border(top: BorderSide(color: Color(0xFFEEF2EC)))
-              : null,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 26,
-              height: 26,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: checked ? AppColors.brand : null,
-                border: checked
-                    ? null
-                    : Border.all(color: const Color(0xFFC9D1C8), width: 2),
-              ),
-              child: checked
-                  ? const Icon(Icons.check, size: 14, color: Colors.white)
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                item.name,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: checked ? AppColors.iconMuted : AppColors.ink,
-                  decoration: checked ? TextDecoration.lineThrough : null,
-                ),
-              ),
-            ),
-            Text(
-              '${item.quantity.toStringAsFixed(0)} ${item.unit}',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: checked ? AppColors.iconMuted : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CheckoutBar extends StatelessWidget {
-  const _CheckoutBar({required this.count, required this.onValidate});
-
-  final int count;
-  final VoidCallback onValidate;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 10, 10),
-      decoration: BoxDecoration(
-        color: AppColors.ink,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.ink.withValues(alpha: 0.25),
-            blurRadius: 32,
-            offset: const Offset(0, 14),
+        child: RefreshIndicator(
+          onRefresh: () =>
+              ref.refresh(shoppingListProvider(widget.groupId).future),
+          child: listAsync.toWidget(
+            onRetry: () => ref.invalidate(shoppingListProvider(widget.groupId)),
+            data: (_) => _buildList(items),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '$count article${count > 1 ? 's' : ''} coché${count > 1 ? 's' : ''}',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'À ranger au frigo ou au placard',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Material(
-            color: AppColors.limeAccent,
-            borderRadius: BorderRadius.circular(999),
-            child: InkWell(
-              onTap: onValidate,
-              borderRadius: BorderRadius.circular(999),
-              child: Container(
-                height: 52,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Valider',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.ink,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Sélection multiple de recettes (cases à cocher), renvoie leurs ids via
-/// `Navigator.pop` — CLAUDE.md : "Sélection des recettes souhaitées pour la
-/// semaine → validation via cases à cocher."
-class _RecipePickerSheet extends ConsumerStatefulWidget {
-  const _RecipePickerSheet({required this.groupId});
-
-  final int groupId;
-
-  @override
-  ConsumerState<_RecipePickerSheet> createState() => _RecipePickerSheetState();
-}
-
-class _RecipePickerSheetState extends ConsumerState<_RecipePickerSheet> {
-  final Set<int> _selected = {};
-
-  @override
-  Widget build(BuildContext context) {
-    final recipesAsync = ref.watch(recipesControllerProvider);
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Choisir des recettes',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Flexible(
-              child: recipesAsync.when(
-                data: (recipes) => _RecipeCheckboxList(
-                  recipes: recipes,
-                  selected: _selected,
-                  onToggle: (id, value) => setState(() {
-                    if (value) {
-                      _selected.add(id);
-                    } else {
-                      _selected.remove(id);
-                    }
-                  }),
-                ),
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (error, _) => Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text('Erreur : $error'),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _selected.isEmpty
-                  ? null
-                  : () => Navigator.of(context).pop(_selected.toList()),
-              child: Text('Ajouter ${_selected.length} recette(s) à la liste'),
-            ),
-          ],
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: _selectedIds.isEmpty
+          ? null
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: CheckoutBar(
+                count: _selectedIds.length,
+                onValidate: () => _goToCheckout(items),
+              ),
+            ),
     );
   }
-}
 
-class _RecipeCheckboxList extends StatelessWidget {
-  const _RecipeCheckboxList({
-    required this.recipes,
-    required this.selected,
-    required this.onToggle,
-  });
-
-  final List<Recipe> recipes;
-  final Set<int> selected;
-  final void Function(int id, bool value) onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    if (recipes.isEmpty) {
-      return const EmptyState(
-        icon: Icons.menu_book_outlined,
-        title: 'Aucune recette disponible',
-        message: 'Crée-en une avant de générer une liste.',
-      );
+  Widget _buildList(List<ShoppingListItem> items) {
+    final byRecipe = <String, List<ShoppingListItem>>{};
+    for (final item in items) {
+      (byRecipe[item.sourceRecipeName ?? 'Autres articles'] ??= []).add(item);
     }
+    final progress = items.isEmpty ? 0.0 : _selectedIds.length / items.length;
 
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: recipes.length,
-      itemBuilder: (context, index) {
-        final recipe = recipes[index];
-
-        return CheckboxListTile(
-          value: selected.contains(recipe.id),
-          onChanged: (value) => onToggle(recipe.id, value ?? false),
-          title: Text(recipe.name),
-          subtitle: Text(
-            '${recipe.ingredients.length} ingrédients — pour ${recipe.referenceServings} pers.',
+    return ListView(
+      padding: EdgeInsets.fromLTRB(20, 8, 20, _selectedIds.isEmpty ? 32 : 120),
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const RoundBackButton(),
+          title: Text(
+            'Liste de courses',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-        );
-      },
+          subtitle: Text(
+            'Groupe ${widget.groupName}',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: _pickRecipes,
+          icon: const Icon(Icons.restaurant_menu, size: 20),
+          label: const Text('Choisir des recettes'),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.brandLight,
+            foregroundColor: AppColors.brandDark,
+          ),
+        ),
+        const SizedBox(height: 18),
+        if (items.isEmpty)
+          const EmptyState(
+            icon: Icons.shopping_cart_outlined,
+            title: 'Liste vide',
+            message: 'Choisis des recettes pour générer la liste.',
+          )
+        else ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Dans le panier',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+              Text(
+                '${_selectedIds.length} / ${items.length}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: 8,
+            borderRadius: BorderRadius.circular(4),
+            backgroundColor: AppColors.border,
+            color: AppColors.brand,
+          ),
+          for (final MapEntry(key: recipeName, value: recipeItems)
+              in byRecipe.entries)
+            Padding(
+              padding: const EdgeInsets.only(top: 18),
+              child: ShoppingItemGroup(
+                title: recipeName,
+                items: recipeItems,
+                selectedIds: _selectedIds,
+                onToggle: _toggle,
+              ),
+            ),
+        ],
+      ],
     );
   }
 }

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme.dart';
+import '../../core/theme.dart';
 
-/// Un onglet de `AppBottomNav` : une icône (+ sa variante "actif") et un
-/// libellé affiché seulement sur l'onglet sélectionné.
 class AppNavDestination {
   const AppNavDestination({
     required this.icon,
@@ -16,11 +14,7 @@ class AppNavDestination {
   final String label;
 }
 
-/// Barre de navigation flottante de la maquette : une pilule blanche avec
-/// ombre, l'onglet actif devient une pilule sombre (icône + libellé), les
-/// autres restent juste une icône grise. Pas le `NavigationBar` de Material
-/// (qui est un simple bandeau plein, sans pilule flottante ni largeur
-/// variable par onglet) — on construit ce widget à la main.
+// Pilule flottante de la maquette (le NavigationBar Material n'en propose pas).
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     super.key,
@@ -33,34 +27,21 @@ class AppBottomNav extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
   final List<AppNavDestination> destinations;
 
-  /// Hauteur réelle de la pilule (`Container` ci-dessous).
   static const double pillHeight = 72;
 
-  /// Marge entre le bas de l'écran et le bas de la pilule : part de la vraie
-  /// zone système de l'appareil (`MediaQuery.padding.bottom` — barre de
-  /// gestes ou barre 3-boutons selon le téléphone, 0 sur certains, 30-48px
-  /// sur d'autres) plutôt qu'un nombre fixe, jamais en dessous de 16 (valeur
-  /// de la maquette). Une marge fixe de 24 ne suffisait pas sur les
-  /// téléphones où cette barre est visible et plus haute — la pilule se
-  /// retrouvait partiellement dessous, zone où les taps sont interceptés par
-  /// le système plutôt que par l'app.
+  // Tient compte de la barre système du téléphone (gestes ou 3 boutons).
   static double bottomMargin(BuildContext context) {
     final systemBottomInset = MediaQuery.paddingOf(context).bottom;
     return systemBottomInset > 0 ? systemBottomInset + 12 : 16.0;
   }
 
-  /// Hauteur totale occupée par la pilule (elle + sa marge) : la clearance à
-  /// laisser à tout élément flottant qui lui est propre à l'écran (FAB...)
-  /// pour passer AU-DESSUS d'elle plutôt que de se retrouver en partie
-  /// dessous, visuellement masqué par elle ou par le dégradé qui la précède.
+  // Hauteur à laisser libre pour qu'un élément flottant passe au-dessus.
   static double floatingClearance(BuildContext context) =>
       bottomMargin(context) + pillHeight;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      // La pilule ne touche ni les bords ni le bas de l'écran — marge 16 de
-      // chaque côté (valeur de la maquette), bas adapté à l'appareil ci-dessus.
       padding: EdgeInsets.fromLTRB(16, 0, 16, bottomMargin(context)),
       child: Container(
         height: pillHeight,
@@ -80,9 +61,6 @@ class AppBottomNav extends StatelessWidget {
           children: [
             for (var i = 0; i < destinations.length; i++)
               Expanded(
-                // L'onglet actif occupe plus de largeur (icône + libellé) que
-                // les autres (icône seule) — ratio 3:2, repris de la maquette
-                // (colonnes de grille 1.5fr / 1fr).
                 flex: i == selectedIndex ? 3 : 2,
                 child: _NavItem(
                   destination: destinations[i],
@@ -97,13 +75,7 @@ class AppBottomNav extends StatelessWidget {
   }
 }
 
-/// FAB d'écran d'onglet (Recettes, Frigo...) qui flotte juste au-dessus de la
-/// pilule — sans ce décalage, le `Scaffold` imbriqué de l'onglet positionne
-/// déjà correctement le FAB tout seul, mais sa moitié basse reste prise dans
-/// le léger dégradé anti-faux-clic de `HomeShell` (peint par-dessus dans le
-/// `Stack` du shell), qui l'estompe comme s'il était passé dessous. Décalage
-/// de la moitié de `floatingClearance` : exactement la hauteur de ce
-/// dégradé (`fadeHeight` dans `home_shell.dart`), pour passer juste au-dessus.
+// FAB remonté au-dessus du dégradé qui précède la barre de navigation.
 class FabAboveNav extends StatelessWidget {
   const FabAboveNav({
     super.key,
@@ -147,9 +119,6 @@ class _NavItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Material(
-        // `InkWell` a besoin d'un ancêtre `Material` pour dessiner l'effet
-        // d'encre du tap (le "splash") — sans lui, `onTap` marcherait quand
-        // même mais sans aucun retour visuel.
         color: selected ? AppColors.ink : Colors.transparent,
         borderRadius: BorderRadius.circular(999),
         child: InkWell(
