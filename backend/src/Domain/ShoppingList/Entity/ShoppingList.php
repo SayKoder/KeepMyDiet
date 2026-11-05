@@ -7,10 +7,12 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use App\Domain\Group\Entity\Group;
+use App\Domain\ShoppingList\Dto\AddShoppingListItemInput;
 use App\Domain\ShoppingList\Dto\CheckoutShoppingListInput;
 use App\Domain\ShoppingList\Dto\GenerateFromMealPlanInput;
 use App\Domain\ShoppingList\Dto\GenerateShoppingListInput;
 use App\Domain\ShoppingList\Repository\ShoppingListRepository;
+use App\Domain\ShoppingList\State\AddShoppingListItemProcessor;
 use App\Domain\ShoppingList\State\CheckoutShoppingListProcessor;
 use App\Domain\ShoppingList\State\GenerateShoppingListFromMealPlanProcessor;
 use App\Domain\ShoppingList\State\GenerateShoppingListProcessor;
@@ -30,7 +32,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * 2026-10-02). `generate_from_plan` (2026-10-07) est une 3ᵉ façon
  * d'alimenter la liste, à partir du planning de repas plutôt que d'une
  * sélection manuelle de recettes — voir GenerateShoppingListFromMealPlanProcessor
- * pour ce qui diffère de `generate`. Pas de `Post`/`Patch`/`Delete`
+ * pour ce qui diffère de `generate`. `items` ajoute un article isolé (sans
+ * recette d'origine). Pas de `Post`/`Patch`/`Delete`
  * classiques exposés : tout passe par ces actions métier.
  */
 #[ORM\Entity(repositoryClass: ShoppingListRepository::class)]
@@ -46,6 +49,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
             uriVariables: ['groupId' => new Link(fromClass: Group::class, toProperty: 'group')],
             input: GenerateShoppingListInput::class,
             processor: GenerateShoppingListProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/groups/{groupId}/shopping_lists/items',
+            uriVariables: ['groupId' => new Link(fromClass: Group::class, toProperty: 'group')],
+            input: AddShoppingListItemInput::class,
+            processor: AddShoppingListItemProcessor::class,
         ),
         new Post(
             uriTemplate: '/groups/{groupId}/shopping_lists/checkout',
