@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/widgets/app_bottom_nav.dart';
-import '../../../shared/widgets/async_value_ui.dart';
-import '../../meal_plan/presentation/meal_plan_screen.dart';
-import 'create_recipe_screen.dart';
-import 'recipe_detail_screen.dart';
-import 'recipes_controller.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/meal_plan_screen.dart';
+import 'package:keepmydiet/features/recipes/presentation/create_recipe_screen.dart';
+import 'package:keepmydiet/features/recipes/presentation/recipe_detail_screen.dart';
+import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class RecipesListScreen extends ConsumerWidget {
   const RecipesListScreen({super.key});

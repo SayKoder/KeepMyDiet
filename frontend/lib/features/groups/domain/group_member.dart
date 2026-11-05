@@ -1,4 +1,4 @@
-import 'group_role.dart';
+import 'package:keepmydiet/features/groups/domain/group_role.dart';
 
 /// Une adhésion (`GroupMembership` côté backend). `user` est embarqué
 /// directement dans le JSON grâce à `#[ApiProperty(readableLink: true)]` sur

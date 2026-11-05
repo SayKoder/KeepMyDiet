@@ -1,9 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../../fridge/domain/storage_location.dart';
-import '../domain/shopping_list.dart';
+import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
+import 'package:keepmydiet/features/shopping_list/domain/shopping_list.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final shoppingListApiClientProvider = Provider<ShoppingListApiClient>((ref) {
   return ShoppingListApiClient(ref.watch(dioProvider));

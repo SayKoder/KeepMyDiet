@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/missing_ingredient.dart';
+import 'package:keepmydiet/features/meal_plan/domain/missing_ingredient.dart';
 
 Future<void> showMissingIngredientsSheet(
   BuildContext context,

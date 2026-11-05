@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/widgets/message_banner.dart';
-import 'compact_number_field.dart';
-import 'profile_section_card.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/nutrition/presentation/widgets/compact_number_field.dart';
+import 'package:keepmydiet/features/nutrition/presentation/widgets/profile_section_card.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class GoalCard extends StatelessWidget {
   const GoalCard({

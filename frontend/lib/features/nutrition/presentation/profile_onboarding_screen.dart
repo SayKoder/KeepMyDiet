@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme.dart';
-import '../../../shared/widgets/message_banner.dart';
-import '../../../shared/widgets/submit_button_content.dart';
-import '../domain/activity_level.dart';
-import '../domain/sex.dart';
-import 'profile_controller.dart';
-import 'profile_input.dart';
-import 'widgets/activity_level_card.dart';
-import 'widgets/goal_card.dart';
-import 'widgets/onboarding_reveal.dart';
-import 'widgets/profile_basics_card.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/nutrition/domain/activity_level.dart';
+import 'package:keepmydiet/features/nutrition/domain/sex.dart';
+import 'package:keepmydiet/features/nutrition/presentation/profile_controller.dart';
+import 'package:keepmydiet/features/nutrition/presentation/profile_input.dart';
+import 'package:keepmydiet/features/nutrition/presentation/widgets/activity_level_card.dart';
+import 'package:keepmydiet/features/nutrition/presentation/widgets/goal_card.dart';
+import 'package:keepmydiet/features/nutrition/presentation/widgets/onboarding_reveal.dart';
+import 'package:keepmydiet/features/nutrition/presentation/widgets/profile_basics_card.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 // Parcours guidé en 3 étapes après l'inscription, avec les mêmes cartes que
 // le formulaire de profil.

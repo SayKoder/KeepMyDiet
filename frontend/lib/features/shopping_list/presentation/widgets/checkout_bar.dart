@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
+import 'package:keepmydiet/core/theme.dart';
 
 class CheckoutBar extends StatelessWidget {
   const CheckoutBar({super.key, required this.count, required this.onValidate});

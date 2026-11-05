@@ -1,9 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../shared/api_client.dart';
-import '../../../../shared/widgets/form_error_text.dart';
-import '../../../../shared/widgets/submit_button_content.dart';
+import 'package:keepmydiet/shared/api_client.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class SingleFieldFormScreen extends StatefulWidget {
   const SingleFieldFormScreen({

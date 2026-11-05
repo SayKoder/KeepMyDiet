@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../shared/widgets/dialog_action_buttons.dart';
-import '../../../../shared/widgets/form_error_text.dart';
-import '../../../../shared/widgets/number_field.dart';
-import '../../../../shared/widgets/submit_button_content.dart';
-import '../../data/fridge_api_client.dart';
-import '../../data/open_food_facts_client.dart';
-import '../../domain/food_reference.dart';
-import '../fridge_controller.dart';
+import 'package:keepmydiet/features/fridge/data/fridge_api_client.dart';
+import 'package:keepmydiet/features/fridge/data/open_food_facts_client.dart';
+import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
+import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 // `product` pré-remplit le formulaire (trouvé sur Open Food Facts),
 // `barcode` est rattaché au produit pour le retrouver au prochain scan.

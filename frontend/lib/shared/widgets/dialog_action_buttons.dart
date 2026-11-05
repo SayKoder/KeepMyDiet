@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme.dart';
+import 'package:keepmydiet/core/theme.dart';
 
 // Toujours côte à côte : les `actions` d'un AlertDialog s'empilent si le
 // texte est trop long.

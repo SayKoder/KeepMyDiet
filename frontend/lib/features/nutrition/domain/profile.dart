@@ -1,5 +1,5 @@
-import 'activity_level.dart';
-import 'sex.dart';
+import 'package:keepmydiet/features/nutrition/domain/activity_level.dart';
+import 'package:keepmydiet/features/nutrition/domain/sex.dart';
 
 /// `bmr`/`tdee`/`calorieGoal` sont calculés à la volée côté backend (jamais
 /// stockés) — toujours à jour, même juste après un changement de poids.

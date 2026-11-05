@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/widgets/message_banner.dart';
-import '../../../shared/widgets/segmented_pill.dart';
-import 'auth_controller.dart';
-import 'widgets/login_header.dart';
+import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
+import 'package:keepmydiet/features/auth/presentation/widgets/login_header.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});

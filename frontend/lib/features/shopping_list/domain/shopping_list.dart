@@ -1,4 +1,4 @@
-import 'shopping_list_item.dart';
+import 'package:keepmydiet/features/shopping_list/domain/shopping_list_item.dart';
 
 /// Une seule liste "active" par groupe côté backend — voir ShoppingListApiClient.
 class ShoppingList {

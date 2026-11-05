@@ -1,5 +1,5 @@
-import 'recipe_ingredient.dart';
-import 'recipe_step.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_step.dart';
 
 /// `totalCalories`/`totalProteins`/`totalCarbs`/`totalFats` sont calculés à la
 /// volée côté backend (jamais stockés) — juste une somme sur les ingrédients,

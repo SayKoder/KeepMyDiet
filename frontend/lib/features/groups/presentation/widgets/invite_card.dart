@@ -2,12 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/api_client.dart';
-import '../../../../shared/widgets/white_card.dart';
-import '../../data/groups_api_client.dart';
-import '../../domain/group.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/groups/data/groups_api_client.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/shared/api_client.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class InviteCard extends ConsumerStatefulWidget {
   const InviteCard({super.key, required this.group});

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
-import '../../../../shared/widgets/icon_badge.dart';
-import '../../../../shared/widgets/white_card.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class MacroCard extends StatelessWidget {
   const MacroCard({

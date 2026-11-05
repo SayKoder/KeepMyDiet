@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme.dart';
-import '../../../shared/widgets/async_value_ui.dart';
-import '../../../shared/widgets/round_back_button.dart';
-import '../domain/shopping_list_item.dart';
-import 'shopping_list_checkout_screen.dart';
-import 'shopping_list_controller.dart';
-import 'widgets/checkout_bar.dart';
-import 'widgets/recipe_picker_sheet.dart';
-import 'widgets/shopping_item_group.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/shopping_list/domain/shopping_list_item.dart';
+import 'package:keepmydiet/features/shopping_list/presentation/shopping_list_checkout_screen.dart';
+import 'package:keepmydiet/features/shopping_list/presentation/shopping_list_controller.dart';
+import 'package:keepmydiet/features/shopping_list/presentation/widgets/checkout_bar.dart';
+import 'package:keepmydiet/features/shopping_list/presentation/widgets/recipe_picker_sheet.dart';
+import 'package:keepmydiet/features/shopping_list/presentation/widgets/shopping_item_group.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class ShoppingListScreen extends ConsumerStatefulWidget {
   const ShoppingListScreen({

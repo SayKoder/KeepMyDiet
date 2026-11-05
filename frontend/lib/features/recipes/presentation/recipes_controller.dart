@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../data/recipes_api_client.dart';
-import '../domain/recipe.dart';
-import '../domain/recipe_failure.dart';
-import '../domain/recipe_ingredient.dart';
-import '../domain/recipe_step.dart';
+import 'package:keepmydiet/features/recipes/data/recipes_api_client.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_failure.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_step.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final recipesControllerProvider =
     AsyncNotifierProvider<RecipesController, List<Recipe>>(

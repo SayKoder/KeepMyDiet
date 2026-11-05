@@ -1,20 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/api_client.dart';
-import '../../../../shared/widgets/dialog_action_buttons.dart';
-import '../../../groups/presentation/groups_controller.dart';
-import '../../../meal_plan/domain/meal_plan_entry.dart';
-import '../../../meal_plan/domain/meal_plan_entry_status.dart';
-import '../../../meal_plan/domain/meal_type.dart';
-import '../../../meal_plan/presentation/add_meal_plan_entry_screen.dart';
-import '../../../meal_plan/presentation/meal_plan_controller.dart';
-import '../../../nutrition/presentation/daily_nutrition_log_controller.dart';
-import '../journal_date_controller.dart';
-import '../journal_quick_add_sheet.dart';
-import 'meal_prompt_card.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/home/presentation/journal_date_controller.dart';
+import 'package:keepmydiet/features/home/presentation/journal_quick_add_sheet.dart';
+import 'package:keepmydiet/features/home/presentation/widgets/meal_prompt_card.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry_status.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_type.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/add_meal_plan_entry_screen.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/meal_plan_controller.dart';
+import 'package:keepmydiet/features/nutrition/presentation/daily_nutrition_log_controller.dart';
+import 'package:keepmydiet/shared/api_client.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 Future<void> showAddMealSheet(BuildContext context) {
   return showModalBottomSheet<void>(

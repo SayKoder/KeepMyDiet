@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../auth/presentation/auth_controller.dart';
-import '../../home/presentation/journal_date_controller.dart';
-import '../data/nutrition_api_client.dart';
-import '../domain/water_intake.dart';
+import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
+import 'package:keepmydiet/features/home/presentation/journal_date_controller.dart';
+import 'package:keepmydiet/features/nutrition/data/nutrition_api_client.dart';
+import 'package:keepmydiet/features/nutrition/domain/water_intake.dart';
 
 final waterIntakeControllerProvider =
     AsyncNotifierProvider<WaterIntakeController, WaterIntake?>(

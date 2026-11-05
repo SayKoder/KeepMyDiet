@@ -30,7 +30,7 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 
 ## Preview web (dev) — tester les écrans depuis un téléphone
 `docker-compose.web.yml` compile l'app Flutter en web (Flutter 3.47.7, cf. `../frontend/Dockerfile`) et la sert avec l'API derrière le Traefik du serveur, en accès public :
-**https://rfaupin-dev.online/keepmydiet/** (l'API est proxifiée en même origine sur `/keepmydiet/api`).
+**https://remi-faupin.me/keepmydiet/** (l'API est proxifiée en même origine sur `/keepmydiet/api`).
 
 ```
 cp .env.web.dist .env.web     # puis renseigner les secrets (gitignored)

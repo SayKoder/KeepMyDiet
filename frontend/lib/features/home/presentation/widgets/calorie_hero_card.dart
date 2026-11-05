@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/widgets/pill.dart';
-import '../../../nutrition/domain/profile.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/nutrition/domain/profile.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class CalorieHeroCard extends StatelessWidget {
   const CalorieHeroCard({

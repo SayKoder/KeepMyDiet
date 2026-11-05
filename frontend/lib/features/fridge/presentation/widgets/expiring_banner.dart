@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
+import 'package:keepmydiet/core/theme.dart';
 
 class ExpiringBanner extends StatelessWidget {
   const ExpiringBanner({super.key, required this.count, required this.onTap});
@@ -34,7 +34,7 @@ class ExpiringBanner extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
       ),
       subtitle: const Text(
         'Voir les recettes qui les utilisent',

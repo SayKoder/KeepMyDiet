@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
-import '../../domain/activity_level.dart';
-import 'profile_section_card.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/nutrition/domain/activity_level.dart';
+import 'package:keepmydiet/features/nutrition/presentation/widgets/profile_section_card.dart';
 
 class ActivityLevelCard extends StatelessWidget {
   const ActivityLevelCard({

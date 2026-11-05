@@ -1,14 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../shared/api_client.dart';
-import '../../../../shared/widgets/white_card.dart';
-import '../../../groups/presentation/groups_controller.dart';
-import '../../../meal_plan/domain/meal_plan_entry.dart';
-import '../../../meal_plan/domain/meal_plan_entry_status.dart';
-import '../../../meal_plan/presentation/meal_plan_controller.dart';
-import '../journal_quick_add_sheet.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/home/presentation/journal_quick_add_sheet.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry_status.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/meal_plan_controller.dart';
+import 'package:keepmydiet/shared/api_client.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class MealPromptCard extends ConsumerWidget {
   const MealPromptCard({super.key, required this.entry});

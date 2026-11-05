@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/widgets/async_value_ui.dart';
-import '../domain/recipe_suggestion.dart';
-import 'recipe_suggestions_controller.dart';
+import 'package:keepmydiet/features/recipe_suggestions/domain/recipe_suggestion.dart';
+import 'package:keepmydiet/features/recipe_suggestions/presentation/recipe_suggestions_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class RecipeSuggestionsScreen extends ConsumerWidget {
   const RecipeSuggestionsScreen({

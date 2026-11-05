@@ -3,12 +3,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'core/theme.dart';
-import 'features/auth/domain/auth_session.dart';
-import 'features/auth/presentation/auth_controller.dart';
-import 'features/auth/presentation/login_screen.dart';
-import 'features/home/presentation/home_shell.dart';
-import 'shared/responsive.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/auth/domain/auth_session.dart';
+import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
+import 'package:keepmydiet/features/auth/presentation/login_screen.dart';
+import 'package:keepmydiet/features/home/presentation/home_shell.dart';
+import 'package:keepmydiet/shared/responsive.dart';
 
 /// Permet à `_AuthGate` de vider la pile de navigation depuis son `ref.listen`
 /// (voir plus bas) sans dépendre d'un `BuildContext` d'écran particulier —

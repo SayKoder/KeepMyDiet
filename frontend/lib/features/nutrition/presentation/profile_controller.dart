@@ -1,13 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../../auth/presentation/auth_controller.dart';
-import '../data/nutrition_api_client.dart';
-import '../domain/activity_level.dart';
-import '../domain/profile.dart';
-import '../domain/profile_failure.dart';
-import '../domain/sex.dart';
+import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
+import 'package:keepmydiet/features/nutrition/data/nutrition_api_client.dart';
+import 'package:keepmydiet/features/nutrition/domain/activity_level.dart';
+import 'package:keepmydiet/features/nutrition/domain/profile.dart';
+import 'package:keepmydiet/features/nutrition/domain/profile_failure.dart';
+import 'package:keepmydiet/features/nutrition/domain/sex.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final profileControllerProvider =
     AsyncNotifierProvider<ProfileController, Profile?>(ProfileController.new);

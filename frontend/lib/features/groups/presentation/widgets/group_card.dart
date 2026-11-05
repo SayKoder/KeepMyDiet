@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/widgets/letter_avatar.dart';
-import '../../../../shared/widgets/pill.dart';
-import '../../domain/group.dart';
-import '../../domain/group_member.dart';
-import '../groups_controller.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/domain/group_member.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class GroupCard extends ConsumerWidget {
   const GroupCard({
@@ -52,7 +50,7 @@ class GroupCard extends ConsumerWidget {
       ),
       title: Text(
         group.name,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
       ),
       subtitle: members == null ? null : _MembersSummary(members: members),
       trailing: isActive

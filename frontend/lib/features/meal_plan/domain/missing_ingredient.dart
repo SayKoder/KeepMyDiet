@@ -1,5 +1,5 @@
-import '../../fridge/domain/fridge_item.dart';
-import 'meal_plan_entry.dart';
+import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry.dart';
 
 class MissingIngredient {
   const MissingIngredient({

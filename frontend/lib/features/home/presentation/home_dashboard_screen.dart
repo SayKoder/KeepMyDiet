@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme.dart';
-import '../../../shared/home_navigation.dart';
-import '../../../shared/widgets/async_value_ui.dart';
-import '../../../shared/widgets/message_banner.dart';
-import '../../auth/presentation/auth_controller.dart';
-import '../../groups/presentation/groups_controller.dart';
-import '../../nutrition/domain/profile.dart';
-import '../../nutrition/presentation/daily_nutrition_log_controller.dart';
-import '../../nutrition/presentation/nutrition_dashboard_screen.dart';
-import '../../nutrition/presentation/profile_controller.dart';
-import '../../nutrition/presentation/profile_form_screen.dart';
-import '../../nutrition/presentation/profile_onboarding_screen.dart';
-import 'widgets/add_meal_sheet.dart';
-import 'widgets/calorie_hero_card.dart';
-import 'widgets/dashboard_header.dart';
-import 'widgets/journal_date_nav.dart';
-import 'widgets/macro_card.dart';
-import 'widgets/shortcut_card.dart';
-import 'widgets/water_card.dart';
-import 'widgets/weight_card.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/home/presentation/widgets/add_meal_sheet.dart';
+import 'package:keepmydiet/features/home/presentation/widgets/calorie_hero_card.dart';
+import 'package:keepmydiet/features/home/presentation/widgets/dashboard_header.dart';
+import 'package:keepmydiet/features/home/presentation/widgets/journal_date_nav.dart';
+import 'package:keepmydiet/features/home/presentation/widgets/macro_card.dart';
+import 'package:keepmydiet/features/home/presentation/widgets/shortcut_card.dart';
+import 'package:keepmydiet/features/home/presentation/widgets/water_card.dart';
+import 'package:keepmydiet/features/home/presentation/widgets/weight_card.dart';
+import 'package:keepmydiet/features/nutrition/domain/profile.dart';
+import 'package:keepmydiet/features/nutrition/presentation/daily_nutrition_log_controller.dart';
+import 'package:keepmydiet/features/nutrition/presentation/nutrition_dashboard_screen.dart';
+import 'package:keepmydiet/features/nutrition/presentation/profile_controller.dart';
+import 'package:keepmydiet/features/nutrition/presentation/profile_form_screen.dart';
+import 'package:keepmydiet/features/nutrition/presentation/profile_onboarding_screen.dart';
+import 'package:keepmydiet/shared/home_navigation.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class HomeDashboardScreen extends ConsumerWidget {
   const HomeDashboardScreen({super.key});

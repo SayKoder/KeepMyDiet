@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/groups_api_client.dart';
-import 'groups_controller.dart';
-import 'widgets/single_field_form_screen.dart';
+import 'package:keepmydiet/features/groups/data/groups_api_client.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/groups/presentation/widgets/single_field_form_screen.dart';
 
 class JoinGroupScreen extends ConsumerWidget {
   const JoinGroupScreen({super.key});

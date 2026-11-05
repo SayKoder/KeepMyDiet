@@ -1,13 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../../recipe_suggestions/presentation/recipe_suggestions_controller.dart';
-import '../data/fridge_api_client.dart';
-import '../domain/food_reference.dart';
-import '../domain/fridge_failure.dart';
-import '../domain/fridge_item.dart';
-import '../domain/storage_location.dart';
+import 'package:keepmydiet/features/fridge/data/fridge_api_client.dart';
+import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
+import 'package:keepmydiet/features/fridge/domain/fridge_failure.dart';
+import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
+import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
+import 'package:keepmydiet/features/recipe_suggestions/presentation/recipe_suggestions_controller.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 /// `.family` par `groupId` : le frigo est propre à chaque groupe, pas à
 /// l'utilisateur (contrairement aux recettes, pool global).

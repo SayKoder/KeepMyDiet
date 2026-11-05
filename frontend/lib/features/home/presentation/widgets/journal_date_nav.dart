@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/date_labels.dart';
-import '../journal_date_controller.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/home/presentation/journal_date_controller.dart';
+import 'package:keepmydiet/shared/date_labels.dart';
 
 class JournalDateNav extends ConsumerWidget {
   const JournalDateNav({super.key});

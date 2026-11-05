@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
-import '../../../nutrition/domain/profile.dart';
-import '../../../nutrition/presentation/profile_form_screen.dart';
-import '../../../../shared/date_labels.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/nutrition/domain/profile.dart';
+import 'package:keepmydiet/features/nutrition/presentation/profile_form_screen.dart';
+import 'package:keepmydiet/shared/date_labels.dart';
 
 class DashboardHeader extends StatelessWidget {
   const DashboardHeader({super.key, this.profile});

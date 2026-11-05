@@ -1,10 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../domain/food_reference.dart';
-import '../domain/fridge_item.dart';
-import '../domain/storage_location.dart';
+import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
+import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
+import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final fridgeApiClientProvider = Provider<FridgeApiClient>((ref) {
   return FridgeApiClient(ref.watch(dioProvider));

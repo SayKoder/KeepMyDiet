@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../../../shared/token_storage.dart';
-import '../data/auth_api_client.dart';
-import '../domain/auth_failure.dart';
-import '../domain/auth_session.dart';
+import 'package:keepmydiet/features/auth/data/auth_api_client.dart';
+import 'package:keepmydiet/features/auth/domain/auth_failure.dart';
+import 'package:keepmydiet/features/auth/domain/auth_session.dart';
+import 'package:keepmydiet/shared/api_client.dart';
+import 'package:keepmydiet/shared/token_storage.dart';
 
 final authControllerProvider =
     AsyncNotifierProvider<AuthController, AuthSession?>(AuthController.new);

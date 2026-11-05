@@ -1,10 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../domain/group.dart';
-import '../domain/group_invitation.dart';
-import '../domain/group_member.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/domain/group_invitation.dart';
+import 'package:keepmydiet/features/groups/domain/group_member.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final groupsApiClientProvider = Provider<GroupsApiClient>((ref) {
   return GroupsApiClient(ref.watch(dioProvider));

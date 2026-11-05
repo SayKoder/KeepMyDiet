@@ -1,9 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:keepmydiet/shared/token_storage.dart';
 import 'package:keepmydiet/main.dart';
+import 'package:keepmydiet/shared/token_storage.dart';
 
 /// Remplace le vrai stockage sécurisé (canaux natifs, indisponibles en test)
 /// par une version en mémoire — Riverpod permet ce genre de substitution via

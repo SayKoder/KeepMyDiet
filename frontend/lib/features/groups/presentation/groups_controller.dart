@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../../auth/presentation/auth_controller.dart';
-import '../data/groups_api_client.dart';
-import '../domain/group.dart';
-import '../domain/group_failure.dart';
-import '../domain/group_member.dart';
+import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
+import 'package:keepmydiet/features/groups/data/groups_api_client.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/domain/group_failure.dart';
+import 'package:keepmydiet/features/groups/domain/group_member.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final groupsControllerProvider =
     AsyncNotifierProvider<GroupsController, List<Group>>(GroupsController.new);
