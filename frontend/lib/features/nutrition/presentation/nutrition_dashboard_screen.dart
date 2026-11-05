@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/async_value_ui.dart';
+import '../../../shared/widgets/async_value_ui.dart';
 import '../domain/profile.dart';
 import 'profile_controller.dart';
 import 'profile_form_screen.dart';
@@ -18,21 +18,23 @@ class NutritionDashboardScreen extends ConsumerWidget {
       body: profileAsync.toWidget(
         onRetry: () => ref.invalidate(profileControllerProvider),
         data: (profile) => profile == null
-            ? _NoProfileView(
-                onCreate: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ProfileFormScreen()),
-                ),
-              )
+            ? const _NoProfileView()
             : _DashboardView(profile: profile),
       ),
     );
   }
 }
 
-class _NoProfileView extends StatelessWidget {
-  const _NoProfileView({required this.onCreate});
+void _openProfileForm(BuildContext context, [Profile? profile]) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => ProfileFormScreen(existingProfile: profile),
+    ),
+  );
+}
 
-  final VoidCallback onCreate;
+class _NoProfileView extends StatelessWidget {
+  const _NoProfileView();
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +43,14 @@ class _NoProfileView extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          spacing: 16,
           children: [
             const Text(
-              "Crée ton profil pour calculer tes besoins caloriques.",
+              'Crée ton profil pour calculer tes besoins caloriques.',
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
             FilledButton(
-              onPressed: onCreate,
+              onPressed: () => _openProfileForm(context),
               child: const Text('Créer mon profil'),
             ),
           ],
@@ -65,35 +67,29 @@ class _DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final weeks = profile.estimatedWeeksToTarget;
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
         Center(
-          child: SizedBox(
-            width: 220,
-            height: 220,
+          child: SizedBox.square(
+            dimension: 220,
             child: Stack(
-              alignment: Alignment.center,
+              fit: StackFit.expand,
               children: [
-                // Anneau décoratif (inspiration Samsung Health) : pas encore
-                // un vrai pourcentage de progression, faute d'un suivi des
-                // calories consommées dans la journée (pas encore construit,
-                // voir CLAUDE.md "Suivi diététique").
-                SizedBox(
-                  width: 220,
-                  height: 220,
-                  child: CircularProgressIndicator(
-                    value: 1,
-                    strokeWidth: 14,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                CircularProgressIndicator(
+                  value: 1,
+                  strokeWidth: 14,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       profile.calorieGoal.toStringAsFixed(0),
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      style: textTheme.headlineMedium,
                     ),
                     const Text('kcal / jour (objectif)'),
                   ],
@@ -104,6 +100,7 @@ class _DashboardView extends StatelessWidget {
         ),
         const SizedBox(height: 32),
         Row(
+          spacing: 12,
           children: [
             Expanded(
               child: _StatCard(
@@ -111,14 +108,12 @@ class _DashboardView extends StatelessWidget {
                 value: profile.bmr,
               ),
             ),
-            const SizedBox(width: 12),
             Expanded(
               child: _StatCard(
                 label: 'Dépense totale (TDEE)',
                 value: profile.tdee,
               ),
             ),
-            const SizedBox(width: 12),
             Expanded(
               child: _StatCard(
                 label: 'Plancher de sécurité',
@@ -127,31 +122,24 @@ class _DashboardView extends StatelessWidget {
             ),
           ],
         ),
-        if (profile.estimatedWeeksToTarget != null) ...[
+        if (weeks != null) ...[
           const SizedBox(height: 16),
-          Center(
-            child: Text(
-              'Environ ${profile.estimatedWeeksToTarget} semaines pour atteindre '
-              '${profile.targetWeightKg!.toStringAsFixed(1)}kg au rythme choisi.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+          Text(
+            'Environ $weeks semaines pour atteindre '
+            '${profile.targetWeightKg!.toStringAsFixed(1)}kg au rythme choisi.',
+            textAlign: TextAlign.center,
           ),
         ],
         const SizedBox(height: 24),
         Text(
-          '${profile.age} ans · ${profile.heightCm.toStringAsFixed(0)}cm · ${profile.weightKg.toStringAsFixed(1)}kg',
+          '${profile.age} ans · ${profile.heightCm.toStringAsFixed(0)}cm · '
+          '${profile.weightKg.toStringAsFixed(1)}kg',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 16),
         Center(
           child: TextButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ProfileFormScreen(existingProfile: profile),
-              ),
-            ),
+            onPressed: () => _openProfileForm(context, profile),
             child: const Text('Modifier mon profil'),
           ),
         ),
@@ -168,20 +156,22 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          spacing: 4,
           children: [
             Text(
               '${value.toStringAsFixed(0)} kcal',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: textTheme.titleLarge,
             ),
-            const SizedBox(height: 4),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: textTheme.bodySmall,
             ),
           ],
         ),

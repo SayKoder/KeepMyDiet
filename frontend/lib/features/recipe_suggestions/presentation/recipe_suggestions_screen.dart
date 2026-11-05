@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/async_value_ui.dart';
+import '../../../shared/widgets/async_value_ui.dart';
 import '../domain/recipe_suggestion.dart';
 import 'recipe_suggestions_controller.dart';
 

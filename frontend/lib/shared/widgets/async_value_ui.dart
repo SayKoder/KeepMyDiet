@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/theme.dart';
+
+import '../../core/theme.dart';
 
 extension AsyncValueUi<T> on AsyncValue<T> {
   Widget toWidget({
@@ -21,6 +22,7 @@ extension AsyncValueUi<T> on AsyncValue<T> {
     );
   }
 }
+
 class LoadingState extends StatelessWidget {
   const LoadingState({super.key});
 
@@ -31,6 +33,7 @@ class LoadingState extends StatelessWidget {
     );
   }
 }
+
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
@@ -68,6 +71,7 @@ class EmptyState extends StatelessWidget {
     );
   }
 }
+
 class ErrorState extends StatelessWidget {
   const ErrorState({super.key, required this.onRetry});
 
@@ -81,11 +85,16 @@ class ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded,
-                size: 48, color: AppColors.errorText),
+            const Icon(
+              Icons.wifi_off_rounded,
+              size: 48,
+              color: AppColors.errorText,
+            ),
             const SizedBox(height: 16),
-            Text('Chargement impossible',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Chargement impossible',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             const Text(
               'Vérifie ta connexion puis réessaie.',

@@ -1,6 +1,6 @@
 # Preview web (dev) : app Flutter compilée en web + API Symfony, derrière le
 # Traefik du serveur. Sert à tester les écrans depuis un téléphone sans build natif.
-#   https://rfaupin-dev.online/keepmydiet/
+#   https://remi-faupin.me/keepmydiet/
 #
 # docker compose --env-file .env.web -f docker-compose.web.yml up -d --build
 services:
@@ -11,7 +11,7 @@ services:
     depends_on:
       - api
     networks:
-      - traefik
+      - proxy
       - internal
     labels:
       - "traefik.enable=true"
@@ -44,6 +44,8 @@ services:
       JWT_SECRET_KEY: /var/www/html/config/jwt/private.pem
       JWT_PUBLIC_KEY: /var/www/html/config/jwt/public.pem
       JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+      DEFAULT_URI: https://${APP_DOMAIN}/keepmydiet
+      CORS_ALLOW_ORIGIN: ^https://${APP_DOMAIN}$$
     volumes:
       - jwt_keys:/var/www/html/config/jwt
     depends_on:
@@ -64,7 +66,7 @@ services:
       - internal
 
 networks:
-  traefik:
+  proxy:
     external: true
   internal:
 

@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
-import '../../../shared/form_error_text.dart';
-import '../../../shared/submit_button_content.dart';
+import '../../../shared/widgets/form_error_text.dart';
+import '../../../shared/widgets/submit_button_content.dart';
 import '../../fridge/domain/storage_location.dart';
 import '../data/shopping_list_api_client.dart';
 import '../domain/shopping_list_item.dart';
 import 'shopping_list_controller.dart';
 
-/// Une ligne par item sélectionné : lieu de stockage + DLC, obligatoires
-/// (CLAUDE.md : "ajoutés au frigo ou au placard... avec leur DLC (saisie
-/// manuelle...)" — pas d'estimation automatique par catégorie en v1, voir
-/// JOURNAL.md). Valide tout d'un coup via `checkout`.
+// Lieu de rangement et date de péremption pour chaque article acheté.
 class ShoppingListCheckoutScreen extends ConsumerStatefulWidget {
   const ShoppingListCheckoutScreen({
     super.key,
@@ -43,13 +41,11 @@ class _ShoppingListCheckoutScreenState
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _expirationDates[itemId] ?? now.add(const Duration(days: 7)),
+      initialDate: _expirationDates[itemId],
       firstDate: now,
       lastDate: now.add(const Duration(days: 3 * 365)),
     );
-    if (picked != null) {
-      setState(() => _expirationDates[itemId] = picked);
-    }
+    if (picked != null) setState(() => _expirationDates[itemId] = picked);
   }
 
   Future<void> _submit() async {
@@ -62,25 +58,20 @@ class _ShoppingListCheckoutScreenState
       await checkoutShoppingList(
         ref,
         groupId: widget.groupId,
-        items: widget.items
-            .map(
-              (item) => CheckoutItem(
-                itemId: item.id,
-                storageLocation: _locations[item.id]!,
-                expirationDate: _expirationDates[item.id]!,
-              ),
-            )
-            .toList(),
+        items: [
+          for (final item in widget.items)
+            CheckoutItem(
+              itemId: item.id,
+              storageLocation: _locations[item.id]!,
+              expirationDate: _expirationDates[item.id]!,
+            ),
+        ],
       );
-      if (mounted) {
-        Navigator.of(context).pop(true);
-      }
+      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       setState(() => _errorMessage = '$e');
     } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -91,47 +82,15 @@ class _ShoppingListCheckoutScreenState
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          for (final item in widget.items) ...[
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${item.name} — ${item.quantity.toStringAsFixed(0)} ${item.unit}',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    SegmentedButton<StorageLocation>(
-                      segments: StorageLocation.values
-                          .map(
-                            (location) => ButtonSegment(
-                              value: location,
-                              label: Text(location.label),
-                            ),
-                          )
-                          .toList(),
-                      selected: {_locations[item.id]!},
-                      onSelectionChanged: (selection) =>
-                          setState(() => _locations[item.id] = selection.first),
-                    ),
-                    const SizedBox(height: 8),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Date de péremption'),
-                      subtitle: Text(
-                        '${_expirationDates[item.id]!.day}/${_expirationDates[item.id]!.month}/${_expirationDates[item.id]!.year}',
-                      ),
-                      trailing: const Icon(Icons.calendar_today),
-                      onTap: () => _pickDate(item.id),
-                    ),
-                  ],
-                ),
-              ),
+          for (final item in widget.items)
+            _CheckoutItemCard(
+              item: item,
+              location: _locations[item.id]!,
+              expirationDate: _expirationDates[item.id]!,
+              onLocationChanged: (location) =>
+                  setState(() => _locations[item.id] = location),
+              onPickDate: () => _pickDate(item.id),
             ),
-            const SizedBox(height: 12),
-          ],
           if (_errorMessage != null) FormErrorText(_errorMessage!),
           FilledButton(
             onPressed: _isSubmitting ? null : _submit,
@@ -143,6 +102,58 @@ class _ShoppingListCheckoutScreenState
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CheckoutItemCard extends StatelessWidget {
+  const _CheckoutItemCard({
+    required this.item,
+    required this.location,
+    required this.expirationDate,
+    required this.onLocationChanged,
+    required this.onPickDate,
+  });
+
+  final ShoppingListItem item;
+  final StorageLocation location;
+  final DateTime expirationDate;
+  final ValueChanged<StorageLocation> onLocationChanged;
+  final VoidCallback onPickDate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 8,
+          children: [
+            Text(
+              '${item.name} — ${item.quantity.toStringAsFixed(0)} ${item.unit}',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            SegmentedButton<StorageLocation>(
+              segments: [
+                for (final value in StorageLocation.values)
+                  ButtonSegment(value: value, label: Text(value.label)),
+              ],
+              selected: {location},
+              onSelectionChanged: (selection) =>
+                  onLocationChanged(selection.first),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Date de péremption'),
+              subtitle: Text(DateFormat('d/M/y').format(expirationDate)),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: onPickDate,
+            ),
+          ],
+        ),
       ),
     );
   }

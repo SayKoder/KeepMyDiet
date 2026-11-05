@@ -19,7 +19,10 @@ RUN composer install --no-dev --no-scripts --no-autoloader --no-interaction --pr
 
 COPY . .
 
-RUN composer dump-autoload --optimize --no-dev --classmap-authoritative \
+# .env est gitignored : on part d'un fichier vide, la vraie config vient
+# des variables d'environnement du compose (qui priment sur .env.local.php).
+RUN touch .env \
+    && composer dump-autoload --optimize --no-dev --classmap-authoritative \
     && composer dump-env prod \
     && mkdir -p var/cache var/log config/jwt \
     && chown -R www-data:www-data var

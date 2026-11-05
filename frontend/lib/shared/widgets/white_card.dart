@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme.dart';
+import '../../core/theme.dart';
 
-/// Carte "blanche à bordure" utilisée dans tous les écrans construits dans le
-/// style de la maquette (Accueil, Profil, Groupes...) — même trio
-/// couleur/bordure/radius recopié à chaque fois, seuls le padding et le
-/// radius varient d'un endroit à l'autre.
 class WhiteCard extends StatelessWidget {
   const WhiteCard({
     super.key,

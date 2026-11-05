@@ -37,6 +37,9 @@ class AppColors {
   static const errorText = Color(0xFFA1191E);
   static const errorBg = Color(0xFFFFE7E8);
 
+  static const warningText = Color(0xFF9A3412);
+  static const warningBg = Color(0xFFFFEDE4);
+
   // Chaque nutriment garde la même couleur partout dans l'appli. 3 teintes
   // par famille (pas une seule) : `xxxIcon` est plus soutenu que `xxx` pour
   // rester lisible en trait d'icône sur le fond clair `xxxBg` — une icône

@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-/// Écran plein écran avec la caméra, qui se ferme tout seul (`Navigator.pop`
-/// avec le code lu) dès qu'un code-barres est détecté.
-///
-/// `mobile_scanner` gère lui-même la demande de permission caméra au premier
-/// lancement (popup système) ; si elle est refusée, `MobileScanner` affiche
-/// son propre état d'erreur dans `errorBuilder` plutôt que de planter.
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
 
@@ -17,9 +11,7 @@ class BarcodeScannerScreen extends StatefulWidget {
 class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
   final _controller = MobileScannerController();
 
-  // `onDetect` peut se déclencher plusieurs fois pour le même code pendant
-  // qu'on ferme l'écran (plusieurs frames analysées avant que le pop ne
-  // prenne effet) : ce flag évite de faire un double pop.
+  // onDetect peut se déclencher plusieurs fois avant la fermeture de l'écran.
   bool _handled = false;
 
   @override
@@ -29,13 +21,8 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
   }
 
   void _onDetect(BarcodeCapture capture) {
-    if (_handled) {
-      return;
-    }
     final code = capture.barcodes.firstOrNull?.rawValue;
-    if (code == null) {
-      return;
-    }
+    if (_handled || code == null) return;
     _handled = true;
     Navigator.of(context).pop(code);
   }
@@ -50,17 +37,15 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
         title: const Text('Scanner un code-barres'),
         actions: [
           IconButton(
+            onPressed: _controller.toggleTorch,
             icon: ValueListenableBuilder(
               valueListenable: _controller,
-              builder: (context, state, child) {
-                return Icon(
-                  state.torchState == TorchState.on
-                      ? Icons.flash_on
-                      : Icons.flash_off,
-                );
-              },
+              builder: (_, state, _) => Icon(
+                state.torchState == TorchState.on
+                    ? Icons.flash_on
+                    : Icons.flash_off,
+              ),
             ),
-            onPressed: () => _controller.toggleTorch(),
           ),
         ],
       ),
@@ -70,7 +55,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
           MobileScanner(
             controller: _controller,
             onDetect: _onDetect,
-            errorBuilder: (context, error) => Center(
+            errorBuilder: (_, error) => Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
