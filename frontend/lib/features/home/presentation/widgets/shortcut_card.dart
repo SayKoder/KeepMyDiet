@@ -43,10 +43,7 @@ class ShortcutCard extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
               Text(
                 subtitle,

@@ -50,7 +50,7 @@ class GroupCard extends ConsumerWidget {
       ),
       title: Text(
         group.name,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
       ),
       subtitle: members == null ? null : _MembersSummary(members: members),
       trailing: isActive

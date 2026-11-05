@@ -57,7 +57,7 @@ class ProfileBasicsCard extends StatelessWidget {
             date == null
                 ? 'Non renseignée'
                 : DateFormat('dd/MM/y').format(date),
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
           ),
           trailing: const Icon(
             Icons.calendar_today_outlined,

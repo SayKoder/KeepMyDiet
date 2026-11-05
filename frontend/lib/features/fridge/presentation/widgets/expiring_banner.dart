@@ -34,7 +34,7 @@ class ExpiringBanner extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
       ),
       subtitle: const Text(
         'Voir les recettes qui les utilisent',
