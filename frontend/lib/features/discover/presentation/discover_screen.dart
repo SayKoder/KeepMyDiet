@@ -99,6 +99,12 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 ),
               ),
             ),
+            SizedBox(
+              height: 3,
+              child: discoverAsync.value?.isSearching ?? false
+                  ? const LinearProgressIndicator()
+                  : null,
+            ),
             Expanded(
               child: discoverAsync.toWidget(
                 onRetry: () =>
@@ -124,6 +130,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       child: NotificationListener<ScrollNotification>(
         onNotification: (n) => _loadMoreNearEnd(n.metrics),
         child: CustomScrollView(
+          key: ValueKey(state.query),
           slivers: [
             SliverGrid.builder(
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

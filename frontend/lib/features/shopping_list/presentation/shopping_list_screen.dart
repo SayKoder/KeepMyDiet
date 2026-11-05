@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/groups/presentation/group_events_controller.dart';
 import 'package:keepmydiet/features/shopping_list/domain/shopping_list_item.dart';
 import 'package:keepmydiet/features/shopping_list/presentation/add_shopping_item_screen.dart';
 import 'package:keepmydiet/features/shopping_list/presentation/shopping_list_checkout_screen.dart';
@@ -71,28 +72,38 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
   Widget build(BuildContext context) {
     final listAsync = ref.watch(shoppingListProvider(widget.groupId));
     final items = listAsync.value?.items ?? const <ShoppingListItem>[];
+    ref.onGroupEvent(
+      widget.groupId,
+      'shopping_list',
+      () => ref.invalidate(shoppingListProvider(widget.groupId)),
+    );
 
-    return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () =>
-              ref.refresh(shoppingListProvider(widget.groupId).future),
-          child: listAsync.toWidget(
-            onRetry: () => ref.invalidate(shoppingListProvider(widget.groupId)),
-            data: (_) => _buildList(items),
+    return LiveRefresh(
+      interval: liveRefreshInterval,
+      onRefresh: () => ref.invalidate(shoppingListProvider(widget.groupId)),
+      child: Scaffold(
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () =>
+                ref.refresh(shoppingListProvider(widget.groupId).future),
+            child: listAsync.toWidget(
+              onRetry: () =>
+                  ref.invalidate(shoppingListProvider(widget.groupId)),
+              data: (_) => _buildList(items),
+            ),
           ),
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _selectedIds.isEmpty
-          ? null
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: CheckoutBar(
-                count: _selectedIds.length,
-                onValidate: () => _goToCheckout(items),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: _selectedIds.isEmpty
+            ? null
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: CheckoutBar(
+                  count: _selectedIds.length,
+                  onValidate: () => _goToCheckout(items),
+                ),
               ),
-            ),
+      ),
     );
   }
 

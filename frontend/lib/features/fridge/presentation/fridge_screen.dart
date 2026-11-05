@@ -10,6 +10,7 @@ import 'package:keepmydiet/features/fridge/presentation/widgets/expiring_banner.
 import 'package:keepmydiet/features/fridge/presentation/widgets/fridge_header.dart';
 import 'package:keepmydiet/features/fridge/presentation/widgets/fridge_item_card.dart';
 import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/presentation/group_events_controller.dart';
 import 'package:keepmydiet/features/recipe_suggestions/presentation/recipe_suggestions_screen.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
 
@@ -30,57 +31,66 @@ class _FridgeScreenState extends ConsumerState<FridgeScreen> {
     final groupId = widget.group.id;
     final itemsAsync = ref.watch(fridgeItemsProvider(groupId));
     final allItems = itemsAsync.value ?? [];
+    ref.onGroupEvent(
+      groupId,
+      'fridge',
+      () => ref.invalidate(fridgeItemsProvider(groupId)),
+    );
 
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-              child: Column(
-                children: [
-                  FridgeHeader(group: widget.group),
-                  const SizedBox(height: 20),
-                  SegmentedPill<StorageLocation>(
-                    values: StorageLocation.values,
-                    selected: _selected,
-                    labelOf: (location) => location.label,
-                    badgeOf: (location) => allItems
-                        .where((i) => i.storageLocation == location)
-                        .length
-                        .toString(),
-                    onChanged: (location) =>
-                        setState(() => _selected = location),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: itemsAsync.toWidget(
-                onRetry: () => ref.invalidate(fridgeItemsProvider(groupId)),
-                data: (items) => _ItemsList(
-                  items: items
-                      .where((i) => i.storageLocation == _selected)
-                      .toList(),
-                  group: widget.group,
+    return LiveRefresh(
+      interval: liveRefreshInterval,
+      onRefresh: () => ref.invalidate(fridgeItemsProvider(groupId)),
+      child: Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+                child: Column(
+                  children: [
+                    FridgeHeader(group: widget.group),
+                    const SizedBox(height: 20),
+                    SegmentedPill<StorageLocation>(
+                      values: StorageLocation.values,
+                      selected: _selected,
+                      labelOf: (location) => location.label,
+                      badgeOf: (location) => allItems
+                          .where((i) => i.storageLocation == location)
+                          .length
+                          .toString(),
+                      onChanged: (location) =>
+                          setState(() => _selected = location),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FabAboveNav(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => AddFridgeItemScreen(
-              groupId: groupId,
-              defaultLocation: _selected,
-            ),
+              Expanded(
+                child: itemsAsync.toWidget(
+                  onRetry: () => ref.invalidate(fridgeItemsProvider(groupId)),
+                  data: (items) => _ItemsList(
+                    items: items
+                        .where((i) => i.storageLocation == _selected)
+                        .toList(),
+                    group: widget.group,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        tooltip: 'Ajouter un aliment',
-        child: const Icon(Icons.add),
+        floatingActionButton: FabAboveNav(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => AddFridgeItemScreen(
+                groupId: groupId,
+                defaultLocation: _selected,
+              ),
+            ),
+          ),
+          tooltip: 'Ajouter un aliment',
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

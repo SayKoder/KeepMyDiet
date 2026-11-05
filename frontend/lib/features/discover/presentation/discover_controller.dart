@@ -9,6 +9,7 @@ class DiscoverState {
     this.page = 1,
     this.isLoadingMore = false,
     this.loadMoreFailed = false,
+    this.isSearching = false,
   });
 
   final String query;
@@ -17,6 +18,7 @@ class DiscoverState {
   final int page;
   final bool isLoadingMore;
   final bool loadMoreFailed;
+  final bool isSearching;
 
   DiscoverState copyWith({
     List<OpenFoodFactsProduct>? products,
@@ -24,6 +26,7 @@ class DiscoverState {
     int? page,
     bool? isLoadingMore,
     bool? loadMoreFailed,
+    bool? isSearching,
   }) => DiscoverState(
     query: query,
     products: products ?? this.products,
@@ -31,6 +34,7 @@ class DiscoverState {
     page: page ?? this.page,
     isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
+    isSearching: isSearching ?? this.isSearching,
   );
 }
 
@@ -58,14 +62,18 @@ class DiscoverController extends AsyncNotifier<DiscoverState> {
 
   Future<void> search(String query) async {
     final request = ++_request;
-    state = const AsyncLoading();
+    final current = state.value;
+    state = current == null
+        ? const AsyncLoading()
+        : AsyncData(current.copyWith(isSearching: true));
     final result = await AsyncValue.guard(() => _firstPage(query));
     if (ref.mounted && request == _request) state = result;
   }
 
   Future<void> loadMore() async {
     final current = state.value;
-    if (current == null || !current.hasMore || current.isLoadingMore) return;
+    if (current == null || current.isSearching) return;
+    if (!current.hasMore || current.isLoadingMore) return;
 
     final request = _request;
     state = AsyncData(

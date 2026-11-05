@@ -41,6 +41,25 @@ ProviderContainer _container(
 }
 
 void main() {
+  test('loadMore est ignoré pendant une nouvelle recherche', () async {
+    final slow = Completer<OpenFoodFactsPage>();
+    final calls = <String>[];
+    final container = _container((query, page) {
+      calls.add('$query#$page');
+      return query == 'lent' ? slow.future : Future.value(_page(['a']));
+    });
+    await container.read(discoverProvider.future);
+    final controller = container.read(discoverProvider.notifier);
+
+    final search = controller.search('lent');
+    await controller.loadMore();
+    slow.complete(_page(['b']));
+    await search;
+
+    expect(calls, ['#1', 'lent#1']);
+    expect(container.read(discoverProvider).value!.products.single.name, 'b');
+  });
+
   test(
     'loadMore ajoute la page suivante puis s\'arrête en fin de liste',
     () async {
