@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keepmydiet/features/groups/data/groups_api_client.dart';
+import 'package:keepmydiet/features/groups/data/groups_repository.dart';
 import 'package:keepmydiet/features/groups/domain/group.dart';
 import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
 import 'package:keepmydiet/shared/api_client.dart';
@@ -17,7 +17,7 @@ class GroupDetailScreen extends ConsumerWidget {
   Future<void> _invite(BuildContext context, WidgetRef ref) async {
     try {
       final invitation = await ref
-          .read(groupsApiClientProvider)
+          .read(groupsRepositoryProvider)
           .createInvitation(group.id);
       if (context.mounted) await _showCode(context, invitation.token);
     } on DioException catch (e) {

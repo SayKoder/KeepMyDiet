@@ -1,8 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
 import 'package:keepmydiet/features/home/presentation/journal_date_controller.dart';
-import 'package:keepmydiet/features/nutrition/data/nutrition_api_client.dart';
+import 'package:keepmydiet/features/nutrition/data/nutrition_repository.dart';
 import 'package:keepmydiet/features/nutrition/domain/water_intake.dart';
 
 final waterIntakeControllerProvider =
@@ -20,13 +19,13 @@ class WaterIntakeController extends AsyncNotifier<WaterIntake?> {
     ref.watch(authControllerProvider);
     final date = ref.watch(journalDateProvider);
 
-    return ref.read(nutritionApiClientProvider).fetchWaterIntakeForDate(date);
+    return ref.read(nutritionRepositoryProvider).fetchWaterIntakeForDate(date);
   }
 
   Future<void> add(int deltaMl) async {
     final date = ref.read(journalDateProvider);
     final intake = await ref
-        .read(nutritionApiClientProvider)
+        .read(nutritionRepositoryProvider)
         .addWater(deltaMl, date: date);
     state = AsyncData(intake);
   }

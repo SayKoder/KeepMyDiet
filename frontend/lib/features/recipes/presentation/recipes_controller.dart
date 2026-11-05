@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keepmydiet/features/recipes/data/recipes_api_client.dart';
+import 'package:keepmydiet/features/recipes/data/recipes_repository.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_failure.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
@@ -18,7 +18,7 @@ final recipesControllerProvider =
 class RecipesController extends AsyncNotifier<List<Recipe>> {
   @override
   Future<List<Recipe>> build() {
-    return ref.read(recipesApiClientProvider).fetchAll();
+    return ref.read(recipesRepositoryProvider).fetchAll();
   }
 
   Future<Recipe> create({
@@ -30,7 +30,7 @@ class RecipesController extends AsyncNotifier<List<Recipe>> {
     final Recipe recipe;
     try {
       recipe = await ref
-          .read(recipesApiClientProvider)
+          .read(recipesRepositoryProvider)
           .create(
             name: name,
             referenceServings: referenceServings,
@@ -48,7 +48,7 @@ class RecipesController extends AsyncNotifier<List<Recipe>> {
 
   Future<void> delete(int id) async {
     try {
-      await ref.read(recipesApiClientProvider).delete(id);
+      await ref.read(recipesRepositoryProvider).delete(id);
     } on DioException catch (e) {
       throw RecipeFailure(extractErrorMessage(e));
     }
@@ -58,7 +58,7 @@ class RecipesController extends AsyncNotifier<List<Recipe>> {
 
   Future<void> refresh() async {
     state = await AsyncValue.guard(
-      () => ref.read(recipesApiClientProvider).fetchAll(),
+      () => ref.read(recipesRepositoryProvider).fetchAll(),
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
-import 'package:keepmydiet/features/nutrition/data/nutrition_api_client.dart';
+import 'package:keepmydiet/features/nutrition/data/nutrition_repository.dart';
 import 'package:keepmydiet/features/nutrition/domain/water_goal.dart';
 
 final waterGoalControllerProvider =
@@ -16,18 +15,18 @@ class WaterGoalController extends AsyncNotifier<WaterGoal?> {
   Future<WaterGoal?> build() {
     ref.watch(authControllerProvider);
 
-    return ref.read(nutritionApiClientProvider).fetchMyWaterGoal();
+    return ref.read(nutritionRepositoryProvider).fetchMyWaterGoal();
   }
 
   Future<void> set(int goalMl) async {
     final goal = await ref
-        .read(nutritionApiClientProvider)
+        .read(nutritionRepositoryProvider)
         .setWaterGoal(goalMl);
     state = AsyncData(goal);
   }
 
   Future<void> reset() async {
-    await ref.read(nutritionApiClientProvider).resetWaterGoal();
+    await ref.read(nutritionRepositoryProvider).resetWaterGoal();
     state = const AsyncData(null);
   }
 }

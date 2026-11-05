@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
-import 'package:keepmydiet/features/groups/data/groups_api_client.dart';
+import 'package:keepmydiet/features/groups/data/groups_repository.dart';
 import 'package:keepmydiet/features/groups/domain/group.dart';
 import 'package:keepmydiet/features/groups/domain/group_failure.dart';
 import 'package:keepmydiet/features/groups/domain/group_member.dart';
@@ -23,13 +23,13 @@ class GroupsController extends AsyncNotifier<List<Group>> {
     // automatiquement ce cache et relance `fetchMyGroups()` à jour.
     ref.watch(authControllerProvider);
 
-    return ref.read(groupsApiClientProvider).fetchMyGroups();
+    return ref.read(groupsRepositoryProvider).fetchMyGroups();
   }
 
   Future<Group> createGroup({required String name}) async {
     final Group group;
     try {
-      group = await ref.read(groupsApiClientProvider).createGroup(name: name);
+      group = await ref.read(groupsRepositoryProvider).createGroup(name: name);
     } on DioException catch (e) {
       throw GroupFailure(extractErrorMessage(e));
     }
@@ -41,7 +41,7 @@ class GroupsController extends AsyncNotifier<List<Group>> {
 
   Future<void> refresh() async {
     state = await AsyncValue.guard(
-      () => ref.read(groupsApiClientProvider).fetchMyGroups(),
+      () => ref.read(groupsRepositoryProvider).fetchMyGroups(),
     );
   }
 }
@@ -52,7 +52,7 @@ final groupMembersProvider = FutureProvider.family<List<GroupMember>, int>((
   ref,
   groupId,
 ) {
-  return ref.watch(groupsApiClientProvider).fetchMembers(groupId);
+  return ref.watch(groupsRepositoryProvider).fetchMembers(groupId);
 });
 
 /// Groupe affiché dans l'onglet Frigo. Null tant qu'aucun groupe n'a encore

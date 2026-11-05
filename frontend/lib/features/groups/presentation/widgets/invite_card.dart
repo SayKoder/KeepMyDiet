@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/core/theme.dart';
-import 'package:keepmydiet/features/groups/data/groups_api_client.dart';
+import 'package:keepmydiet/features/groups/data/groups_repository.dart';
 import 'package:keepmydiet/features/groups/domain/group.dart';
 import 'package:keepmydiet/shared/api_client.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
@@ -25,7 +25,7 @@ class _InviteCardState extends ConsumerState<InviteCard> {
     setState(() => _isGenerating = true);
     try {
       final invitation = await ref
-          .read(groupsApiClientProvider)
+          .read(groupsRepositoryProvider)
           .createInvitation(widget.group.id);
       if (mounted) setState(() => _token = invitation.token);
     } on DioException catch (e) {

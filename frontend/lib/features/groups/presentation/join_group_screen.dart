@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:keepmydiet/features/groups/data/groups_api_client.dart';
+import 'package:keepmydiet/features/groups/data/groups_repository.dart';
 import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
 import 'package:keepmydiet/features/groups/presentation/widgets/single_field_form_screen.dart';
 
@@ -9,7 +8,7 @@ class JoinGroupScreen extends ConsumerWidget {
   const JoinGroupScreen({super.key});
 
   Future<void> _join(WidgetRef ref, String token) async {
-    await ref.read(groupsApiClientProvider).joinByToken(token);
+    await ref.read(groupsRepositoryProvider).joinByToken(token);
     await ref.read(groupsControllerProvider.notifier).refresh();
   }
 

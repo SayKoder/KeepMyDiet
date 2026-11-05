@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
-import 'package:keepmydiet/features/nutrition/data/nutrition_api_client.dart';
+import 'package:keepmydiet/features/nutrition/data/nutrition_repository.dart';
 import 'package:keepmydiet/features/nutrition/domain/activity_level.dart';
 import 'package:keepmydiet/features/nutrition/domain/profile.dart';
 import 'package:keepmydiet/features/nutrition/domain/profile_failure.dart';
@@ -20,7 +20,7 @@ class ProfileController extends AsyncNotifier<Profile?> {
   Future<Profile?> build() {
     ref.watch(authControllerProvider);
 
-    return ref.read(nutritionApiClientProvider).fetchMyProfile();
+    return ref.read(nutritionRepositoryProvider).fetchMyProfile();
   }
 
   Future<void> create({
@@ -35,7 +35,7 @@ class ProfileController extends AsyncNotifier<Profile?> {
     final Profile profile;
     try {
       profile = await ref
-          .read(nutritionApiClientProvider)
+          .read(nutritionRepositoryProvider)
           .createProfile(
             sex: sex,
             birthDate: birthDate,
@@ -72,7 +72,7 @@ class ProfileController extends AsyncNotifier<Profile?> {
     final Profile profile;
     try {
       profile = await ref
-          .read(nutritionApiClientProvider)
+          .read(nutritionRepositoryProvider)
           .updateProfile(
             id: current.id,
             sex: sex,

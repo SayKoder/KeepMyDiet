@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/meal_plan/presentation/widgets/existing_recipe_tab.dart';
-import 'package:keepmydiet/features/recipes/data/recipes_api_client.dart';
+import 'package:keepmydiet/features/recipes/data/recipes_repository.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
 import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
@@ -199,7 +199,7 @@ class _IngredientCardState extends ConsumerState<_IngredientCard> {
 
     _debounce = Timer(const Duration(milliseconds: 300), () async {
       final results = await ref
-          .read(recipesApiClientProvider)
+          .read(recipesRepositoryProvider)
           .suggestIngredients(query);
       if (mounted) setState(() => _suggestions = results);
     });
