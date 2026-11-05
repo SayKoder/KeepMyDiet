@@ -5,4 +5,6 @@ class WaterGoal {
 
   factory WaterGoal.fromJson(Map<String, dynamic> json) =>
       WaterGoal(goalMl: json['goalMl'] as int);
+
+  Map<String, dynamic> toJson() => {'goalMl': goalMl};
 }

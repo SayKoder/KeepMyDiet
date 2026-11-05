@@ -3,17 +3,32 @@ import 'package:keepmydiet/features/recipes/data/recipes_api_client.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe_step.dart';
+import 'package:keepmydiet/shared/local_database.dart';
+import 'package:keepmydiet/shared/network_first.dart';
 
 final recipesRepositoryProvider = Provider<RecipesRepository>((ref) {
-  return RecipesRepository(ref.watch(recipesApiClientProvider));
+  return RecipesRepository(
+    ref.watch(recipesApiClientProvider),
+    ref.watch(localDatabaseProvider),
+  );
 });
 
 class RecipesRepository {
-  RecipesRepository(this._api);
+  RecipesRepository(this._api, this._database);
 
   final RecipesApiClient _api;
+  final LocalDatabase _database;
 
-  Future<List<Recipe>> fetchAll() => _api.fetchAll();
+  Future<List<Recipe>> fetchAll() => networkFirst(
+    _database,
+    key: 'recipes',
+    fetch: _api.fetchAll,
+    toJson: (recipes) => [for (final recipe in recipes) recipe.toJson()],
+    fromJson: (json) => [
+      for (final recipe in json as List)
+        Recipe.fromJson(recipe as Map<String, dynamic>),
+    ],
+  );
 
   Future<Recipe> create({
     required String name,

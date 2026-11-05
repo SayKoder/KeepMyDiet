@@ -14,4 +14,10 @@ class WaterIntake {
     date: DateTime.parse(json['date'] as String),
     amountMl: json['amountMl'] as int,
   );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'date': date.toIso8601String(),
+    'amountMl': amountMl,
+  };
 }

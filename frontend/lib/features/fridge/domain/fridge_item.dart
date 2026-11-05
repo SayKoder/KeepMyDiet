@@ -36,4 +36,13 @@ class FridgeItem {
   /// Urgence visuelle (anti-gaspillage) : DLC dans moins de 3 jours.
   bool get isExpiringSoon =>
       expirationDate.difference(DateTime.now()).inDays < 3;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'foodReference': foodReference.toJson(),
+    'storageLocation': storageLocation.name,
+    'quantity': quantity,
+    'unit': unit,
+    'expirationDate': expirationDate.toIso8601String(),
+  };
 }

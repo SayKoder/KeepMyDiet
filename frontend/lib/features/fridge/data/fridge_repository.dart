@@ -4,22 +4,34 @@ import 'package:keepmydiet/features/fridge/data/open_food_facts_client.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
 import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
 import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
+import 'package:keepmydiet/shared/local_database.dart';
+import 'package:keepmydiet/shared/network_first.dart';
 
 final fridgeRepositoryProvider = Provider<FridgeRepository>((ref) {
   return FridgeRepository(
     ref.watch(fridgeApiClientProvider),
     ref.watch(openFoodFactsClientProvider),
+    ref.watch(localDatabaseProvider),
   );
 });
 
 class FridgeRepository {
-  FridgeRepository(this._api, this._openFoodFacts);
+  FridgeRepository(this._api, this._openFoodFacts, this._database);
 
   final FridgeApiClient _api;
   final OpenFoodFactsClient _openFoodFacts;
+  final LocalDatabase _database;
 
-  Future<List<FoodReference>> fetchCatalog(int groupId) =>
-      _api.fetchCatalog(groupId);
+  Future<List<FoodReference>> fetchCatalog(int groupId) => networkFirst(
+    _database,
+    key: 'food_catalog_$groupId',
+    fetch: () => _api.fetchCatalog(groupId),
+    toJson: (foods) => [for (final food in foods) food.toJson()],
+    fromJson: (json) => [
+      for (final food in json as List)
+        FoodReference.fromJson(food as Map<String, dynamic>),
+    ],
+  );
 
   Future<FoodReference> createCustomFood({
     required int groupId,
@@ -39,7 +51,16 @@ class FridgeRepository {
     barcode: barcode,
   );
 
-  Future<List<FridgeItem>> fetchItems(int groupId) => _api.fetchItems(groupId);
+  Future<List<FridgeItem>> fetchItems(int groupId) => networkFirst(
+    _database,
+    key: 'fridge_items_$groupId',
+    fetch: () => _api.fetchItems(groupId),
+    toJson: (items) => [for (final item in items) item.toJson()],
+    fromJson: (json) => [
+      for (final item in json as List)
+        FridgeItem.fromJson(item as Map<String, dynamic>),
+    ],
+  );
 
   Future<void> addItem({
     required int groupId,

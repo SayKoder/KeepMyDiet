@@ -4,6 +4,7 @@ import 'package:keepmydiet/features/auth/data/auth_repository.dart';
 import 'package:keepmydiet/features/auth/domain/auth_failure.dart';
 import 'package:keepmydiet/features/auth/domain/auth_session.dart';
 import 'package:keepmydiet/shared/api_client.dart';
+import 'package:keepmydiet/shared/local_database.dart';
 import 'package:keepmydiet/shared/token_storage.dart';
 
 final authControllerProvider =
@@ -81,6 +82,7 @@ class AuthController extends AsyncNotifier<AuthSession?> {
 
   Future<void> logout() async {
     await ref.read(tokenStorageProvider).delete();
+    await ref.read(localDatabaseProvider).clear();
     state = const AsyncData(null);
   }
 }

@@ -24,4 +24,13 @@ class DailyNutritionLog {
         carbConsumedG: (json['carbConsumedG'] as num).toDouble(),
         fatConsumedG: (json['fatConsumedG'] as num).toDouble(),
       );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'date': date.toIso8601String(),
+    'caloriesConsumed': caloriesConsumed,
+    'proteinConsumedG': proteinConsumedG,
+    'carbConsumedG': carbConsumedG,
+    'fatConsumedG': fatConsumedG,
+  };
 }

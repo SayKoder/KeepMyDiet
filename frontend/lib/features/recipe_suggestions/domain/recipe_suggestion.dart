@@ -45,4 +45,15 @@ class RecipeSuggestion {
             ? null
             : DateTime.parse(json['soonestExpirationDate'] as String),
       );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'referenceServings': referenceServings,
+    'caloriesPerServing': caloriesPerServing,
+    'matchedIngredientsCount': matchedIngredientsCount,
+    'totalIngredientsCount': totalIngredientsCount,
+    'missingIngredientNames': missingIngredientNames,
+    'soonestExpirationDate': soonestExpirationDate?.toIso8601String(),
+  };
 }

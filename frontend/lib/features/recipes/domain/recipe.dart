@@ -47,4 +47,16 @@ class Recipe {
       totalFats: (json['totalFats'] as num).toDouble(),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'referenceServings': referenceServings,
+    'ingredients': [for (final ingredient in ingredients) ingredient.toJson()],
+    'steps': [for (final step in steps) step.toJson()],
+    'totalCalories': totalCalories,
+    'totalProteins': totalProteins,
+    'totalCarbs': totalCarbs,
+    'totalFats': totalFats,
+  };
 }
