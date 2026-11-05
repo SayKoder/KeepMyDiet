@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:keepmydiet/features/recipe_suggestions/data/recipe_suggestions_api_client.dart';
+import 'package:keepmydiet/features/recipe_suggestions/data/recipe_suggestions_repository.dart';
 import 'package:keepmydiet/features/recipe_suggestions/domain/recipe_suggestion.dart';
 
 /// `.family` par `groupId` : les suggestions dépendent du frigo/placard de
@@ -8,6 +7,6 @@ import 'package:keepmydiet/features/recipe_suggestions/domain/recipe_suggestion.
 final recipeSuggestionsProvider =
     FutureProvider.family<List<RecipeSuggestion>, int>((ref, groupId) {
       return ref
-          .watch(recipeSuggestionsApiClientProvider)
+          .watch(recipeSuggestionsRepositoryProvider)
           .fetchForGroup(groupId);
     });

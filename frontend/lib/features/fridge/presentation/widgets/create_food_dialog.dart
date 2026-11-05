@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keepmydiet/features/fridge/data/fridge_api_client.dart';
+import 'package:keepmydiet/features/fridge/data/fridge_repository.dart';
 import 'package:keepmydiet/features/fridge/data/open_food_facts_client.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
 import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
@@ -88,7 +88,7 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
 
     try {
       final food = await ref
-          .read(fridgeApiClientProvider)
+          .read(fridgeRepositoryProvider)
           .createCustomFood(
             groupId: widget.groupId,
             name: name,

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/fridge/data/fridge_repository.dart';
 import 'package:keepmydiet/features/fridge/data/open_food_facts_client.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
 import 'package:keepmydiet/features/fridge/presentation/barcode_scanner_screen.dart';
@@ -51,7 +52,9 @@ class _FoodSearchViewState extends ConsumerState<FoodSearchView> {
     if (query.isEmpty) return;
 
     _onlineDebounce = Timer(const Duration(milliseconds: 450), () async {
-      final results = await ref.read(openFoodFactsClientProvider).search(query);
+      final results = await ref
+          .read(fridgeRepositoryProvider)
+          .searchOnline(query);
       if (!mounted || _query != query) return;
       setState(() {
         _onlineResults = results;
@@ -96,7 +99,9 @@ class _FoodSearchViewState extends ConsumerState<FoodSearchView> {
       barrierDismissible: false,
       builder: (_) => const LoadingState(),
     );
-    final product = await ref.read(openFoodFactsClientProvider).lookup(code);
+    final product = await ref
+        .read(fridgeRepositoryProvider)
+        .lookupBarcode(code);
     if (!mounted) return;
     Navigator.of(context).pop();
 

@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keepmydiet/features/auth/data/auth_api_client.dart';
+import 'package:keepmydiet/features/auth/data/auth_repository.dart';
 import 'package:keepmydiet/features/auth/domain/auth_failure.dart';
 import 'package:keepmydiet/features/auth/domain/auth_session.dart';
 import 'package:keepmydiet/shared/api_client.dart';
@@ -56,7 +56,7 @@ class AuthController extends AsyncNotifier<AuthSession?> {
   }) async {
     try {
       await ref
-          .read(authApiClientProvider)
+          .read(authRepositoryProvider)
           .register(email: email, password: password);
     } on DioException catch (e) {
       throw AuthFailure(extractErrorMessage(e));
@@ -69,7 +69,7 @@ class AuthController extends AsyncNotifier<AuthSession?> {
     final String token;
     try {
       token = await ref
-          .read(authApiClientProvider)
+          .read(authRepositoryProvider)
           .login(email: email, password: password);
     } on DioException catch (e) {
       throw AuthFailure(extractErrorMessage(e));

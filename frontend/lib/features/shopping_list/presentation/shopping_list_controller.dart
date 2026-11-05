@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
 import 'package:keepmydiet/features/recipe_suggestions/presentation/recipe_suggestions_controller.dart';
 import 'package:keepmydiet/features/shopping_list/data/shopping_list_api_client.dart';
+import 'package:keepmydiet/features/shopping_list/data/shopping_list_repository.dart';
 import 'package:keepmydiet/features/shopping_list/domain/shopping_list.dart';
 import 'package:keepmydiet/features/shopping_list/domain/shopping_list_failure.dart';
 import 'package:keepmydiet/shared/api_client.dart';
@@ -13,7 +14,7 @@ final shoppingListProvider = FutureProvider.family<ShoppingList?, int>((
   ref,
   groupId,
 ) {
-  return ref.watch(shoppingListApiClientProvider).fetchActive(groupId);
+  return ref.watch(shoppingListRepositoryProvider).fetchActive(groupId);
 });
 
 Future<void> generateShoppingList(
@@ -22,7 +23,7 @@ Future<void> generateShoppingList(
   required List<int> recipeIds,
 }) async {
   try {
-    await ref.read(shoppingListApiClientProvider).generate(groupId, recipeIds);
+    await ref.read(shoppingListRepositoryProvider).generate(groupId, recipeIds);
   } on DioException catch (e) {
     throw ShoppingListFailure(extractErrorMessage(e));
   }
@@ -36,7 +37,7 @@ Future<void> checkoutShoppingList(
   required List<CheckoutItem> items,
 }) async {
   try {
-    await ref.read(shoppingListApiClientProvider).checkout(groupId, items);
+    await ref.read(shoppingListRepositoryProvider).checkout(groupId, items);
   } on DioException catch (e) {
     throw ShoppingListFailure(extractErrorMessage(e));
   }

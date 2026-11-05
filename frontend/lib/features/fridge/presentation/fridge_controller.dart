@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keepmydiet/features/fridge/data/fridge_api_client.dart';
+import 'package:keepmydiet/features/fridge/data/fridge_repository.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
 import 'package:keepmydiet/features/fridge/domain/fridge_failure.dart';
 import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
@@ -14,14 +14,14 @@ final foodCatalogProvider = FutureProvider.family<List<FoodReference>, int>((
   ref,
   groupId,
 ) {
-  return ref.watch(fridgeApiClientProvider).fetchCatalog(groupId);
+  return ref.watch(fridgeRepositoryProvider).fetchCatalog(groupId);
 });
 
 final fridgeItemsProvider = FutureProvider.family<List<FridgeItem>, int>((
   ref,
   groupId,
 ) {
-  return ref.watch(fridgeApiClientProvider).fetchItems(groupId);
+  return ref.watch(fridgeRepositoryProvider).fetchItems(groupId);
 });
 
 /// Pas de notifier dédié ici : juste des fonctions qui appellent l'API puis
@@ -39,7 +39,7 @@ Future<void> addFridgeItem(
 }) async {
   try {
     await ref
-        .read(fridgeApiClientProvider)
+        .read(fridgeRepositoryProvider)
         .addItem(
           groupId: groupId,
           foodReferenceId: foodReferenceId,
@@ -65,7 +65,7 @@ Future<void> deleteFridgeItem(
   required int itemId,
 }) async {
   try {
-    await ref.read(fridgeApiClientProvider).deleteItem(itemId);
+    await ref.read(fridgeRepositoryProvider).deleteItem(itemId);
   } on DioException catch (e) {
     throw FridgeFailure(extractErrorMessage(e));
   }

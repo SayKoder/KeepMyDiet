@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/home/presentation/journal_date_controller.dart';
-import 'package:keepmydiet/features/meal_plan/data/meal_plan_api_client.dart';
+import 'package:keepmydiet/features/meal_plan/data/meal_plan_repository.dart';
 import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry.dart';
 import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry_log.dart';
 import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry_status.dart';
@@ -57,7 +57,7 @@ final mealPlanEntriesProvider = FutureProvider.family<List<MealPlanEntry>, int>(
     final weekStart = ref.watch(mealPlanWeekStartProvider);
 
     return ref
-        .read(mealPlanApiClientProvider)
+        .read(mealPlanRepositoryProvider)
         .fetchEntries(
           groupId: groupId,
           from: weekStart,
@@ -74,7 +74,7 @@ final mealPlanEntriesForDateProvider =
       final date = ref.watch(journalDateProvider);
 
       return ref
-          .read(mealPlanApiClientProvider)
+          .read(mealPlanRepositoryProvider)
           .fetchEntries(groupId: groupId, from: date, to: date);
     });
 
@@ -83,7 +83,7 @@ final mealPlanEntriesForDateProvider =
 final mealPlanEntryLogsProvider = FutureProvider<List<MealPlanEntryLog>>((ref) {
   final date = ref.watch(journalDateProvider);
 
-  return ref.read(mealPlanApiClientProvider).fetchEntryLogs(date);
+  return ref.read(mealPlanRepositoryProvider).fetchEntryLogs(date);
 });
 
 final mealPlanControllerProvider = Provider<MealPlanController>(
@@ -105,7 +105,7 @@ class MealPlanController {
     final MealPlanEntry entry;
     try {
       entry = await _ref
-          .read(mealPlanApiClientProvider)
+          .read(mealPlanRepositoryProvider)
           .createEntry(
             groupId: groupId,
             date: date,
@@ -132,7 +132,7 @@ class MealPlanController {
     final MealPlanEntry entry;
     try {
       entry = await _ref
-          .read(mealPlanApiClientProvider)
+          .read(mealPlanRepositoryProvider)
           .updateEntry(
             entryId: entryId,
             recipeId: recipeId,
@@ -150,7 +150,7 @@ class MealPlanController {
 
   Future<void> deleteEntry({required int groupId, required int entryId}) async {
     try {
-      await _ref.read(mealPlanApiClientProvider).deleteEntry(entryId);
+      await _ref.read(mealPlanRepositoryProvider).deleteEntry(entryId);
     } on DioException catch (e) {
       throw MealPlanFailure(extractErrorMessage(e));
     }
@@ -172,7 +172,7 @@ class MealPlanController {
   }) async {
     try {
       await _ref
-          .read(mealPlanApiClientProvider)
+          .read(mealPlanRepositoryProvider)
           .submitMealPlanEntryLog(
             entryId: entryId,
             status: status,
@@ -198,7 +198,7 @@ class MealPlanController {
 
     try {
       await _ref
-          .read(mealPlanApiClientProvider)
+          .read(mealPlanRepositoryProvider)
           .generateShoppingListFromPlan(
             groupId: groupId,
             from: weekStart,
