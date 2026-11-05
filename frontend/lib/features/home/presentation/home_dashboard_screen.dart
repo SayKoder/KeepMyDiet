@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/core/theme.dart';
 import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
+import 'package:keepmydiet/features/discover/presentation/discover_screen.dart';
 import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
 import 'package:keepmydiet/features/home/presentation/widgets/add_meal_sheet.dart';
 import 'package:keepmydiet/features/home/presentation/widgets/calorie_hero_card.dart';
@@ -182,6 +183,16 @@ class _DashboardView extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 10),
+        ShortcutCard(
+          icon: Icons.explore_outlined,
+          iconBg: AppColors.waterBg,
+          iconColor: AppColors.waterIcon,
+          label: 'Découvrir',
+          subtitle: 'Produits Open Food Facts',
+          onTap: () => Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const DiscoverScreen())),
         ),
         const SizedBox(height: 16),
         Center(

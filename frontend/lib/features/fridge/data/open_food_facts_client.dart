@@ -11,6 +11,10 @@ class OpenFoodFactsProduct {
     required this.carbsPer100g,
     required this.fatsPer100g,
     this.barcode,
+    this.imageUrl,
+    this.nutriScore,
+    this.ingredients,
+    this.allergens = const [],
   });
 
   final String name;
@@ -18,11 +22,11 @@ class OpenFoodFactsProduct {
   final double proteinsPer100g;
   final double carbsPer100g;
   final double fatsPer100g;
-
-  /// Renseigné pour un résultat de `search()` (on ne le connaît pas encore
-  /// à ce stade) — `null` pour `lookup()`, où l'appelant connaît déjà le
-  /// code-barres puisque c'est lui qui l'a fourni en entrée.
   final String? barcode;
+  final String? imageUrl;
+  final String? nutriScore;
+  final String? ingredients;
+  final List<String> allergens;
 }
 
 /// API publique d'Open Food Facts — aucune authentification, donc un Dio
@@ -47,6 +51,7 @@ class OpenFoodFactsClient {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         '/product/$barcode.json',
+        queryParameters: {'fields': _detailFields},
       );
       final data = response.data!;
       if (data['status'] != 1) {
@@ -66,32 +71,43 @@ class OpenFoodFactsClient {
   /// `baseUrl` partagé du client. Liste vide (pas d'exception) sur requête
   /// ratée ou vide — l'appelant retombe simplement sur le catalogue local.
   Future<List<OpenFoodFactsProduct>> search(String query) async {
-    final trimmed = query.trim();
-    if (trimmed.isEmpty) {
+    if (query.trim().isEmpty) {
       return const [];
     }
 
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
-        'https://world.openfoodfacts.org/cgi/search.pl',
-        queryParameters: {
-          'search_terms': trimmed,
-          'search_simple': 1,
-          'action': 'process',
-          'json': 1,
-          'page_size': 20,
-          'fields': 'code,product_name,nutriments',
-        },
-      );
-      final products = response.data?['products'] as List<dynamic>? ?? [];
-
-      return products
-          .map((p) => _fromJson(p as Map<String, dynamic>))
-          .whereType<OpenFoodFactsProduct>()
-          .toList();
+      return await browse(query);
     } on DioException {
       return const [];
     }
+  }
+
+  /// Version paginée de `search()` pour l'écran Découvrir : lève
+  /// `DioException` pour que l'écran affiche l'erreur, et une requête vide
+  /// renvoie les produits les plus scannés.
+  Future<List<OpenFoodFactsProduct>> browse(
+    String query, {
+    int page = 1,
+  }) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      'https://world.openfoodfacts.org/cgi/search.pl',
+      queryParameters: {
+        'search_terms': query.trim(),
+        'search_simple': 1,
+        'action': 'process',
+        'json': 1,
+        'sort_by': 'unique_scans_n',
+        'page': page,
+        'page_size': 20,
+        'fields': 'code,product_name,nutriments,image_front_small_url',
+      },
+    );
+    final products = response.data?['products'] as List<dynamic>? ?? [];
+
+    return products
+        .map((p) => _fromJson(p as Map<String, dynamic>))
+        .whereType<OpenFoodFactsProduct>()
+        .toList();
   }
 
   OpenFoodFactsProduct? _fromJson(Map<String, dynamic> product) {
@@ -108,8 +124,26 @@ class OpenFoodFactsClient {
       carbsPer100g: _num(nutriments['carbohydrates_100g']),
       fatsPer100g: _num(nutriments['fat_100g']),
       barcode: product['code'] as String?,
+      imageUrl:
+          (product['image_front_url'] ?? product['image_front_small_url'])
+              as String?,
+      nutriScore: _nutriScore(product),
+      ingredients: (product['ingredients_text'] as String?)?.trim(),
+      allergens: [
+        for (final tag in product['allergens_tags'] as List<dynamic>? ?? [])
+          (tag as String).replaceFirst(RegExp(r'^\w+:'), ''),
+      ],
     );
   }
+
+  String? _nutriScore(Map<String, dynamic> product) {
+    final grade = product['nutriscore_grade'] ?? product['nutrition_grades'];
+    return grade is String && grade.length == 1 ? grade.toUpperCase() : null;
+  }
+
+  static const _detailFields =
+      'code,product_name,nutriments,image_front_url,ingredients_text,'
+      'allergens_tags,nutriscore_grade,nutrition_grades';
 
   double _num(dynamic value) {
     if (value is num) {

@@ -146,20 +146,9 @@ class _ItemDetailsFormState extends ConsumerState<_ItemDetailsForm> {
           ),
         ),
         const SizedBox(height: 16),
-        Row(
-          spacing: 8,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _quantityController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(labelText: 'Quantité'),
-              ),
-            ),
-            Expanded(child: IngredientUnitField(controller: _unitController)),
-          ],
+        QuantityUnitRow(
+          quantityController: _quantityController,
+          unitController: _unitController,
         ),
         const SizedBox(height: 16),
         SegmentedButton<StorageLocation>(

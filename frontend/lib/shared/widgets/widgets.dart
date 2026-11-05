@@ -9,6 +9,7 @@ export 'letter_avatar.dart';
 export 'message_banner.dart';
 export 'number_field.dart';
 export 'pill.dart';
+export 'quantity_unit_row.dart';
 export 'round_back_button.dart';
 export 'segmented_pill.dart';
 export 'submit_button_content.dart';

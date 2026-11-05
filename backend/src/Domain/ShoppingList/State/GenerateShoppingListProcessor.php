@@ -6,18 +6,12 @@ use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Domain\Group\Repository\GroupMembershipRepository;
-use App\Domain\Group\Repository\GroupRepository;
 use App\Domain\Recipe\Entity\Recipe;
 use App\Domain\ShoppingList\Dto\GenerateShoppingListInput;
 use App\Domain\ShoppingList\Entity\ShoppingList;
 use App\Domain\ShoppingList\Entity\ShoppingListItem;
-use App\Domain\ShoppingList\Repository\ShoppingListRepository;
-use App\Shared\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * Ajoute à la liste active du groupe (créée si besoin) une ligne par
@@ -30,35 +24,19 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 final class GenerateShoppingListProcessor implements ProcessorInterface
 {
     public function __construct(
-        private readonly GroupRepository $groups,
+        private readonly ActiveShoppingListResolver $resolver,
         private readonly GroupMembershipRepository $memberships,
-        private readonly ShoppingListRepository $shoppingLists,
         private readonly IriConverterInterface $iriConverter,
         private readonly EntityManagerInterface $em,
-        private readonly Security $security,
     ) {
     }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ShoppingList
     {
         /** @var GenerateShoppingListInput $data */
-        $group = $this->groups->find($uriVariables['groupId']);
-        if (null === $group) {
-            throw new NotFoundHttpException();
-        }
+        $list = $this->resolver->resolve($uriVariables['groupId']);
 
-        $user = $this->security->getUser();
-        if (!$user instanceof User || !$this->memberships->isMember($user, $group)) {
-            throw new AccessDeniedException();
-        }
-
-        $list = $this->shoppingLists->findActiveForGroup($group);
-        if (null === $list) {
-            $list = new ShoppingList();
-            $list->setGroup($group);
-        }
-
-        $servings = max(1, $this->memberships->countMembers($group));
+        $servings = max(1, $this->memberships->countMembers($list->getGroup()));
 
         foreach ($data->recipes as $recipeIri) {
             $recipe = $this->iriConverter->getResourceFromIri($recipeIri);
