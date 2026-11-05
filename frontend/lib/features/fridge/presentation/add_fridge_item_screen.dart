@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/async_value_ui.dart';
+import '../../../shared/dialog_action_buttons.dart';
 import '../../../shared/form_error_text.dart';
 import '../../../shared/ingredient_unit_field.dart';
 import '../../../shared/submit_button_content.dart';
@@ -40,12 +43,51 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
+  // Recherche Open Food Facts déclenchée par la saisie, en plus du filtrage
+  // local déjà fait sur `foodCatalogProvider` juste en dessous — même
+  // service que celui utilisé par le scan, mais par nom plutôt que par
+  // code-barres. `Timer`-based debounce (450ms) : sans lui, chaque frappe
+  // partirait en requête réseau vers OFF.
+  Timer? _offDebounce;
+  List<OpenFoodFactsProduct> _offResults = const [];
+  bool _offSearching = false;
+
   @override
   void dispose() {
+    _offDebounce?.cancel();
     _searchController.dispose();
     _quantityController.dispose();
     _unitController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {}); // réapplique le filtre local tout de suite
+
+    _offDebounce?.cancel();
+    final query = _searchController.text.trim();
+    if (query.isEmpty) {
+      setState(() {
+        _offResults = const [];
+        _offSearching = false;
+      });
+      return;
+    }
+
+    setState(() => _offSearching = true);
+    _offDebounce = Timer(const Duration(milliseconds: 450), () async {
+      final results = await ref.read(openFoodFactsClientProvider).search(query);
+      // La requête la plus récente est la seule dont le résultat compte : si
+      // le texte a encore changé entre-temps, une recherche plus récente est
+      // déjà en vol (ou va l'être) — appliquer ce résultat-ci écraserait le
+      // sien avec une réponse obsolète.
+      if (mounted && _searchController.text.trim() == query) {
+        setState(() {
+          _offResults = results;
+          _offSearching = false;
+        });
+      }
+    });
   }
 
   Future<void> _pickExpirationDate() async {
@@ -106,16 +148,27 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
     }
     Navigator.of(context).pop();
 
+    await _openCreateDialog(product: offProduct, barcode: code);
+  }
+
+  /// Ouvre la popup de création pré-remplie — partagée entre le scan
+  /// (`_scanBarcode`, trouvé ou non sur Open Food Facts) et un résultat tapé
+  /// dans la recherche texte (`_buildSearchStep`), pour ne pas dupliquer cet
+  /// appel à chaque nouvelle source de résultat.
+  Future<void> _openCreateDialog({
+    OpenFoodFactsProduct? product,
+    String? barcode,
+  }) async {
     final result = await showDialog<FoodReference>(
       context: context,
       builder: (context) => _CreateFoodDialog(
         groupId: widget.groupId,
-        initialName: offProduct?.name ?? '',
-        initialCalories: offProduct?.caloriesPer100g,
-        initialProteins: offProduct?.proteinsPer100g,
-        initialCarbs: offProduct?.carbsPer100g,
-        initialFats: offProduct?.fatsPer100g,
-        barcode: code,
+        initialName: product?.name ?? '',
+        initialCalories: product?.caloriesPer100g,
+        initialProteins: product?.proteinsPer100g,
+        initialCarbs: product?.carbsPer100g,
+        initialFats: product?.fatsPer100g,
+        barcode: barcode,
       ),
     );
     if (result != null) {
@@ -197,12 +250,13 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
                 onPressed: _scanBarcode,
               ),
             ),
-            onChanged: (_) => setState(() {}),
+            onChanged: (_) => _onSearchChanged(),
           ),
           const SizedBox(height: 12),
           Expanded(
             child: catalogAsync.toWidget(
-              onRetry: () => ref.invalidate(foodCatalogProvider(widget.groupId)),
+              onRetry: () =>
+                  ref.invalidate(foodCatalogProvider(widget.groupId)),
               data: (catalog) {
                 final query = _searchController.text.trim().toLowerCase();
                 final matches = query.isEmpty
@@ -210,27 +264,71 @@ class _AddFridgeItemScreenState extends ConsumerState<AddFridgeItemScreen> {
                     : catalog
                           .where((f) => f.name.toLowerCase().contains(query))
                           .toList();
+                // Un produit déjà dans le catalogue (Ciqual + perso du
+                // groupe) n'a pas besoin d'être proposé une 2e fois depuis
+                // Open Food Facts, même code-barres ou nom très proche.
+                final knownBarcodes = catalog
+                    .map((f) => f.barcode)
+                    .whereType<String>()
+                    .toSet();
+                final offMatches = _offResults
+                    .where((p) => !knownBarcodes.contains(p.barcode))
+                    .toList();
 
-                return ListView.builder(
-                  itemCount: matches.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == matches.length) {
-                      return ListTile(
-                        leading: const Icon(Icons.add),
-                        title: const Text('Créer un nouveau produit'),
-                        onTap: _createCustomFood,
-                      );
-                    }
-                    final food = matches[index];
-
-                    return ListTile(
-                      title: Text(food.name),
-                      subtitle: Text(
-                        '${food.caloriesPer100g.toStringAsFixed(0)} kcal / 100g',
+                return ListView(
+                  children: [
+                    for (final food in matches)
+                      ListTile(
+                        title: Text(food.name),
+                        subtitle: Text(
+                          '${food.caloriesPer100g.toStringAsFixed(0)} kcal / 100g',
+                        ),
+                        onTap: () => setState(() => _selectedFood = food),
                       ),
-                      onTap: () => setState(() => _selectedFood = food),
-                    );
-                  },
+                    if (query.isNotEmpty) ...[
+                      const _SectionLabel('OPEN FOOD FACTS'),
+                      if (_offSearching)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        )
+                      else if (offMatches.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Text(
+                            'Aucun résultat en ligne pour cette recherche.',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      else
+                        for (final product in offMatches)
+                          ListTile(
+                            leading: const Icon(Icons.public),
+                            title: Text(product.name),
+                            subtitle: Text(
+                              '${product.caloriesPer100g.toStringAsFixed(0)} kcal / 100g',
+                            ),
+                            onTap: () => _openCreateDialog(
+                              product: product,
+                              barcode: product.barcode,
+                            ),
+                          ),
+                    ],
+                    ListTile(
+                      leading: const Icon(Icons.add),
+                      title: const Text('Créer un nouveau produit'),
+                      onTap: _createCustomFood,
+                    ),
+                  ],
                 );
               },
             ),
@@ -432,8 +530,9 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Nom'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             const Text('Valeurs pour 100g :', style: TextStyle(fontSize: 12)),
+            const SizedBox(height: 10),
             TextField(
               controller: _caloriesController,
               keyboardType: const TextInputType.numberWithOptions(
@@ -441,6 +540,7 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
               ),
               decoration: const InputDecoration(labelText: 'Kcal'),
             ),
+            const SizedBox(height: 12),
             TextField(
               controller: _proteinsController,
               keyboardType: const TextInputType.numberWithOptions(
@@ -448,6 +548,7 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
               ),
               decoration: const InputDecoration(labelText: 'Protéines'),
             ),
+            const SizedBox(height: 12),
             TextField(
               controller: _carbsController,
               keyboardType: const TextInputType.numberWithOptions(
@@ -455,6 +556,7 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
               ),
               decoration: const InputDecoration(labelText: 'Glucides'),
             ),
+            const SizedBox(height: 12),
             TextField(
               controller: _fatsController,
               keyboardType: const TextInputType.numberWithOptions(
@@ -465,25 +567,46 @@ class _CreateFoodDialogState extends ConsumerState<_CreateFoodDialog> {
             if (_errorMessage != null)
               FormErrorText(
                 _errorMessage!,
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: 12),
               ),
           ],
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Annuler'),
-        ),
-        FilledButton(
-          onPressed: _isSubmitting ? null : _submit,
-          child: SubmitButtonContent(
+        DialogActionButtons(
+          cancelLabel: 'Annuler',
+          onCancel: _isSubmitting ? null : () => Navigator.of(context).pop(),
+          confirmLabel: 'Créer',
+          onConfirm: _isSubmitting ? null : _submit,
+          confirmChild: SubmitButtonContent(
             isSubmitting: _isSubmitting,
             label: const Text('Créer'),
             size: 16,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.8,
+          color: Colors.grey,
+        ),
+      ),
     );
   }
 }

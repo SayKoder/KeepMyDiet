@@ -10,6 +10,7 @@ class OpenFoodFactsProduct {
     required this.proteinsPer100g,
     required this.carbsPer100g,
     required this.fatsPer100g,
+    this.barcode,
   });
 
   final String name;
@@ -17,6 +18,11 @@ class OpenFoodFactsProduct {
   final double proteinsPer100g;
   final double carbsPer100g;
   final double fatsPer100g;
+
+  /// Renseigné pour un résultat de `search()` (on ne le connaît pas encore
+  /// à ce stade) — `null` pour `lookup()`, où l'appelant connaît déjà le
+  /// code-barres puisque c'est lui qui l'a fourni en entrée.
+  final String? barcode;
 }
 
 /// API publique d'Open Food Facts — aucune authentification, donc un Dio
@@ -47,23 +53,62 @@ class OpenFoodFactsClient {
         return null;
       }
 
-      final product = data['product'] as Map<String, dynamic>;
-      final nutriments = product['nutriments'] as Map<String, dynamic>? ?? {};
-      final name = (product['product_name'] as String?)?.trim();
-      if (name == null || name.isEmpty) {
-        return null;
-      }
-
-      return OpenFoodFactsProduct(
-        name: name,
-        caloriesPer100g: _num(nutriments['energy-kcal_100g']),
-        proteinsPer100g: _num(nutriments['proteins_100g']),
-        carbsPer100g: _num(nutriments['carbohydrates_100g']),
-        fatsPer100g: _num(nutriments['fat_100g']),
-      );
+      return _fromJson(data['product'] as Map<String, dynamic>);
     } on DioException {
       return null;
     }
+  }
+
+  /// Recherche par nom (barre de recherche du frigo/placard) — même service
+  /// que `lookup()`, mais l'endpoint classique de recherche texte d'Open
+  /// Food Facts (`/cgi/search.pl`) est à la racine du domaine, pas sous
+  /// `/api/v2` comme `lookup()` : URL absolue plutôt que de changer le
+  /// `baseUrl` partagé du client. Liste vide (pas d'exception) sur requête
+  /// ratée ou vide — l'appelant retombe simplement sur le catalogue local.
+  Future<List<OpenFoodFactsProduct>> search(String query) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      return const [];
+    }
+
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        'https://world.openfoodfacts.org/cgi/search.pl',
+        queryParameters: {
+          'search_terms': trimmed,
+          'search_simple': 1,
+          'action': 'process',
+          'json': 1,
+          'page_size': 20,
+          'fields': 'code,product_name,nutriments',
+        },
+      );
+      final products = response.data?['products'] as List<dynamic>? ?? [];
+
+      return products
+          .map((p) => _fromJson(p as Map<String, dynamic>))
+          .whereType<OpenFoodFactsProduct>()
+          .toList();
+    } on DioException {
+      return const [];
+    }
+  }
+
+  OpenFoodFactsProduct? _fromJson(Map<String, dynamic> product) {
+    final nutriments = product['nutriments'] as Map<String, dynamic>? ?? {};
+    final name = (product['product_name'] as String?)?.trim();
+    if (name == null || name.isEmpty) {
+      return null;
+    }
+
+    return OpenFoodFactsProduct(
+      name: name,
+      caloriesPer100g: _num(nutriments['energy-kcal_100g']),
+      proteinsPer100g: _num(nutriments['proteins_100g']),
+      carbsPer100g: _num(nutriments['carbohydrates_100g']),
+      fatsPer100g: _num(nutriments['fat_100g']),
+      barcode: product['code'] as String?,
+    );
   }
 
   double _num(dynamic value) {
