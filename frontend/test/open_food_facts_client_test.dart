@@ -53,15 +53,28 @@ void main() {
     expect(product?.imageUrl, 'https://img/large.jpg');
   });
 
-  test('browse ignore les produits sans nom', () async {
-    final products = await _client({
+  test('browse ignore les produits sans nom et lit le total', () async {
+    final page = await _client({
+      'count': 100,
       'products': [
         {'code': '1', 'product_name': 'Pain'},
         {'code': '2', 'product_name': '  '},
       ],
     }).browse('');
 
-    expect(products.map((p) => p.name), ['Pain']);
-    expect(products.single.nutriScore, isNull);
+    expect(page.products.map((p) => p.name), ['Pain']);
+    expect(page.products.single.nutriScore, isNull);
+    expect(page.hasMore, isTrue);
+  });
+
+  test('browse: plus de page quand le total est atteint', () async {
+    final page = await _client({
+      'count': '24',
+      'products': [
+        {'code': '1', 'product_name': 'Pain'},
+      ],
+    }).browse('pain');
+
+    expect(page.hasMore, isFalse);
   });
 }

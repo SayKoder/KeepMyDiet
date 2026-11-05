@@ -18,36 +18,27 @@ class DiscoverScreen extends ConsumerStatefulWidget {
 
 class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   final _searchController = TextEditingController();
-  final _scrollController = ScrollController();
   Timer? _debounce;
 
   DiscoverController get _controller => ref.read(discoverProvider.notifier);
 
   @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
   void dispose() {
     _debounce?.cancel();
     _searchController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 400) {
-      _controller.loadMore();
-    }
+  bool _loadMoreNearEnd(ScrollMetrics metrics) {
+    final failed = ref.read(discoverProvider).value?.loadMoreFailed ?? false;
+    if (!failed && metrics.extentAfter < 1000) _controller.loadMore();
+    return false;
   }
 
   void _onSearchChanged(String query) {
     _debounce?.cancel();
     _debounce = Timer(
-      const Duration(milliseconds: 450),
+      const Duration(milliseconds: 600),
       () => _controller.search(query.trim()),
     );
   }
@@ -128,24 +119,29 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   Widget _buildGrid(DiscoverState state) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        SliverGrid.builder(
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 200,
-            mainAxisExtent: 250,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-          ),
-          itemCount: state.products.length,
-          itemBuilder: (_, index) => ProductCard(
-            product: state.products[index],
-            onTap: () => _openDetail(state.products[index]),
-          ),
+    return NotificationListener<ScrollMetricsNotification>(
+      onNotification: (n) => _loadMoreNearEnd(n.metrics),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (n) => _loadMoreNearEnd(n.metrics),
+        child: CustomScrollView(
+          slivers: [
+            SliverGrid.builder(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 200,
+                mainAxisExtent: 250,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: state.products.length,
+              itemBuilder: (_, index) => ProductCard(
+                product: state.products[index],
+                onTap: () => _openDetail(state.products[index]),
+              ),
+            ),
+            SliverToBoxAdapter(child: _buildFooter(state)),
+          ],
         ),
-        SliverToBoxAdapter(child: _buildFooter(state)),
-      ],
+      ),
     );
   }
 
