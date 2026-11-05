@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme.dart';
-import '../../../shared/widgets/app_bottom_nav.dart';
-import '../../../shared/widgets/async_value_ui.dart';
-import '../../../shared/widgets/segmented_pill.dart';
-import '../../groups/domain/group.dart';
-import '../../recipe_suggestions/presentation/recipe_suggestions_screen.dart';
-import '../domain/fridge_failure.dart';
-import '../domain/fridge_item.dart';
-import '../domain/storage_location.dart';
-import 'add_fridge_item_screen.dart';
-import 'fridge_controller.dart';
-import 'widgets/expiring_banner.dart';
-import 'widgets/fridge_header.dart';
-import 'widgets/fridge_item_card.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/fridge/domain/fridge_failure.dart';
+import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
+import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
+import 'package:keepmydiet/features/fridge/presentation/add_fridge_item_screen.dart';
+import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
+import 'package:keepmydiet/features/fridge/presentation/widgets/expiring_banner.dart';
+import 'package:keepmydiet/features/fridge/presentation/widgets/fridge_header.dart';
+import 'package:keepmydiet/features/fridge/presentation/widgets/fridge_item_card.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/recipe_suggestions/presentation/recipe_suggestions_screen.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class FridgeScreen extends ConsumerStatefulWidget {
   const FridgeScreen({super.key, required this.group});

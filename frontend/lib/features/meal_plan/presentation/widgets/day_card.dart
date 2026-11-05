@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../shared/date_labels.dart';
-import '../../domain/meal_plan_entry.dart';
-import '../../domain/meal_type.dart';
-import '../add_meal_plan_entry_screen.dart';
-import '../meal_plan_controller.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_type.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/add_meal_plan_entry_screen.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/meal_plan_controller.dart';
+import 'package:keepmydiet/shared/date_labels.dart';
 
 class DayCard extends StatelessWidget {
   const DayCard({

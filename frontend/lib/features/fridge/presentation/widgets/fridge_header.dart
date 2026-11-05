@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme.dart';
-import '../../../groups/domain/group.dart';
-import '../../../groups/presentation/group_detail_screen.dart';
-import '../../../groups/presentation/groups_controller.dart';
-import '../../../recipe_suggestions/presentation/recipe_suggestions_screen.dart';
-import '../../../shopping_list/presentation/shopping_list_screen.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/presentation/group_detail_screen.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/recipe_suggestions/presentation/recipe_suggestions_screen.dart';
+import 'package:keepmydiet/features/shopping_list/presentation/shopping_list_screen.dart';
 
 class FridgeHeader extends ConsumerWidget {
   const FridgeHeader({super.key, required this.group});

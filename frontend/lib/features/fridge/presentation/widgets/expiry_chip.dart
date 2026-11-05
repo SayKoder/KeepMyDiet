@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme.dart';
+import 'package:keepmydiet/core/theme.dart';
 
 class ExpiryChip extends StatelessWidget {
   const ExpiryChip({super.key, required this.date});

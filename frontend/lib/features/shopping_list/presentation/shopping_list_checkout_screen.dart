@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
-import '../../../shared/widgets/form_error_text.dart';
-import '../../../shared/widgets/submit_button_content.dart';
-import '../../fridge/domain/storage_location.dart';
-import '../data/shopping_list_api_client.dart';
-import '../domain/shopping_list_item.dart';
-import 'shopping_list_controller.dart';
+import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
+import 'package:keepmydiet/features/shopping_list/data/shopping_list_api_client.dart';
+import 'package:keepmydiet/features/shopping_list/domain/shopping_list_item.dart';
+import 'package:keepmydiet/features/shopping_list/presentation/shopping_list_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 // Lieu de rangement et date de péremption pour chaque article acheté.
 class ShoppingListCheckoutScreen extends ConsumerStatefulWidget {

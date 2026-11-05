@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/widgets/async_value_ui.dart';
-import '../../data/open_food_facts_client.dart';
-import '../../domain/food_reference.dart';
-import '../barcode_scanner_screen.dart';
-import '../fridge_controller.dart';
-import 'create_food_dialog.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/fridge/data/open_food_facts_client.dart';
+import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
+import 'package:keepmydiet/features/fridge/presentation/barcode_scanner_screen.dart';
+import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
+import 'package:keepmydiet/features/fridge/presentation/widgets/create_food_dialog.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class FoodSearchView extends ConsumerStatefulWidget {
   const FoodSearchView({

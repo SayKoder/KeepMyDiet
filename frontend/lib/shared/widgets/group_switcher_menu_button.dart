@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
 
 class GroupSwitcherMenuButton extends StatelessWidget {
   const GroupSwitcherMenuButton({

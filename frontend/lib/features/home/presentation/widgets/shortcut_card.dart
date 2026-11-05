@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
-import '../../../../shared/widgets/icon_badge.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class ShortcutCard extends StatelessWidget {
   const ShortcutCard({

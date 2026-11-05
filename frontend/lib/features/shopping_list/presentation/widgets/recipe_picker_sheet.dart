@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../shared/widgets/async_value_ui.dart';
-import '../../../recipes/domain/recipe.dart';
-import '../../../recipes/presentation/recipes_controller.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe.dart';
+import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 // Renvoie les ids des recettes cochées.
 Future<List<int>?> showRecipePickerSheet(BuildContext context) {

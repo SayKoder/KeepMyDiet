@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../../fridge/presentation/fridge_controller.dart';
-import '../../recipe_suggestions/presentation/recipe_suggestions_controller.dart';
-import '../data/shopping_list_api_client.dart';
-import '../domain/shopping_list.dart';
-import '../domain/shopping_list_failure.dart';
+import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
+import 'package:keepmydiet/features/recipe_suggestions/presentation/recipe_suggestions_controller.dart';
+import 'package:keepmydiet/features/shopping_list/data/shopping_list_api_client.dart';
+import 'package:keepmydiet/features/shopping_list/domain/shopping_list.dart';
+import 'package:keepmydiet/features/shopping_list/domain/shopping_list_failure.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 /// `.family` par `groupId`, comme le frigo : la liste de courses est propre
 /// à chaque groupe.

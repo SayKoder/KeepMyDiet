@@ -1,15 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../home/presentation/journal_date_controller.dart';
-import '../../nutrition/presentation/daily_nutrition_log_controller.dart';
-import '../domain/meal_plan_entry_log.dart';
-import '../domain/meal_plan_entry_status.dart';
-import '../../../shared/api_client.dart';
-import '../data/meal_plan_api_client.dart';
-import '../domain/meal_plan_entry.dart';
-import '../domain/meal_plan_failure.dart';
-import '../domain/meal_type.dart';
+import 'package:keepmydiet/features/home/presentation/journal_date_controller.dart';
+import 'package:keepmydiet/features/meal_plan/data/meal_plan_api_client.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry_log.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry_status.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_failure.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_type.dart';
+import 'package:keepmydiet/features/nutrition/presentation/daily_nutrition_log_controller.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 /// Début (lundi minuit, normalisé) de la semaine actuellement affichée —
 /// séparé du reste de l'état pour que `mealPlanEntriesProvider` (family) sache

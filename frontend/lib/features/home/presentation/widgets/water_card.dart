@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/widgets/icon_badge.dart';
-import '../../../../shared/widgets/white_card.dart';
-import '../../../nutrition/presentation/profile_controller.dart';
-import '../../../nutrition/presentation/water_goal_controller.dart';
-import '../../../nutrition/presentation/water_intake_controller.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/nutrition/presentation/profile_controller.dart';
+import 'package:keepmydiet/features/nutrition/presentation/water_goal_controller.dart';
+import 'package:keepmydiet/features/nutrition/presentation/water_intake_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class WaterCard extends ConsumerWidget {
   const WaterCard({super.key});

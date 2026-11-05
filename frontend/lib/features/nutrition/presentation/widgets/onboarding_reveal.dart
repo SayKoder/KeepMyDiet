@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
+import 'package:keepmydiet/core/theme.dart';
 
 // Coche plein écran affichée juste avant le rideau (même fond `hero`).
 class OnboardingSuccessView extends StatelessWidget {

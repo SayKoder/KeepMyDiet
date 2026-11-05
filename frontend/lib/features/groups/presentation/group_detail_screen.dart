@@ -2,13 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../../../shared/widgets/async_value_ui.dart';
-import '../../../shared/widgets/group_switcher_menu_button.dart';
-import '../data/groups_api_client.dart';
-import '../domain/group.dart';
-import 'groups_controller.dart';
+import 'package:keepmydiet/features/groups/data/groups_api_client.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/shared/api_client.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class GroupDetailScreen extends ConsumerWidget {
   const GroupDetailScreen({super.key, required this.group});

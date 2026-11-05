@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/widgets/segmented_pill.dart';
-import '../../domain/sex.dart';
-import 'compact_number_field.dart';
-import 'profile_section_card.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/nutrition/domain/sex.dart';
+import 'package:keepmydiet/features/nutrition/presentation/widgets/compact_number_field.dart';
+import 'package:keepmydiet/features/nutrition/presentation/widgets/profile_section_card.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class ProfileBasicsCard extends StatelessWidget {
   const ProfileBasicsCard({

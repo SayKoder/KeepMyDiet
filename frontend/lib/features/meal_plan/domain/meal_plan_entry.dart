@@ -1,5 +1,5 @@
-import '../../recipes/domain/recipe.dart';
-import 'meal_type.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_type.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe.dart';
 
 class MealPlanEntry {
   const MealPlanEntry({

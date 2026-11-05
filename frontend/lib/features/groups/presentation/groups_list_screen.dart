@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme.dart';
-import '../../../shared/home_navigation.dart';
-import '../../../shared/widgets/async_value_ui.dart';
-import '../../auth/presentation/auth_controller.dart';
-import '../domain/group.dart';
-import 'create_group_screen.dart';
-import 'groups_controller.dart';
-import 'join_group_screen.dart';
-import 'widgets/group_action_card.dart';
-import 'widgets/group_card.dart';
-import 'widgets/invite_card.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/auth/presentation/auth_controller.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/presentation/create_group_screen.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/groups/presentation/join_group_screen.dart';
+import 'package:keepmydiet/features/groups/presentation/widgets/group_action_card.dart';
+import 'package:keepmydiet/features/groups/presentation/widgets/group_card.dart';
+import 'package:keepmydiet/features/groups/presentation/widgets/invite_card.dart';
+import 'package:keepmydiet/shared/home_navigation.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class GroupsListScreen extends ConsumerWidget {
   const GroupsListScreen({super.key});

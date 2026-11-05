@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../shared/widgets/async_value_ui.dart';
-import '../../../../shared/widgets/form_error_text.dart';
-import '../../../../shared/widgets/number_field.dart';
-import '../../../../shared/widgets/submit_button_content.dart';
-import '../../../recipes/domain/recipe.dart';
-import '../../../recipes/presentation/recipes_controller.dart';
-import '../../domain/meal_plan_entry.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe.dart';
+import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 typedef SaveMealEntry = Future<MealPlanEntry> Function({
   required int recipeId,

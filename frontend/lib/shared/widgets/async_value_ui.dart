@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme.dart';
+import 'package:keepmydiet/core/theme.dart';
 
 extension AsyncValueUi<T> on AsyncValue<T> {
   Widget toWidget({

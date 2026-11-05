@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme.dart';
+import 'package:keepmydiet/core/theme.dart';
 
 class RoundBackButton extends StatelessWidget {
   const RoundBackButton({super.key});

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/widgets/async_value_ui.dart';
-import '../domain/profile.dart';
-import 'profile_controller.dart';
-import 'profile_form_screen.dart';
+import 'package:keepmydiet/features/nutrition/domain/profile.dart';
+import 'package:keepmydiet/features/nutrition/presentation/profile_controller.dart';
+import 'package:keepmydiet/features/nutrition/presentation/profile_form_screen.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class NutritionDashboardScreen extends ConsumerWidget {
   const NutritionDashboardScreen({super.key});

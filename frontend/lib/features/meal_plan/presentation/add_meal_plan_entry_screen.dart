@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../domain/meal_plan_entry.dart';
-import '../domain/meal_type.dart';
-import 'meal_plan_controller.dart';
-import 'widgets/existing_recipe_tab.dart';
-import 'widgets/quick_add_tab.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_type.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/meal_plan_controller.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/widgets/existing_recipe_tab.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/widgets/quick_add_tab.dart';
 
 class AddMealPlanEntryScreen extends ConsumerWidget {
   const AddMealPlanEntryScreen({

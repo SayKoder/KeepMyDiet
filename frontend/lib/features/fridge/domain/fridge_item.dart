@@ -1,5 +1,5 @@
-import 'food_reference.dart';
-import 'storage_location.dart';
+import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
+import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
 
 /// `foodReference` est embarqué directement dans le JSON (readableLink côté
 /// backend) — pas besoin d'une requête séparée pour afficher le nom/macros.

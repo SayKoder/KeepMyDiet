@@ -1,4 +1,4 @@
-import 'meal_plan_entry_status.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry_status.dart';
 
 class MealPlanEntryLog {
   const MealPlanEntryLog({

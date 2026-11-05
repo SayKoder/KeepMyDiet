@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
-import '../../domain/shopping_list_item.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/shopping_list/domain/shopping_list_item.dart';
 
 class ShoppingItemGroup extends StatelessWidget {
   const ShoppingItemGroup({

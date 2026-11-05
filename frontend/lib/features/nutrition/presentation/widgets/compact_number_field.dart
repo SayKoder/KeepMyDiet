@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
+import 'package:keepmydiet/core/theme.dart';
 
 class CompactNumberField extends StatelessWidget {
   const CompactNumberField({

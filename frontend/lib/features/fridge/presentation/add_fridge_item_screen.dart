@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
-import '../../../shared/widgets/form_error_text.dart';
-import '../../../shared/widgets/ingredient_unit_field.dart';
-import '../../../shared/widgets/submit_button_content.dart';
-import '../domain/food_reference.dart';
-import '../domain/storage_location.dart';
-import 'fridge_controller.dart';
-import 'widgets/food_search_view.dart';
+import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
+import 'package:keepmydiet/features/fridge/domain/storage_location.dart';
+import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
+import 'package:keepmydiet/features/fridge/presentation/widgets/food_search_view.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 // Étape 1 : choisir l'aliment. Étape 2 : quantité, lieu et date.
 class AddFridgeItemScreen extends StatefulWidget {

@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../domain/meal_plan_entry_log.dart';
-import '../domain/meal_plan_entry_status.dart';
-import '../../../shared/api_client.dart';
-import '../domain/meal_plan_entry.dart';
-import '../domain/meal_type.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry_log.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_plan_entry_status.dart';
+import 'package:keepmydiet/features/meal_plan/domain/meal_type.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final mealPlanApiClientProvider = Provider<MealPlanApiClient>((ref) {
   return MealPlanApiClient(ref.watch(dioProvider));

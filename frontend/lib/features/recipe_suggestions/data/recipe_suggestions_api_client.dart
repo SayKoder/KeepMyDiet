@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/api_client.dart';
-import '../domain/recipe_suggestion.dart';
+import 'package:keepmydiet/features/recipe_suggestions/domain/recipe_suggestion.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final recipeSuggestionsApiClientProvider = Provider<RecipeSuggestionsApiClient>(
   (ref) {

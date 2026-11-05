@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
-import '../../../../core/theme.dart';
-import '../../domain/fridge_item.dart';
-import '../../../../shared/widgets/letter_avatar.dart';
-import 'expiry_chip.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/fridge/domain/fridge_item.dart';
+import 'package:keepmydiet/features/fridge/presentation/widgets/expiry_chip.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class FridgeItemCard extends StatelessWidget {
   const FridgeItemCard({super.key, required this.item});

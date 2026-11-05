@@ -1,13 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../domain/daily_nutrition_log.dart';
-import '../../../shared/api_client.dart';
-import '../domain/activity_level.dart';
-import '../domain/profile.dart';
-import '../domain/sex.dart';
-import '../domain/water_goal.dart';
-import '../domain/water_intake.dart';
+import 'package:keepmydiet/features/nutrition/domain/activity_level.dart';
+import 'package:keepmydiet/features/nutrition/domain/daily_nutrition_log.dart';
+import 'package:keepmydiet/features/nutrition/domain/profile.dart';
+import 'package:keepmydiet/features/nutrition/domain/sex.dart';
+import 'package:keepmydiet/features/nutrition/domain/water_goal.dart';
+import 'package:keepmydiet/features/nutrition/domain/water_intake.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final nutritionApiClientProvider = Provider<NutritionApiClient>((ref) {
   return NutritionApiClient(ref.watch(dioProvider));

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/api_client.dart';
+import 'package:keepmydiet/shared/api_client.dart';
 
 final authApiClientProvider = Provider<AuthApiClient>((ref) {
   return AuthApiClient(ref.watch(dioProvider));

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/widgets/number_field.dart';
-import '../../fridge/domain/food_reference.dart';
-import '../../fridge/presentation/fridge_controller.dart';
+import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
+import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 // Valeurs absolues pour CET ajout : l'appelant décide quoi en faire.
 class JournalQuickAddResult {

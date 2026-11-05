@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
-import '../../../shared/date_labels.dart';
-import '../../../shared/widgets/async_value_ui.dart';
-import '../../../shared/widgets/group_switcher_menu_button.dart';
-import '../../fridge/presentation/fridge_controller.dart';
-import '../../groups/domain/group.dart';
-import '../../groups/presentation/groups_controller.dart';
-import '../domain/missing_ingredient.dart';
-import 'meal_plan_controller.dart';
-import 'widgets/day_card.dart';
-import 'widgets/missing_ingredients_sheet.dart';
+import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/meal_plan/domain/missing_ingredient.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/meal_plan_controller.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/widgets/day_card.dart';
+import 'package:keepmydiet/features/meal_plan/presentation/widgets/missing_ingredients_sheet.dart';
+import 'package:keepmydiet/shared/date_labels.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 enum _MenuAction { missing, generate }
 

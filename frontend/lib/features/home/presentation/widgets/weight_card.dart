@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
-import '../../../../core/theme.dart';
-import '../../../../shared/widgets/pill.dart';
-import '../../../../shared/widgets/white_card.dart';
-import '../../../nutrition/domain/profile.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/nutrition/domain/profile.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class WeightCard extends StatelessWidget {
   const WeightCard({super.key, required this.profile});

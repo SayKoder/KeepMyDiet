@@ -2,14 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/widgets/form_error_text.dart';
-import '../../../shared/widgets/ingredient_unit_field.dart';
-import '../../../shared/widgets/submit_button_content.dart';
-import '../data/recipes_api_client.dart';
-import '../domain/recipe_ingredient.dart';
-import '../domain/recipe_step.dart';
-import 'recipes_controller.dart';
+import 'package:keepmydiet/features/recipes/data/recipes_api_client.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_step.dart';
+import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class CreateRecipeScreen extends ConsumerStatefulWidget {
   const CreateRecipeScreen({super.key});

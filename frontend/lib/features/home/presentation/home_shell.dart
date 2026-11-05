@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme.dart';
-import '../../../shared/home_navigation.dart';
-import '../../../shared/widgets/app_bottom_nav.dart';
-import '../../../shared/widgets/async_value_ui.dart';
-import '../../fridge/presentation/fridge_screen.dart';
-import '../../groups/domain/group.dart';
-import '../../groups/presentation/groups_controller.dart';
-import '../../groups/presentation/groups_list_screen.dart';
-import '../../recipes/presentation/recipes_list_screen.dart';
-import 'home_dashboard_screen.dart';
+import 'package:keepmydiet/core/theme.dart';
+import 'package:keepmydiet/features/fridge/presentation/fridge_screen.dart';
+import 'package:keepmydiet/features/groups/domain/group.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/groups/presentation/groups_list_screen.dart';
+import 'package:keepmydiet/features/home/presentation/home_dashboard_screen.dart';
+import 'package:keepmydiet/features/recipes/presentation/recipes_list_screen.dart';
+import 'package:keepmydiet/shared/home_navigation.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class HomeShell extends ConsumerWidget {
   const HomeShell({super.key});

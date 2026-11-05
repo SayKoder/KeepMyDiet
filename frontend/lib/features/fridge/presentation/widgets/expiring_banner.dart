@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
+import 'package:keepmydiet/core/theme.dart';
 
 class ExpiringBanner extends StatelessWidget {
   const ExpiringBanner({super.key, required this.count, required this.onTap});

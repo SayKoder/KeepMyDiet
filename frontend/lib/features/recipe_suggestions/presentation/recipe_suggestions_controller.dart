@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/recipe_suggestions_api_client.dart';
-import '../domain/recipe_suggestion.dart';
+import 'package:keepmydiet/features/recipe_suggestions/data/recipe_suggestions_api_client.dart';
+import 'package:keepmydiet/features/recipe_suggestions/domain/recipe_suggestion.dart';
 
 /// `.family` par `groupId` : les suggestions dépendent du frigo/placard de
 /// CE groupe (et des profils de ses membres), pas de l'utilisateur seul.
