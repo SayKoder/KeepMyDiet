@@ -46,7 +46,12 @@ final dioProvider = Provider<Dio>((ref) {
 
 /// Message lisible extrait d'une erreur API : API Platform renvoie `detail`
 /// (ex: erreurs de validation), le firewall json_login de Symfony renvoie
-/// `message` (ex: "Invalid credentials.") — on gère les deux formats.
+/// `message` (ex: "Invalid credentials."). Quand il n'y a PAS de réponse du
+/// tout (pas juste un mauvais format), le flou "Une erreur est survenue"
+/// masquait des causes très différentes à diagnostiquer (pas de connexion,
+/// serveur trop lent, serveur injoignable...) — `error.type` de Dio permet
+/// de donner un message qui dit vraiment ce qui s'est passé, pas juste
+/// bloquer sans piste.
 String extractErrorMessage(DioException error) {
   final data = error.response?.data;
   if (data is Map) {
@@ -55,7 +60,24 @@ String extractErrorMessage(DioException error) {
       return detail;
     }
   }
-  return "Une erreur est survenue, réessaie.";
+
+  switch (error.type) {
+    case DioExceptionType.connectionTimeout:
+    case DioExceptionType.sendTimeout:
+    case DioExceptionType.receiveTimeout:
+      return 'Le serveur met trop de temps à répondre. Vérifie ta connexion et réessaie.';
+    case DioExceptionType.connectionError:
+      return "Impossible de contacter le serveur. Vérifie ta connexion internet.";
+    case DioExceptionType.badCertificate:
+      return 'Connexion sécurisée refusée par le serveur.';
+    case DioExceptionType.badResponse:
+      final status = error.response?.statusCode;
+      return status == null
+          ? "Une erreur est survenue, réessaie."
+          : 'Erreur serveur ($status). Réessaie dans un instant.';
+    default:
+      return "Une erreur est survenue, réessaie.";
+  }
 }
 
 /// Affiche `extractErrorMessage(error)` dans un SnackBar — le

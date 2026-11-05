@@ -54,7 +54,12 @@ class FoodReference
     #[Groups(['food_reference:read', 'fridge_item:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 120)]
+    // 120 ne suffisait pas pour une poignée de noms officiels Ciqual assez
+    // verbeux (ex: "Boisson lactée aromatisée (arôme inconnu), sucrée, au
+    // lait partiellement écrémé, enrichie et/ou restaurée en vitamines
+    // et/ou minéraux (aliment moyen)", 149 caractères) — élargi plutôt que
+    // de tronquer ces noms officiels, voir migration Version20261009185900.
+    #[ORM\Column(length: 255)]
     #[Groups(['food_reference:read', 'food_reference:write', 'fridge_item:read'])]
     #[Assert\NotBlank(groups: ['food_reference:write'])]
     private string $name = '';

@@ -8,6 +8,7 @@ import '../../../core/theme.dart';
 import '../../../shared/api_client.dart';
 import '../../../shared/async_value_ui.dart';
 import '../../../shared/home_navigation.dart';
+import '../../../shared/dialog_action_buttons.dart';
 import '../../../shared/white_card.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../groups/presentation/groups_controller.dart';
@@ -724,31 +725,12 @@ class _AddChooserSheet extends ConsumerWidget {
           content: Text(
             '${existing.recipe.name} est déjà prévu pour ce créneau. Le remplacer ?',
           ),
-          // Un `Row` unique (plutôt que deux entrées dans `actions`) : passé
-          // à l'`OverflowBar` interne de `AlertDialog`, deux boutons de taille
-          // normale empilaient "Annuler" au-dessus de "Remplacer" dès que le
-          // texte ne tenait pas sur une seule ligne faute de place — ici les
-          // deux `Expanded` forcent le côte-à-côte quelle que soit la largeur.
           actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(false),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.border),
-                    ),
-                    child: const Text('Annuler'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    child: const Text('Remplacer'),
-                  ),
-                ),
-              ],
+            DialogActionButtons(
+              cancelLabel: 'Annuler',
+              onCancel: () => Navigator.of(dialogContext).pop(false),
+              confirmLabel: 'Remplacer',
+              onConfirm: () => Navigator.of(dialogContext).pop(true),
             ),
           ],
         ),
