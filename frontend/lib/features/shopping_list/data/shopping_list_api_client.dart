@@ -52,6 +52,33 @@ class ShoppingListApiClient {
     return ShoppingList.fromJson(response.data!);
   }
 
+  Future<ShoppingList> addItem(
+    int groupId, {
+    required String name,
+    required double quantity,
+    required String unit,
+    double caloriesPer100g = 0,
+    double proteinsPer100g = 0,
+    double carbsPer100g = 0,
+    double fatsPer100g = 0,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/groups/$groupId/shopping_lists/items',
+      data: {
+        'name': name,
+        'quantity': quantity,
+        'unit': unit,
+        'caloriesPer100g': caloriesPer100g,
+        'proteinsPer100g': proteinsPer100g,
+        'carbsPer100g': carbsPer100g,
+        'fatsPer100g': fatsPer100g,
+      },
+      options: _ldJson,
+    );
+
+    return ShoppingList.fromJson(response.data!);
+  }
+
   Future<ShoppingList> checkout(int groupId, List<CheckoutItem> items) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/groups/$groupId/shopping_lists/checkout',

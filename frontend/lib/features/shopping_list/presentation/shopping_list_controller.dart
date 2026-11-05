@@ -30,6 +30,37 @@ Future<void> generateShoppingList(
   ref.invalidate(shoppingListProvider(groupId));
 }
 
+Future<void> addShoppingListItem(
+  WidgetRef ref, {
+  required int groupId,
+  required String name,
+  required double quantity,
+  required String unit,
+  double caloriesPer100g = 0,
+  double proteinsPer100g = 0,
+  double carbsPer100g = 0,
+  double fatsPer100g = 0,
+}) async {
+  try {
+    await ref
+        .read(shoppingListApiClientProvider)
+        .addItem(
+          groupId,
+          name: name,
+          quantity: quantity,
+          unit: unit,
+          caloriesPer100g: caloriesPer100g,
+          proteinsPer100g: proteinsPer100g,
+          carbsPer100g: carbsPer100g,
+          fatsPer100g: fatsPer100g,
+        );
+  } on DioException catch (e) {
+    throw ShoppingListFailure(extractErrorMessage(e));
+  }
+
+  ref.invalidate(shoppingListProvider(groupId));
+}
+
 Future<void> checkoutShoppingList(
   WidgetRef ref, {
   required int groupId,

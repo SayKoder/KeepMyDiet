@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/core/theme.dart';
 import 'package:keepmydiet/features/shopping_list/domain/shopping_list_item.dart';
+import 'package:keepmydiet/features/shopping_list/presentation/add_shopping_item_screen.dart';
 import 'package:keepmydiet/features/shopping_list/presentation/shopping_list_checkout_screen.dart';
 import 'package:keepmydiet/features/shopping_list/presentation/shopping_list_controller.dart';
 import 'package:keepmydiet/features/shopping_list/presentation/widgets/checkout_bar.dart';
@@ -47,6 +48,12 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
       }
     }
   }
+
+  void _addFood() => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => AddShoppingItemScreen(groupId: widget.groupId),
+    ),
+  );
 
   Future<void> _goToCheckout(List<ShoppingListItem> items) async {
     final success = await Navigator.of(context).push<bool>(
@@ -125,12 +132,18 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
             foregroundColor: AppColors.brandDark,
           ),
         ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: _addFood,
+          icon: const Icon(Icons.add, size: 20),
+          label: const Text('Ajouter un aliment'),
+        ),
         const SizedBox(height: 18),
         if (items.isEmpty)
           const EmptyState(
             icon: Icons.shopping_cart_outlined,
             title: 'Liste vide',
-            message: 'Choisis des recettes pour générer la liste.',
+            message: 'Choisis des recettes ou ajoute un aliment.',
           )
         else ...[
           Row(
