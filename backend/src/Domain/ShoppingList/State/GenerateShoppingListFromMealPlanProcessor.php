@@ -5,6 +5,7 @@ namespace App\Domain\ShoppingList\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Domain\Fridge\Repository\FridgeItemRepository;
+use App\Domain\Group\Realtime\GroupChangePublisher;
 use App\Domain\Group\Repository\GroupMembershipRepository;
 use App\Domain\Group\Repository\GroupRepository;
 use App\Domain\MealPlan\Repository\MealPlanEntryRepository;
@@ -43,6 +44,7 @@ final class GenerateShoppingListFromMealPlanProcessor implements ProcessorInterf
         private readonly ShoppingListRepository $shoppingLists,
         private readonly EntityManagerInterface $em,
         private readonly Security $security,
+        private readonly GroupChangePublisher $publisher,
     ) {
     }
 
@@ -134,6 +136,7 @@ final class GenerateShoppingListFromMealPlanProcessor implements ProcessorInterf
 
         $this->em->persist($list);
         $this->em->flush();
+        $this->publisher->notify($group, 'shopping_list');
 
         return $list;
     }

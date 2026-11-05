@@ -19,6 +19,7 @@
         "symfony/expression-language": "7.4.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.4.*",
+        "symfony/mercure-bundle": "^0.7.0",
         "symfony/runtime": "7.4.*",
         "symfony/yaml": "7.4.*"
     },

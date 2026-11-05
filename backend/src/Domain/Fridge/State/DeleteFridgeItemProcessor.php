@@ -5,6 +5,7 @@ namespace App\Domain\Fridge\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Domain\Fridge\Entity\FridgeItem;
+use App\Domain\Group\Realtime\GroupChangePublisher;
 use App\Domain\Group\Repository\GroupMembershipRepository;
 use App\Shared\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +22,7 @@ final class DeleteFridgeItemProcessor implements ProcessorInterface
         private readonly EntityManagerInterface $em,
         private readonly GroupMembershipRepository $memberships,
         private readonly Security $security,
+        private readonly GroupChangePublisher $publisher,
     ) {
     }
 
@@ -35,6 +37,7 @@ final class DeleteFridgeItemProcessor implements ProcessorInterface
 
         $this->em->remove($data);
         $this->em->flush();
+        $this->publisher->notify($group, 'fridge');
 
         return null;
     }

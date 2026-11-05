@@ -4,6 +4,7 @@ namespace App\Domain\ShoppingList\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Domain\Group\Realtime\GroupChangePublisher;
 use App\Domain\ShoppingList\Dto\AddShoppingListItemInput;
 use App\Domain\ShoppingList\Entity\ShoppingList;
 use App\Domain\ShoppingList\Entity\ShoppingListItem;
@@ -15,6 +16,7 @@ final class AddShoppingListItemProcessor implements ProcessorInterface
     public function __construct(
         private readonly ActiveShoppingListResolver $resolver,
         private readonly EntityManagerInterface $em,
+        private readonly GroupChangePublisher $publisher,
     ) {
     }
 
@@ -41,6 +43,7 @@ final class AddShoppingListItemProcessor implements ProcessorInterface
 
         $this->em->persist($list);
         $this->em->flush();
+        $this->publisher->notify($list->getGroup(), 'shopping_list');
 
         return $list;
     }

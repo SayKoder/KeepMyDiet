@@ -8,6 +8,7 @@ use App\Domain\Fridge\Entity\FoodReference;
 use App\Domain\Fridge\Entity\FoodSource;
 use App\Domain\Fridge\Entity\FridgeItem;
 use App\Domain\Fridge\Entity\StorageLocation;
+use App\Domain\Group\Realtime\GroupChangePublisher;
 use App\Domain\Group\Repository\GroupMembershipRepository;
 use App\Domain\Group\Repository\GroupRepository;
 use App\Domain\ShoppingList\Dto\CheckoutShoppingListInput;
@@ -39,6 +40,7 @@ final class CheckoutShoppingListProcessor implements ProcessorInterface
         private readonly ShoppingListItemRepository $shoppingListItems,
         private readonly EntityManagerInterface $em,
         private readonly Security $security,
+        private readonly GroupChangePublisher $publisher,
     ) {
     }
 
@@ -104,6 +106,7 @@ final class CheckoutShoppingListProcessor implements ProcessorInterface
         }
 
         $this->em->flush();
+        $this->publisher->notify($group, 'shopping_list', 'fridge');
 
         return $list;
     }
