@@ -5,6 +5,7 @@ namespace App\Domain\ShoppingList\State;
 use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Domain\Group\Realtime\GroupChangePublisher;
 use App\Domain\Group\Repository\GroupMembershipRepository;
 use App\Domain\Recipe\Entity\Recipe;
 use App\Domain\ShoppingList\Dto\GenerateShoppingListInput;
@@ -28,6 +29,7 @@ final class GenerateShoppingListProcessor implements ProcessorInterface
         private readonly GroupMembershipRepository $memberships,
         private readonly IriConverterInterface $iriConverter,
         private readonly EntityManagerInterface $em,
+        private readonly GroupChangePublisher $publisher,
     ) {
     }
 
@@ -68,6 +70,7 @@ final class GenerateShoppingListProcessor implements ProcessorInterface
 
         $this->em->persist($list);
         $this->em->flush();
+        $this->publisher->notify($list->getGroup(), 'shopping_list');
 
         return $list;
     }

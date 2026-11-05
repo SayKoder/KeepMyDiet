@@ -83,6 +83,6 @@ class FridgeRepository {
   Future<OpenFoodFactsProduct?> lookupBarcode(String barcode) =>
       _openFoodFacts.lookup(barcode);
 
-  Future<List<OpenFoodFactsProduct>> searchOnline(String query) =>
-      _openFoodFacts.search(query);
+  Future<List<OpenFoodFactsProduct>> searchOnline(String query) async =>
+      (await _openFoodFacts.browse(query)).products;
 }

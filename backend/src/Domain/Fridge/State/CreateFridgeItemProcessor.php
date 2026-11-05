@@ -5,6 +5,7 @@ namespace App\Domain\Fridge\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Domain\Fridge\Entity\FridgeItem;
+use App\Domain\Group\Realtime\GroupChangePublisher;
 use App\Domain\Group\Repository\GroupMembershipRepository;
 use App\Shared\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +18,7 @@ final class CreateFridgeItemProcessor implements ProcessorInterface
         private readonly EntityManagerInterface $em,
         private readonly GroupMembershipRepository $memberships,
         private readonly Security $security,
+        private readonly GroupChangePublisher $publisher,
     ) {
     }
 
@@ -37,6 +39,7 @@ final class CreateFridgeItemProcessor implements ProcessorInterface
 
         $this->em->persist($data);
         $this->em->flush();
+        $this->publisher->notify($group, 'fridge');
 
         // Particularité observée (pas élucidée, testée avec plusieurs
         // contournements — proxy Doctrine forcé, em->clear()+find() frais —

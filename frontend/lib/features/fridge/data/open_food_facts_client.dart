@@ -58,49 +58,41 @@ class OpenFoodFactsClient {
 
   final Dio _dio;
 
-  /// Retourne `null` si le produit n'est pas référencé sur Open Food Facts
-  /// (code `status == 0`) ou si la requête échoue (pas de réseau, timeout…)
-  /// — dans les deux cas l'appelant retombe sur la saisie manuelle.
+  /// `null` si le produit n'est pas référencé sur Open Food Facts (code
+  /// `status == 0`, réponse valide mais vide). Lève `DioException` si la
+  /// requête échoue (pas de réseau, timeout…) pour que l'écran puisse
+  /// distinguer « introuvable » (rien à relancer) d'une vraie erreur.
+  Future<OpenFoodFactsProduct?> product(String barcode) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/product/$barcode.json',
+      queryParameters: {'fields': _detailFields},
+    );
+    final data = response.data!;
+    if (data['status'] != 1) {
+      return null;
+    }
+
+    return _fromJson(data['product'] as Map<String, dynamic>);
+  }
+
+  /// Comme `product()` mais `null` aussi sur requête ratée : le formulaire de
+  /// création du frigo retombe alors sur la saisie manuelle dans les deux cas.
   Future<OpenFoodFactsProduct?> lookup(String barcode) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
-        '/product/$barcode.json',
-        queryParameters: {'fields': _detailFields},
-      );
-      final data = response.data!;
-      if (data['status'] != 1) {
-        return null;
-      }
-
-      return _fromJson(data['product'] as Map<String, dynamic>);
+      return await product(barcode);
     } on DioException {
       return null;
     }
   }
 
-  /// Recherche par nom (barre de recherche du frigo/placard) — même service
-  /// que `lookup()`, mais l'endpoint classique de recherche texte d'Open
-  /// Food Facts (`/cgi/search.pl`) est à la racine du domaine, pas sous
-  /// `/api/v2` comme `lookup()` : URL absolue plutôt que de changer le
-  /// `baseUrl` partagé du client. Liste vide (pas d'exception) sur requête
-  /// ratée ou vide — l'appelant retombe simplement sur le catalogue local.
-  Future<List<OpenFoodFactsProduct>> search(String query) async {
-    if (query.trim().isEmpty) {
-      return const [];
-    }
-
-    try {
-      return (await browse(query)).products;
-    } on DioException {
-      return const [];
-    }
-  }
-
-  /// Version paginée de `search()` pour l'écran Découvrir : lève
-  /// `DioException` pour que l'écran affiche l'erreur. Une requête vide passe
-  /// par `/search` (v2, tri par popularité, bien plus rapide que le tri de
-  /// `search.pl`). `hasMore` vient du total annoncé par l'API, pas de la page
-  /// reçue : une page vide ou filtrée ne doit pas arrêter le défilement.
+  /// Recherche par nom, paginée (frigo, liste de courses, écran Découvrir).
+  /// L'endpoint de recherche texte d'Open Food Facts (`/cgi/search.pl`) est à
+  /// la racine du domaine, pas sous `/api/v2` : URL absolue plutôt que de
+  /// changer le `baseUrl` partagé du client. Lève `DioException` pour que
+  /// l'écran affiche l'erreur. Une requête vide passe par `/search` (v2, tri
+  /// par popularité, bien plus rapide que le tri de `search.pl`). `hasMore`
+  /// vient du total annoncé par l'API, pas de la page reçue : une page vide ou
+  /// filtrée ne doit pas arrêter le défilement.
   Future<OpenFoodFactsPage> browse(String query, {int page = 1}) async {
     final trimmed = query.trim();
     final params = {

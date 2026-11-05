@@ -9,7 +9,8 @@ Déploiement production : Traefik + Docker Compose sur VPS.
 
 ## Secrets
 Aucun secret réel dans le repo :
-- `APP_SECRET`, `POSTGRES_PASSWORD`, `JWT_PASSPHRASE` viennent de `infra/.env.prod` (gitignored), lu par `docker compose --env-file`.
+- `APP_SECRET`, `POSTGRES_PASSWORD`, `JWT_PASSPHRASE`, `MERCURE_JWT_SECRET` (`openssl rand -hex 32`) viennent de `infra/.env.prod` (gitignored), lu par `docker compose --env-file`.
+- Temps réel : le hub Mercure (`mercure`) est routé directement par Traefik sur `/.well-known/mercure` du Host de l'API. L'app native s'y abonne ; le build web (Dio/XHR ne lit pas un flux en continu) garde un rafraîchissement toutes les 10 s. Le preview `docker-compose.web.yml` n'a pas de hub.
 - Les clés JWT (`private.pem`/`public.pem`) sont générées une fois sur le VPS directement dans le volume nommé `jwt_keys` (jamais commitées, jamais buildées dans l'image) :
   ```
   docker compose -f docker-compose.prod.yml run --rm app \

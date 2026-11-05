@@ -19,6 +19,7 @@ class IngredientUnitField extends StatelessWidget {
       // La clé force un remount quand le texte change depuis l'extérieur.
       key: ValueKey(current),
       initialValue: current.isEmpty ? ingredientUnits.first : current,
+      isExpanded: true,
       decoration: const InputDecoration(labelText: 'Unité'),
       items: options
           .map((unit) => DropdownMenuItem(value: unit, child: Text(unit)))
