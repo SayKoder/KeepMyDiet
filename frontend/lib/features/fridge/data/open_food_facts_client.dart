@@ -29,18 +29,32 @@ class OpenFoodFactsProduct {
   final List<String> allergens;
 }
 
+class OpenFoodFactsPage {
+  const OpenFoodFactsPage({required this.products, required this.hasMore});
+
+  final List<OpenFoodFactsProduct> products;
+  final bool hasMore;
+}
+
 /// API publique d'Open Food Facts — aucune authentification, donc un Dio
 /// séparé de celui de `dioProvider` (qui pointe vers NOTRE backend et y
 /// injecte le JWT à chaque requête, ce qu'on ne veut surtout pas envoyer à
 /// un service tiers).
 final openFoodFactsClientProvider = Provider<OpenFoodFactsClient>((ref) {
   return OpenFoodFactsClient(
-    Dio(BaseOptions(baseUrl: 'https://world.openfoodfacts.org/api/v2')),
+    Dio(
+      BaseOptions(
+        baseUrl: 'https://world.openfoodfacts.org/api/v2',
+        headers: {'User-Agent': 'KeepMyDiet - Flutter - projet étudiant'},
+      ),
+    ),
   );
 });
 
 class OpenFoodFactsClient {
   OpenFoodFactsClient(this._dio);
+
+  static const _pageSize = 24;
 
   final Dio _dio;
 
@@ -76,38 +90,50 @@ class OpenFoodFactsClient {
     }
 
     try {
-      return await browse(query);
+      return (await browse(query)).products;
     } on DioException {
       return const [];
     }
   }
 
   /// Version paginée de `search()` pour l'écran Découvrir : lève
-  /// `DioException` pour que l'écran affiche l'erreur, et une requête vide
-  /// renvoie les produits les plus scannés.
-  Future<List<OpenFoodFactsProduct>> browse(
-    String query, {
-    int page = 1,
-  }) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      'https://world.openfoodfacts.org/cgi/search.pl',
-      queryParameters: {
-        'search_terms': query.trim(),
-        'search_simple': 1,
-        'action': 'process',
-        'json': 1,
-        'sort_by': 'unique_scans_n',
-        'page': page,
-        'page_size': 20,
-        'fields': 'code,product_name,nutriments,image_front_small_url',
-      },
-    );
-    final products = response.data?['products'] as List<dynamic>? ?? [];
+  /// `DioException` pour que l'écran affiche l'erreur. Une requête vide passe
+  /// par `/search` (v2, tri par popularité, bien plus rapide que le tri de
+  /// `search.pl`). `hasMore` vient du total annoncé par l'API, pas de la page
+  /// reçue : une page vide ou filtrée ne doit pas arrêter le défilement.
+  Future<OpenFoodFactsPage> browse(String query, {int page = 1}) async {
+    final trimmed = query.trim();
+    final params = {
+      'page': page,
+      'page_size': _pageSize,
+      'fields': 'code,product_name,nutriments,image_front_small_url',
+    };
+    final response = trimmed.isEmpty
+        ? await _dio.get<Map<String, dynamic>>(
+            '/search',
+            queryParameters: {...params, 'sort_by': 'popularity_key'},
+          )
+        : await _dio.get<Map<String, dynamic>>(
+            'https://world.openfoodfacts.org/cgi/search.pl',
+            queryParameters: {
+              ...params,
+              'search_terms': trimmed,
+              'search_simple': 1,
+              'action': 'process',
+              'json': 1,
+            },
+          );
+    final data = response.data ?? const {};
+    final total = int.tryParse('${data['count']}') ?? 0;
+    final products = data['products'] as List<dynamic>? ?? [];
 
-    return products
-        .map((p) => _fromJson(p as Map<String, dynamic>))
-        .whereType<OpenFoodFactsProduct>()
-        .toList();
+    return OpenFoodFactsPage(
+      products: products
+          .map((p) => _fromJson(p as Map<String, dynamic>))
+          .whereType<OpenFoodFactsProduct>()
+          .toList(),
+      hasMore: page * _pageSize < total,
+    );
   }
 
   OpenFoodFactsProduct? _fromJson(Map<String, dynamic> product) {

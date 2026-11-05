@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/fridge/data/open_food_facts_client.dart';
 
@@ -49,11 +48,11 @@ class DiscoverController extends AsyncNotifier<DiscoverState> {
   Future<DiscoverState> build() => _firstPage('');
 
   Future<DiscoverState> _firstPage(String query) async {
-    final products = await _client.browse(query);
+    final page = await _client.browse(query);
     return DiscoverState(
       query: query,
-      products: products,
-      hasMore: products.isNotEmpty,
+      products: page.products,
+      hasMore: page.hasMore,
     );
   }
 
@@ -77,12 +76,14 @@ class DiscoverController extends AsyncNotifier<DiscoverState> {
       if (!ref.mounted || request != _request) return;
       state = AsyncData(
         current.copyWith(
-          products: [...current.products, ...next],
+          products: [...current.products, ...next.products],
           page: current.page + 1,
-          hasMore: next.isNotEmpty,
+          hasMore: next.hasMore,
+          isLoadingMore: false,
+          loadMoreFailed: false,
         ),
       );
-    } on DioException {
+    } catch (_) {
       if (!ref.mounted || request != _request) return;
       state = AsyncData(current.copyWith(loadMoreFailed: true));
     }
