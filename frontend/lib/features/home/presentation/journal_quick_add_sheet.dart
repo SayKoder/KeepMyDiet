@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keepmydiet/features/fridge/domain/food_reference.dart';
+import 'package:keepmydiet/features/fridge/presentation/food_picker_screen.dart';
 import 'package:keepmydiet/features/fridge/presentation/fridge_controller.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
 
@@ -104,6 +105,15 @@ class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
     if (!result.isEmpty) Navigator.of(context).pop(result);
   }
 
+  Future<void> _pick({bool scan = false}) async {
+    final food = await pickFood(
+      context,
+      groupId: widget.groupId!,
+      startWithScan: scan,
+    );
+    if (food != null && mounted) setState(() => _selected = food);
+  }
+
   List<FoodReference> _matches() {
     final groupId = widget.groupId;
     final query = _search.text.trim().toLowerCase();
@@ -136,6 +146,25 @@ class _JournalQuickAddSheetState extends ConsumerState<_JournalQuickAddSheet> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           if (widget.groupId != null) ...[
+            Row(
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _pick(scan: true),
+                    icon: const Icon(Icons.qr_code_scanner),
+                    label: const Text('Scanner'),
+                  ),
+                ),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _pick,
+                    icon: const Icon(Icons.public),
+                    label: const Text('Open Food Facts'),
+                  ),
+                ),
+              ],
+            ),
             TextField(
               controller: _search,
               decoration: const InputDecoration(

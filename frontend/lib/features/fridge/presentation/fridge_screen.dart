@@ -137,11 +137,7 @@ class _ItemsList extends ConsumerWidget {
           confirmDismiss: (_) => _delete(context, ref, item),
           child: FridgeItemCard(item: item),
         ),
-      const Text(
-        'Glisser une ligne vers la gauche pour la supprimer',
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-      ),
+      const HintText('Glisser une ligne vers la gauche pour la supprimer'),
     ];
 
     return RefreshIndicator(

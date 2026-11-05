@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:keepmydiet/core/theme.dart';
 import 'package:keepmydiet/features/shopping_list/domain/shopping_list_item.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class ShoppingItemGroup extends StatelessWidget {
   const ShoppingItemGroup({
@@ -64,12 +65,22 @@ class _ShoppingItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = checked ? AppColors.iconMuted : AppColors.ink;
 
-    return CheckboxListTile(
-      value: checked,
-      onChanged: (_) => onTap(),
-      controlAffinity: ListTileControlAffinity.leading,
-      checkboxShape: const CircleBorder(),
-      activeColor: AppColors.brand,
+    return ListTile(
+      onTap: () => showFoodDetailSheet(
+        context,
+        name: item.name,
+        calories: item.caloriesPer100g,
+        proteins: item.proteinsPer100g,
+        carbs: item.carbsPer100g,
+        fats: item.fatsPer100g,
+        subtitle: item.sourceRecipeName,
+      ),
+      leading: Checkbox(
+        value: checked,
+        onChanged: (_) => onTap(),
+        shape: const CircleBorder(),
+        activeColor: AppColors.brand,
+      ),
       title: Text(
         item.name,
         style: TextStyle(
@@ -79,7 +90,7 @@ class _ShoppingItemTile extends StatelessWidget {
           decoration: checked ? TextDecoration.lineThrough : null,
         ),
       ),
-      secondary: Text(
+      trailing: Text(
         '${item.quantity.toStringAsFixed(0)} ${item.unit}',
         style: TextStyle(
           fontSize: 13,

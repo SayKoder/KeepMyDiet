@@ -51,6 +51,15 @@ class FridgeItemCard extends StatelessWidget {
         ),
       ),
       trailing: ExpiryChip(date: item.expirationDate),
+      onTap: () => showFoodDetailSheet(
+        context,
+        name: name,
+        calories: item.foodReference.caloriesPer100g,
+        proteins: item.foodReference.proteinsPer100g,
+        carbs: item.foodReference.carbsPer100g,
+        fats: item.foodReference.fatsPer100g,
+        subtitle: '${item.storageLocation.label} · $quantity ${item.unit}',
+      ),
     );
   }
 }

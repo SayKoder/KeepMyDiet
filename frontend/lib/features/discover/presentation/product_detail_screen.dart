@@ -94,27 +94,10 @@ class _ProductInfo extends StatelessWidget {
           '${product.caloriesPer100g.toStringAsFixed(0)} kcal / 100g',
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            Pill(
-              label:
-                  'Protéines ${product.proteinsPer100g.toStringAsFixed(1)} g',
-              background: AppColors.proteinBg,
-              foreground: AppColors.proteinIcon,
-            ),
-            Pill(
-              label: 'Glucides ${product.carbsPer100g.toStringAsFixed(1)} g',
-              background: AppColors.carbsBg,
-              foreground: AppColors.carbsIcon,
-            ),
-            Pill(
-              label: 'Lipides ${product.fatsPer100g.toStringAsFixed(1)} g',
-              background: AppColors.fatBg,
-              foreground: AppColors.fatIcon,
-            ),
-          ],
+        MacroPills(
+          proteins: product.proteinsPer100g,
+          carbs: product.carbsPer100g,
+          fats: product.fatsPer100g,
         ),
         AddToListButton(product: product, label: 'Ajouter à la liste'),
         ?extras,
