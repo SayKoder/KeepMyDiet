@@ -44,7 +44,7 @@ Future<void> addShoppingListItem(
 }) async {
   try {
     await ref
-        .read(shoppingListApiClientProvider)
+        .read(shoppingListRepositoryProvider)
         .addItem(
           groupId,
           name: name,

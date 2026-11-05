@@ -30,6 +30,26 @@ class ShoppingListRepository {
   Future<ShoppingList> generate(int groupId, List<int> recipeIds) =>
       _api.generate(groupId, recipeIds);
 
+  Future<ShoppingList> addItem(
+    int groupId, {
+    required String name,
+    required double quantity,
+    required String unit,
+    double caloriesPer100g = 0,
+    double proteinsPer100g = 0,
+    double carbsPer100g = 0,
+    double fatsPer100g = 0,
+  }) => _api.addItem(
+    groupId,
+    name: name,
+    quantity: quantity,
+    unit: unit,
+    caloriesPer100g: caloriesPer100g,
+    proteinsPer100g: proteinsPer100g,
+    carbsPer100g: carbsPer100g,
+    fatsPer100g: fatsPer100g,
+  );
+
   Future<ShoppingList> checkout(int groupId, List<CheckoutItem> items) =>
       _api.checkout(groupId, items);
 }
