@@ -51,9 +51,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   Future<void> _scanBarcode() async {
-    final code = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => const BarcodeScannerScreen()),
-    );
+    final code = await scanBarcode(context);
     if (code == null || !mounted) return;
 
     showDialog<void>(

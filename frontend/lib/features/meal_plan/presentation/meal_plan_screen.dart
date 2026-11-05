@@ -173,6 +173,7 @@ class _WeekList extends ConsumerWidget {
                 date: date,
                 entries: entries.where((e) => isSameDay(e.date, date)).toList(),
               ),
+            const HintText("Touche la croix d'un repas pour le supprimer"),
           ],
         ),
       ),

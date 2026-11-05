@@ -46,12 +46,43 @@ services:
       JWT_PASSPHRASE: ${JWT_PASSPHRASE}
       DEFAULT_URI: https://${APP_DOMAIN}/keepmydiet
       CORS_ALLOW_ORIGIN: ^https://${APP_DOMAIN}$$
+      MERCURE_URL: http://mercure/.well-known/mercure
+      MERCURE_PUBLIC_URL: https://${APP_DOMAIN}/keepmydiet/.well-known/mercure
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:?MERCURE_JWT_SECRET requis (openssl rand -hex 32)}
+      MERCURE_JWT_ISSUER: keepmydiet
     volumes:
       - jwt_keys:/var/www/html/config/jwt
     depends_on:
       - database
+      - mercure
     networks:
       - internal
+
+  mercure:
+    image: dunglas/mercure
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ":80"
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
+      MERCURE_TRUSTED_ISSUERS: keepmydiet
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins https://${APP_DOMAIN}
+    volumes:
+      - mercure_data:/data
+      - mercure_config:/config
+    networks:
+      - proxy
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keepmydiet-mercure.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/keepmydiet/.well-known/mercure`)"
+      - "traefik.http.routers.keepmydiet-mercure.priority=100"
+      - "traefik.http.routers.keepmydiet-mercure.entrypoints=websecure"
+      - "traefik.http.routers.keepmydiet-mercure.tls.certresolver=le"
+      - "traefik.http.routers.keepmydiet-mercure.middlewares=keepmydiet-mercure-strip"
+      - "traefik.http.middlewares.keepmydiet-mercure-strip.stripprefix.prefixes=/keepmydiet"
+      - "traefik.http.services.keepmydiet-mercure.loadbalancer.server.port=80"
 
   database:
     image: postgres:16-alpine
@@ -73,3 +104,5 @@ networks:
 volumes:
   database_data:
   jwt_keys:
+  mercure_data:
+  mercure_config:

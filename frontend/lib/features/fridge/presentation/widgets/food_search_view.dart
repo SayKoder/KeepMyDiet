@@ -16,10 +16,12 @@ class FoodSearchView extends ConsumerStatefulWidget {
     super.key,
     required this.groupId,
     required this.onSelected,
+    this.startWithScan = false,
   });
 
   final int groupId;
   final ValueChanged<FoodReference> onSelected;
+  final bool startWithScan;
 
   @override
   ConsumerState<FoodSearchView> createState() => _FoodSearchViewState();
@@ -31,6 +33,14 @@ class _FoodSearchViewState extends ConsumerState<FoodSearchView> {
   List<OpenFoodFactsProduct> _onlineResults = const [];
   bool _onlineSearching = false;
   bool _onlineFailed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.startWithScan) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scanBarcode());
+    }
+  }
 
   String get _query => _searchController.text.trim();
 
@@ -91,9 +101,7 @@ class _FoodSearchViewState extends ConsumerState<FoodSearchView> {
   // Produit déjà connu du groupe → sélection directe, sinon création
   // pré-remplie depuis Open Food Facts.
   Future<void> _scanBarcode() async {
-    final code = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => const BarcodeScannerScreen()),
-    );
+    final code = await scanBarcode(context);
     if (code == null || !mounted) return;
 
     final catalog =

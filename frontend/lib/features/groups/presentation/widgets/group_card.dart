@@ -4,6 +4,7 @@ import 'package:keepmydiet/core/theme.dart';
 import 'package:keepmydiet/features/groups/domain/group.dart';
 import 'package:keepmydiet/features/groups/domain/group_member.dart';
 import 'package:keepmydiet/features/groups/presentation/groups_controller.dart';
+import 'package:keepmydiet/features/groups/presentation/rename_group_screen.dart';
 import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class GroupCard extends ConsumerWidget {
@@ -53,17 +54,31 @@ class GroupCard extends ConsumerWidget {
         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
       ),
       subtitle: members == null ? null : _MembersSummary(members: members),
-      trailing: isActive
-          ? const Pill(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isActive)
+            const Pill(
               label: 'Actif',
               background: AppColors.brandLight,
               foreground: AppColors.brandDark,
             )
-          : const Icon(
+          else
+            const Icon(
               Icons.chevron_right,
               size: 18,
               color: AppColors.iconMuted,
             ),
+          if (group.canEdit)
+            EditIconButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => RenameGroupScreen(group: group),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

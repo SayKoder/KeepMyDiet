@@ -1,5 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+
+Future<String?> scanBarcode(BuildContext context) async {
+  final accepted = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Utiliser la caméra ?'),
+      content: const Text(
+        'La caméra sert uniquement à lire le code-barres. Aucune image '
+        "n'est enregistrée ni envoyée, et la caméra s'éteint dès que le "
+        'scan est terminé.',
+      ),
+      actions: [
+        DialogActionButtons(
+          cancelLabel: 'Refuser',
+          onCancel: () => Navigator.of(dialogContext).pop(false),
+          confirmLabel: 'Autoriser',
+          onConfirm: () => Navigator.of(dialogContext).pop(true),
+        ),
+      ],
+    ),
+  );
+  if (accepted != true || !context.mounted) return null;
+
+  return Navigator.of(context).push<String>(
+    MaterialPageRoute(builder: (_) => const BarcodeScannerScreen()),
+  );
+}
 
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
