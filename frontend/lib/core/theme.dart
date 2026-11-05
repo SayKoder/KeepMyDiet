@@ -61,6 +61,9 @@ class AppColors {
   static const waterIcon = Color(0xFF1B7FCC);
 
   static const calories = Color(0xFFFF7A45);
+
+  static const recipeBg = Color(0xFFFFE8DD);
+  static const recipeIcon = Color(0xFFC8501C);
 }
 
 /// Rayons de bordure nommés (section "Arrondis" de la maquette). Les tailles

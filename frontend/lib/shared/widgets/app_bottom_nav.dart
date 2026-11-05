@@ -82,11 +82,13 @@ class FabAboveNav extends StatelessWidget {
     required this.onPressed,
     required this.tooltip,
     required this.child,
+    this.label,
   });
 
   final VoidCallback onPressed;
   final String tooltip;
   final Widget child;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -94,11 +96,22 @@ class FabAboveNav extends StatelessWidget {
       padding: EdgeInsets.only(
         bottom: AppBottomNav.floatingClearance(context) / 2,
       ),
-      child: FloatingActionButton(
-        onPressed: onPressed,
-        tooltip: tooltip,
-        child: child,
-      ),
+      child: label == null
+          ? FloatingActionButton(
+              onPressed: onPressed,
+              tooltip: tooltip,
+              backgroundColor: AppColors.brand,
+              foregroundColor: Colors.white,
+              child: child,
+            )
+          : FloatingActionButton.extended(
+              onPressed: onPressed,
+              tooltip: tooltip,
+              backgroundColor: AppColors.brand,
+              foregroundColor: Colors.white,
+              icon: child,
+              label: Text(label!),
+            ),
     );
   }
 }

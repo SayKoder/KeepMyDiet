@@ -27,6 +27,19 @@ class Recipe {
   final double totalCarbs;
   final double totalFats;
 
+  int get _servings => referenceServings <= 0 ? 1 : referenceServings;
+
+  double get caloriesPerServing => totalCalories / _servings;
+  double get proteinsPerServing => totalProteins / _servings;
+
+  int get totalMinutes {
+    var total = 0;
+    for (final step in steps) {
+      total += step.durationMinutes ?? 0;
+    }
+    return total;
+  }
+
   factory Recipe.fromJson(Map<String, dynamic> json) {
     final ingredients = (json['ingredients'] as List<dynamic>)
         .map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))

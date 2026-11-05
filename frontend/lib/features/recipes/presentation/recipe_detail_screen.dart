@@ -1,26 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:keepmydiet/core/theme.dart';
 import 'package:keepmydiet/features/recipes/domain/recipe.dart';
-import 'package:keepmydiet/features/recipes/domain/recipe_step.dart';
+import 'package:keepmydiet/features/recipes/domain/recipe_ingredient.dart';
 import 'package:keepmydiet/features/recipes/presentation/recipes_controller.dart';
+import 'package:keepmydiet/features/recipes/presentation/widgets/recipe_macros_card.dart';
+import 'package:keepmydiet/features/recipes/presentation/widgets/recipe_step_card.dart';
+import 'package:keepmydiet/shared/widgets/widgets.dart';
 
 class RecipeDetailScreen extends ConsumerWidget {
   const RecipeDetailScreen({super.key, required this.recipe});
 
   final Recipe recipe;
 
+  // Seul l'auteur peut supprimer : le backend renvoie 403 sinon.
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Supprimer cette recette ?'),
+        content: Text('« ${recipe.name} » sera supprimée définitivement.'),
+        actions: [
+          DialogActionButtons(
+            cancelLabel: 'Annuler',
+            onCancel: () => Navigator.of(dialogContext).pop(false),
+            confirmLabel: 'Supprimer',
+            onConfirm: () => Navigator.of(dialogContext).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
     try {
       await ref.read(recipesControllerProvider.notifier).delete(recipe.id);
-      if (context.mounted) {
-        Navigator.of(context).pop();
-      }
+      if (context.mounted) Navigator.of(context).pop();
     } catch (e) {
       if (context.mounted) {
-        // Réservé au créateur (403 sinon) — voir CreateRecipeProcessor/security
-        // côté backend. Pas de moyen simple de savoir côté client si on est
-        // l'auteur avant de tenter, donc on laisse le backend trancher.
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('$e')));
       }
@@ -29,113 +45,185 @@ class RecipeDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sectionTitle = Theme.of(context).textTheme.titleLarge;
+    final count = recipe.ingredients.length;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(recipe.name),
-        actions: [
-          IconButton(
-            onPressed: () => _delete(context, ref),
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Supprimer',
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          _Header(recipe: recipe, onDelete: () => _delete(context, ref)),
+          // La carte remonte sur l'en-tête coloré.
+          Transform.translate(
+            offset: const Offset(0, -36),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: RecipeMacrosCard(recipe: recipe),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 12,
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Text('Ingrédients', style: sectionTitle)),
+                    Text(
+                      '$count élément${count > 1 ? 's' : ''}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                _IngredientsCard(ingredients: recipe.ingredients),
+                if (recipe.steps.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text('Préparation', style: sectionTitle),
+                  for (var i = 0; i < recipe.steps.length; i++)
+                    RecipeStepCard(number: i + 1, step: recipe.steps[i]),
+                ],
+              ],
+            ),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.recipe, required this.onDelete});
+
+  final Recipe recipe;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final minutes = recipe.totalMinutes;
+
+    return Container(
+      decoration: const BoxDecoration(color: AppColors.recipeBg),
+      clipBehavior: Clip.hardEdge,
+      child: Stack(
         children: [
-          Text(
-            'Pour ${recipe.referenceServings} personne(s)',
-            style: Theme.of(context).textTheme.bodyMedium,
+          Positioned(
+            right: -70,
+            bottom: -60,
+            child: CircleAvatar(
+              radius: 110,
+              backgroundColor: AppColors.calories.withValues(alpha: 0.18),
+            ),
           ),
-          const SizedBox(height: 16),
-          Card(
+          SafeArea(
+            bottom: false,
             child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 60),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 16,
                 children: [
-                  _Macro(label: 'Kcal', value: recipe.totalCalories),
-                  _Macro(label: 'Protéines', value: recipe.totalProteins),
-                  _Macro(label: 'Glucides', value: recipe.totalCarbs),
-                  _Macro(label: 'Lipides', value: recipe.totalFats),
+                  Row(
+                    children: [
+                      const RoundBackButton(),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: onDelete,
+                        icon: const Icon(Icons.delete_outline),
+                        color: AppColors.errorText,
+                        tooltip: 'Supprimer',
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          minimumSize: const Size(44, 44),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    recipe.name,
+                    style: Theme.of(context).textTheme.headlineMedium
+                        ?.copyWith(color: const Color(0xFF3B1A0C)),
+                  ),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      Pill(
+                        label:
+                            '${recipe.referenceServings} '
+                            'personne${recipe.referenceServings > 1 ? 's' : ''}',
+                        background: Colors.white,
+                        foreground: AppColors.ink,
+                      ),
+                      if (minutes > 0)
+                        Pill(
+                          label: '$minutes min',
+                          background: Colors.white,
+                          foreground: AppColors.ink,
+                        ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          Text('Ingrédients', style: Theme.of(context).textTheme.titleMedium),
-          for (final ingredient in recipe.ingredients)
-            ListTile(
-              leading: const Icon(Icons.circle, size: 8),
-              title: Text(ingredient.name),
-              trailing: Text('${ingredient.quantity} ${ingredient.unit}'),
-            ),
-          if (recipe.steps.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            Text('Préparation', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            for (var i = 0; i < recipe.steps.length; i++)
-              _StepTile(index: i, step: recipe.steps[i]),
-          ],
         ],
       ),
     );
   }
 }
 
-class _StepTile extends StatelessWidget {
-  const _StepTile({required this.index, required this.step});
+class _IngredientsCard extends StatelessWidget {
+  const _IngredientsCard({required this.ingredients});
 
-  final int index;
-  final RecipeStep step;
+  final List<RecipeIngredient> ingredients;
+
+  String _quantity(RecipeIngredient ingredient) {
+    final value = ingredient.quantity;
+    final text = value == value.roundToDouble()
+        ? value.toStringAsFixed(0)
+        : value.toString();
+    return '$text ${ingredient.unit}';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 14,
-              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              child: Text('${index + 1}'),
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: Text(step.instruction)),
-            if (step.durationMinutes != null) ...[
-              const SizedBox(width: 8),
-              Chip(
-                avatar: const Icon(Icons.schedule, size: 16),
-                label: Text('${step.durationMinutes} min'),
-                visualDensity: VisualDensity.compact,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: ListTile.divideTiles(
+          context: context,
+          color: AppColors.border,
+          tiles: [
+            for (final ingredient in ingredients)
+              ListTile(
+                leading: const CircleAvatar(
+                  radius: 5,
+                  backgroundColor: AppColors.brand,
+                ),
+                minLeadingWidth: 10,
+                title: Text(
+                  ingredient.name,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                trailing: Text(
+                  _quantity(ingredient),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
-            ],
           ],
-        ),
+        ).toList(),
       ),
-    );
-  }
-}
-
-class _Macro extends StatelessWidget {
-  const _Macro({required this.label, required this.value});
-
-  final String label;
-  final double value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value.toStringAsFixed(0),
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-      ],
     );
   }
 }
